@@ -101,16 +101,8 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-tmux_sessionizer() {
-    # Call the script
-    ~/.local/scripts/tmux-sessionizer
-    # Refresh the prompt (important after changing directories)
-    zle reset-prompt
-}
-
-# Register tmux_sessionizer widget & bind key
-zle -N tmux_sessionizer
-bindkey '^F' tmux_sessionizer
+# Register tmux_sessionizer script with Ctrl+f
+bindkey -s '^F' '~/.local/scripts/tmux-sessionizer\n'
 
 # let ssh egent run on startup - prevents reentering pass everytime
 # Check if SSH agent is running
