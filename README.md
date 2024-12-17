@@ -4,12 +4,12 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 
 ## 📁 What's Included?
 
-### 1️⃣ **Neovim (nvim)** ✍️
+### **Neovim (nvim)** ✍️
 - Configuration file: `~/.config/nvim/init.vim`
 - Plugins, key mappings, and theme setup for an enhanced coding experience. 🎨
 - Includes **LSP** settings, **treesitter**, and **telescope** for modern Neovim workflows.
 
-### 2️⃣ **i3 Window Manager** 🪟
+### **i3 Window Manager** 🪟
 - Configuration file: `~/.config/i3/config`
 - Default i3 installations: ```i3 i3status dmenu i3lock xbacklight feh conky xss-lock picom network-manager-applet light maim xclip dunst polkit-gnome polybar rofi```
     - xss-lock - Handles lock and idle stuff
@@ -31,6 +31,15 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 #!/bin/bash
 flatpak run {flatpak for application here}
 ```
+
+### **.zshrc**
+- Contains keybinding for tmux-sessionizer
+- Check ssh agent on after first time use to prevent password reenter for ssh each time
+
+### **Scripts**
+- tmux-sessionizer
+    - REQUIRES: fzf (fuzzy finder) and tmux
+    - Fuzzy find specified directories and creates a new tmux session with it's name
 
 ---
 
