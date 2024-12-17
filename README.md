@@ -14,6 +14,7 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 - Default i3 installations: ```i3 i3status dmenu i3lock xbacklight feh conky xss-lock picom network-manager-applet light maim xclip dunst polkit-gnome polybar rofi```
     - xss-lock - Handles lock and idle stuff
     - picom - Compositor for window transparencies and stuff
+        - Configuration file: `~/.config/picom/picom.conf`
     - network-manager-applet - Tray tool for network stuff
     - light - Display brightness controls
     - maim - screenshot utility
@@ -21,35 +22,15 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
     - dunst - Notifications
     - polkit-gnome - Hook up for authentication/elevation stuff
     - polybar - A configurable status bar
+        - Configuration file: `~/.config/polybar/config`
     - rofi - A sweet sweet launcher (alternative to dmenu)
+        - Configuration file: `~/.config/rofi/config.rasi`
 
 - REMEMBER: If the flathub apps do not show up in dmenu, a shell script needs to be created in /usr/local/bin folder
 ```
 #!/bin/bash
 flatpak run {flatpak for application here}
 ```
-
-### 3️⃣ **Picom** 🌫️
-- Configuration file: `~/.config/picom/picom.conf`
-- Provides subtle window transparency and smooth animations. ✨
-- Tuned for performance and compatibility with i3.
-
-### 4️⃣ **Polybar** 📊
-- Configuration file: `~/.config/polybar/config`
-- A sleek status bar showing workspaces, system stats, audio controls, and more. 🎛️
-- Customized modules for audio, brightness, battery, network, and date/time.
-
-### 5️⃣ **Rofi** 🎩
-- Configuration file: `~/.config/rofi/config.rasi`
-- A stylish application launcher and window switcher. 🚀
-- Includes themes and bindings to match the overall workspace aesthetic.
-
----
-
-## 🌟 Features
-- Consistent theme across all tools (Neovim, i3, Polybar, Rofi, and Picom). 🎨
-- Optimized for speed and minimal resource usage. ⚡
-- Fully customizable and modular for different setups. 🛠️
 
 ---
 
