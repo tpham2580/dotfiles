@@ -13,6 +13,11 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 - Configuration file: `~/.config/i3/config`
 - Keybindings for efficient workspace switching, window tiling, and application launching. ⌨️
 - Integrated with Polybar, Rofi, and Picom for a seamless desktop experience.
+- REMEMBER: If the flathub apps do not show up in dmenu, you need to make a shell script for that application saying something like 
+```
+#!/bin/bash
+flatpak run {flatpak for application here}
+```
 
 ### 3️⃣ **Picom** 🌫️
 - Configuration file: `~/.config/picom/picom.conf`
