@@ -32,11 +32,11 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 flatpak run {flatpak for application here}
 ```
 
-### **.zshrc**
+### **.zshrc** 💻
 - Contains keybinding for tmux-sessionizer
 - Check ssh agent on after first time use to prevent password reenter for ssh each time
 
-### **Scripts**
+### **Scripts** 🤖
 - tmux-sessionizer
     - REQUIRES: fzf (fuzzy finder) and tmux
     - Fuzzy find specified directories and creates a new tmux session with it's name
