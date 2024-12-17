@@ -234,6 +234,10 @@ mode "resize" {
         bindsym $mod+r mode "default"
 }
 
+# Screenshot Key Maps
+bindsym Shift+Print exec --no-startup-id maim --select "/home/$USER/Pictures/$(date)"
+bindsym Ctrl+Shift+Print exec --no-startup-id maim --select | xclip -selection clipboard -t image/png
+
 bindsym $mod+r mode "resize"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
@@ -242,7 +246,7 @@ bindsym $mod+r mode "resize"
 #        status_command i3status
 #}
 
-exec --no-startup-id xrandr --output DP-0 --primary --mode 2560x1440 --rate 144.00 --pos 0x0 --output DP-4 --mode 2560x1440 --rate 60.00 --right-of DP-0 --output DP-2 --off
+exec --no-startup-id xrandr --output DP-0 --primary --mode 2560x1440 --rate 165.00 --pos 0x0 --output DP-4 --mode 2560x1440 --rate 60.00 --right-of DP-0 --output DP-2 --mode 2560x1440 --rate 60.00 --rotate left --left-of DP-0
 
 # Hides i3 title bar
 for_window [class="^.*"] border pixel 0
