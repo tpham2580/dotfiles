@@ -109,8 +109,3 @@ bindkey -s '^F' '~/.local/scripts/tmux-sessionizer\n'
 if [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)" > /dev/null
 fi
-
-# Check if any SSH key is loaded, and add it if not
-if ! ssh-add -l &>/dev/null; then
-    ssh-add 2>/dev/null
-fi
