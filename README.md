@@ -5,7 +5,7 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 ## 📁 What's Included?
 
 ### ✍️ **Neovim (nvim)**
-- Configuration file: `~/.config/nvim/init.vim`
+- Configuration file: `~/.config/nvim/init.lua`
 - Plugins, key mappings, and theme setup for an enhanced coding experience. 🎨
 - Includes **LSP** settings, **treesitter**, and **telescope** for modern Neovim workflows.
 
