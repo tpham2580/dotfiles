@@ -6,8 +6,7 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 
 ### ✍️ **Neovim (nvim)**
 - Configuration file: `~/.config/nvim/init.lua`
-- Plugins, key mappings, and theme setup for an enhanced coding experience. 🎨
-- Includes **LSP** settings, **treesitter**, and **telescope** for modern Neovim workflows.
+- Base configuration file came from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
 
 ### 🪟 **i3 Window Manager**
 - Configuration file: `~/.config/i3/config`
