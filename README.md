@@ -7,9 +7,11 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 ### ✍️ **Neovim (nvim)**
 - Configuration file: `~/.config/nvim/init.lua`
 - Base configuration file came from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
+- Current Theme: [Catppuccin](https://github.com/catppuccin/catppuccin)
 
 ### 🪟 **i3 Window Manager**
 - Configuration file: `~/.config/i3/config`
+- Current Theme: [Catppuccin](https://github.com/catppuccin/catppuccin)
 - Default i3 installations: ```i3 i3status dmenu i3lock xbacklight feh conky xss-lock picom network-manager-applet light maim xclip dunst polkit-gnome polybar rofi```
     - xss-lock - Handles lock and idle stuff
     - picom - Compositor for window transparencies and stuff
