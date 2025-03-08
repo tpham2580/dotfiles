@@ -1012,7 +1012,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.neo-tree',
+  -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -1061,16 +1061,16 @@ vim.keymap.set('n', '<C-e>', function()
   harpoon.ui:toggle_quick_menu(harpoon:list())
 end)
 
-vim.keymap.set('n', '<C-h>', function()
+vim.keymap.set('n', '<A-1>', function()
   harpoon:list():select(1)
 end)
-vim.keymap.set('n', '<C-t>', function()
+vim.keymap.set('n', '<A-2>', function()
   harpoon:list():select(2)
 end)
-vim.keymap.set('n', '<C-n>', function()
+vim.keymap.set('n', '<A-3>', function()
   harpoon:list():select(3)
 end)
-vim.keymap.set('n', '<C-s>', function()
+vim.keymap.set('n', '<A-4>', function()
   harpoon:list():select(4)
 end)
 
