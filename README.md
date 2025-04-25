@@ -32,6 +32,10 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 #!/bin/bash
 flatpak run {flatpak for application here}
 ```
+- You can also run this command to create a file with symlink
+```
+sudo ln -s /opt/extract-folder/bin/start.sh /usr/local/bin/appname
+```
 
 ### 💻 **.zshrc**
 - Contains keybinding for tmux-sessionizer
