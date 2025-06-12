@@ -178,6 +178,15 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Diagnostics show up on right side
+vim.diagnostic.config {
+  virtual_text = true, -- show diagnostics as virtual text (right side)
+  signs = true, -- show signs in the gutter
+  underline = true, -- underline problematic code
+  update_in_insert = false,
+  severity_sort = true,
+}
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -267,6 +276,28 @@ require('lazy').setup({
     },
   },
 
+  -- NOTE: Code Companion (AI)
+  {
+    'olimorris/codecompanion.nvim',
+    opts = {},
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
+
+  -- NOTE: Markdown Previewer
+  -- :Markview
+  {
+    'OXY2DEV/markview.nvim',
+    lazy = false,
+    opts = {
+      preview = {
+        filetypes = { 'markdown', 'codecompanion' },
+        ignore_buftypes = {},
+      },
+    },
+  },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -281,6 +312,37 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
+
+  -- NOTE: Copilot lua
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = 'Copilot', -- lets you run :Copilot setup immediately
+    event = 'InsertEnter', -- also auto‑loads when you start typing
+    config = function()
+      require('copilot').setup {}
+    end,
+  },
+
+  -- copilot cmp
+  {
+    'zbirenbaum/copilot-cmp',
+    config = function()
+      require('copilot_cmp').setup {
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+      }
+    end,
+  },
+
+  -- Code Companion (AI)
+  {
+    'olimorris/codecompanion.nvim',
+    opts = {},
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
 
   -- Harpoon 2 plugin
   {
@@ -484,6 +546,7 @@ require('lazy').setup({
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
+      { 'seblyng/roslyn.nvim' },
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -559,7 +622,10 @@ require('lazy').setup({
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
+          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n' })
+
+          -- Pull up Code Companion chat window
+          map('<leader>cc', ':CodeCompanionChat<CR>', '[C]ode [C]ompanion Chat', { 'n', 'x' })
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
@@ -679,6 +745,21 @@ require('lazy').setup({
             },
           },
         },
+
+        roslyn = {},
+      }
+
+      -- Add other LLMs into Code Companion context
+      require('codecompanion').setup {
+        providers = {
+          copilot = { enabled = true },
+          ollama = {
+            enabled = true,
+            host = 'http://localhost:11434', -- The default server when running `ollama serve`
+            model = 'qwen3.5:3b', -- The LLM I have locally
+          },
+          default_provider = 'copilot',
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -687,7 +768,12 @@ require('lazy').setup({
       --    :Mason
       --
       --  You can press `g?` for help in this menu.
-      require('mason').setup()
+      require('mason').setup {
+        registries = {
+          'github:mason-org/mason-registry',
+          'github:Crashdummyy/mason-registry',
+        },
+      }
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -889,6 +975,8 @@ require('lazy').setup({
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
             group_index = 0,
           },
+          -- Copilot
+          { name = 'copilot' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
