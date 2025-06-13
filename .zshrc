@@ -104,6 +104,15 @@ source $ZSH/oh-my-zsh.sh
 # Register tmux_sessionizer script with Ctrl+f
 bindkey -s '^F' '~/.local/scripts/tmux-sessionizer\n'
 
+# Register a new aichat session with Ctrl+c
+function run_aichat_session() {
+  aichat --session
+  zle reset-prompt
+}
+
+zle -N run_aichat_session
+bindkey '^G' run_aichat_session
+
 # let ssh egent run on startup - prevents reentering pass everytime
 # Check if SSH agent is running
 if [ -z "$SSH_AUTH_SOCK" ]; then
