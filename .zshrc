@@ -120,3 +120,5 @@ export FZF_DEFAULT_OPTS=" \
 
 # Launch Neofetch on Terminal launch
 # neofetch --chafa ~/Pictures/turtle.png --size 500 500
+export PATH="$HOME/.cargo/bin:$PATH"
+export GITHUB_API_KEY="$(gh auth token)"
