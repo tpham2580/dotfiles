@@ -104,23 +104,14 @@ source $ZSH/oh-my-zsh.sh
 # Register tmux_sessionizer script with Ctrl+f
 bindkey -s '^F' '~/.local/scripts/tmux-sessionizer\n'
 
-# Uses pass to retrive api key from key "deepseek/api-key"
+# Uses pass to retrive api key from key 
 deepseek_key() {
   export DEEPSEEK_API_KEY=$(pass deepseek/api-key)
 }
 
 function run_aichat_session() {
   deepseek_key
-  cat > ~/.config/aichat/config.yaml <<EOF
-model: deepseek:deepseek-chat
-clients:
-- type: openai-compatible
-  name: deepseek
-  api_base: https://api.deepseek.com
-  api_key: $DEEPSEEK_API_KEY
-EOF
-  aichat --session
-  zle reset-prompt
+  codex
 }
 
 zle -N run_aichat_session

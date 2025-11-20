@@ -1,0 +1,49 @@
+model = "deepseek-reasoner"
+model_provider = "deepseek-reasoner"
+approval_policy = "on-failure"
+sandbox_mode = "workspace-write"
+project_doc_max_bytes = 32768
+
+[model_providers.deepseek-reasoner]
+name = "DeepSeek Reasoner"
+base_url = "https://api.deepseek.com/v1"
+env_key = "DEEPSEEK_API_KEY"
+wire_api = "chat"
+request_max_retries = 3
+stream_max_retries = 5
+stream_idle_timeout_ms = 180000
+
+[model_providers.deepseek-chat]
+name = "DeepSeek Chat"
+base_url = "https://api.deepseek.com/v1"
+env_key = "DEEPSEEK_API_KEY"
+wire_api = "chat"
+request_max_retries = 4
+stream_max_retries = 8
+stream_idle_timeout_ms = 120000
+
+[profiles.deepseek-reasoner]
+model = "deepseek-reasoner"
+model_provider = "deepseek-reasoner"
+approval_policy = "on-failure"
+sandbox_mode = "workspace-write"
+model_supports_reasoning_summaries = false
+
+[profiles.deepseek-chat]
+model = "deepseek-chat"
+model_provider = "deepseek-chat"
+approval_policy = "on-failure"
+sandbox_mode = "workspace-write"
+model_supports_reasoning_summaries = false
+
+[sandbox_workspace_write]
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+network_access = true
+
+[shell_environment_policy]
+inherit = "all"
+ignore_default_excludes = false
+
+[history]
+persistence = "save-all"

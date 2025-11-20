@@ -1,0 +1,15 @@
+[2m2025-11-20T02:05:28.376418Z[0m [32m INFO[0m Esc pressed
+[2m2025-11-20T02:05:28.987413Z[0m [32m INFO[0m Esc pressed
+[2m2025-11-20T02:05:33.673402Z[0m [32m INFO[0m Esc pressed
+[2m2025-11-20T02:05:33.826145Z[0m [32m INFO[0m Esc pressed
+[2m2025-11-20T02:05:33.990669Z[0m [32m INFO[0m Esc pressed
+[2m2025-11-20T02:07:12.018596Z[0m [32m INFO[0m spawning ghost snapshot task
+[2m2025-11-20T02:07:12.019328Z[0m [32m INFO[0m Turn error: Missing environment variable: `DEEPSEEK_API_KEY`.
+[2m2025-11-20T02:07:12.022493Z[0m [32m INFO[0m skipping ghost snapshot because current directory is not a Git repository [3msub_id[0m[2m=[0m"1"
+[2m2025-11-20T02:07:12.022508Z[0m [32m INFO[0m ghost snapshot gate marked ready
+[2m2025-11-20T02:09:36.525930Z[0m [32m INFO[0m spawning ghost snapshot task
+[2m2025-11-20T02:09:36.554318Z[0m [32m INFO[0m skipping ghost snapshot because current directory is not a Git repository [3msub_id[0m[2m=[0m"1"
+[2m2025-11-20T02:09:36.554329Z[0m [32m INFO[0m ghost snapshot gate marked ready
+[2m2025-11-20T02:10:32.082843Z[0m [32m INFO[0m spawning ghost snapshot task
+[2m2025-11-20T02:10:32.102986Z[0m [32m INFO[0m skipping ghost snapshot because current directory is not a Git repository [3msub_id[0m[2m=[0m"3"
+[2m2025-11-20T02:10:32.103004Z[0m [32m INFO[0m ghost snapshot gate marked ready
