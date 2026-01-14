@@ -276,13 +276,16 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Code Companion (AI)
+  -- NOTE: Copilot Chat (AI)
   {
-    'olimorris/codecompanion.nvim',
-    opts = {},
+    'CopilotC-Nvim/CopilotChat.nvim',
     dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-treesitter/nvim-treesitter',
+      { 'nvim-lua/plenary.nvim', branch = 'master' },
+      'zbirenbaum/copilot.lua',
+    },
+    build = 'make tiktoken',
+    opts = {
+      -- Configure options as needed; defaults are fine for now
     },
   },
 
@@ -293,7 +296,7 @@ require('lazy').setup({
     lazy = false,
     opts = {
       preview = {
-        filetypes = { 'markdown', 'codecompanion' },
+        filetypes = { 'markdown', 'copilot-chat' },
         ignore_buftypes = {},
       },
     },
@@ -332,16 +335,6 @@ require('lazy').setup({
         panel = { enabled = false },
       }
     end,
-  },
-
-  -- Code Companion (AI)
-  {
-    'olimorris/codecompanion.nvim',
-    opts = {},
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-treesitter/nvim-treesitter',
-    },
   },
 
   -- Harpoon 2 plugin
@@ -663,7 +656,24 @@ require('lazy').setup({
           -- This may be unwanted, since they displace some of your code
           if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
             map('<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
+              local ih = vim.lsp.inlay_hint
+              if not ih then
+                return
+              end
+              local enabled = false
+              -- nvim 0.11+ signature: is_enabled({ bufnr = bufnr }), enable(enabled, { bufnr = bufnr })
+              local ok, val = pcall(ih.is_enabled, { bufnr = event.buf })
+              if ok then
+                enabled = val
+                pcall(ih.enable, not enabled, { bufnr = event.buf })
+                return
+              end
+              -- nvim 0.10 signature: is_enabled(bufnr), enable(bufnr, enabled)
+              ok, val = pcall(ih.is_enabled, event.buf)
+              if ok then
+                enabled = val
+              end
+              pcall(ih.enable, event.buf, not enabled)
             end, '[T]oggle Inlay [H]ints')
           end
         end,
@@ -698,7 +708,7 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -746,18 +756,7 @@ require('lazy').setup({
         roslyn = {},
       }
 
-      -- Add other LLMs into Code Companion context
-      require('codecompanion').setup {
-        providers = {
-          copilot = { enabled = true },
-          ollama = {
-            enabled = true,
-            host = 'http://localhost:11434', -- The default server when running `ollama serve`
-            model = 'qwen3.5:3b', -- The LLM I have locally
-          },
-          default_provider = 'copilot',
-        },
-      }
+      -- Copilot Chat configured via lazy `opts` above
 
       -- Ensure the servers and tools above are installed
       --  To check the current status of installed tools and/or manually install
@@ -780,6 +779,16 @@ require('lazy').setup({
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      local function setup_lsp(server_name, server_opts)
+        -- Prefer Neovim 0.11+ API to avoid deprecated lspconfig framework
+        if vim.lsp and vim.lsp.enable and vim.lsp.config then
+          vim.lsp.config(server_name, server_opts)
+          return vim.lsp.enable(server_name)
+        end
+        -- Fallback for older versions
+        return require('lspconfig')[server_name].setup(server_opts)
+      end
+
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
@@ -790,13 +799,13 @@ require('lazy').setup({
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
+            setup_lsp(server_name, server)
           end,
         },
       }
 
       -- emmet autocomplete
-      require('lspconfig').emmet_ls.setup {
+      setup_lsp('emmet_ls', {
         capabilities = require('cmp_nvim_lsp').default_capabilities(),
         filetypes = {
           'html',
@@ -817,7 +826,7 @@ require('lazy').setup({
             },
           },
         },
-      }
+      })
     end,
   },
 
@@ -831,7 +840,7 @@ require('lazy').setup({
         function()
           require('conform').format { async = true, lsp_format = 'fallback' }
         end,
-        mode = '',
+        mode = { 'n', 'v' },
         desc = '[F]ormat buffer',
       },
     },
@@ -1154,8 +1163,8 @@ require('lazy').setup({
   },
 })
 
--- Pull up Code Companion chat window
-vim.keymap.set({ 'n', 'x' }, '<leader>cc', ':CodeCompanionChat<CR>', { desc = '[C]ode [C]ompanion Chat' })
+-- Pull up Copilot Chat window
+vim.keymap.set({ 'n', 'x' }, '<leader>cc', '<cmd>CopilotChatToggle<CR>', { desc = '[C]opilot [C]hat' })
 
 -- NOTE: Harpoon setup
 local harpoon = require 'harpoon'
