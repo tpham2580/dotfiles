@@ -276,17 +276,26 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Copilot Chat (AI)
+  -- NOTE: Code Companion (AI)
   {
-    'CopilotC-Nvim/CopilotChat.nvim',
+    'olimorris/codecompanion.nvim',
     dependencies = {
-      { 'nvim-lua/plenary.nvim', branch = 'master' },
-      'zbirenbaum/copilot.lua',
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
     },
-    build = 'make tiktoken',
-    opts = {
-      -- Configure options as needed; defaults are fine for now
-    },
+    opts = function()
+      local adapters = require 'codecompanion.adapters'
+      return {
+        adapters = {
+          copilot = adapters.copilot,
+        },
+        strategies = {
+          chat = { adapter = 'copilot' },
+          inline = { adapter = 'copilot' },
+          command = { adapter = 'copilot' },
+        },
+      }
+    end,
   },
 
   -- NOTE: Markdown Previewer
@@ -296,7 +305,7 @@ require('lazy').setup({
     lazy = false,
     opts = {
       preview = {
-        filetypes = { 'markdown', 'copilot-chat' },
+        filetypes = { 'markdown', 'codecompanion' },
         ignore_buftypes = {},
       },
     },
@@ -1163,8 +1172,8 @@ require('lazy').setup({
   },
 })
 
--- Pull up Copilot Chat window
-vim.keymap.set({ 'n', 'x' }, '<leader>cc', '<cmd>CopilotChatToggle<CR>', { desc = '[C]opilot [C]hat' })
+-- Pull up Code Companion chat window
+vim.keymap.set({ 'n', 'x' }, '<leader>cc', ':CodeCompanionChat<CR>', { desc = '[C]ode [C]ompanion Chat' })
 
 -- NOTE: Harpoon setup
 local harpoon = require 'harpoon'
