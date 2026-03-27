@@ -276,26 +276,23 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Code Companion (AI)
+  -- NOTE: Avante (AI Agent)
   {
-    'olimorris/codecompanion.nvim',
+    'yetone/avante.nvim',
+    event = 'VeryLazy',
+    version = false,
+    build = vim.fn.has 'win32' ~= 0
+        and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false'
+      or 'make',
     dependencies = {
       'nvim-lua/plenary.nvim',
-      'nvim-treesitter/nvim-treesitter',
+      'MunifTanjim/nui.nvim',
+      'zbirenbaum/copilot.lua',
+      'nvim-tree/nvim-web-devicons',
     },
-    opts = function()
-      local adapters = require 'codecompanion.adapters'
-      return {
-        adapters = {
-          copilot = adapters.copilot,
-        },
-        strategies = {
-          chat = { adapter = 'copilot' },
-          inline = { adapter = 'copilot' },
-          command = { adapter = 'copilot' },
-        },
-      }
-    end,
+    opts = {
+      provider = 'copilot',
+    },
   },
 
   -- NOTE: Markdown Previewer
@@ -305,7 +302,7 @@ require('lazy').setup({
     lazy = false,
     opts = {
       preview = {
-        filetypes = { 'markdown', 'codecompanion' },
+        filetypes = { 'markdown', 'Avante' },
         ignore_buftypes = {},
       },
     },
@@ -417,7 +414,7 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    branch = 'master',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -1171,9 +1168,6 @@ require('lazy').setup({
     },
   },
 })
-
--- Pull up Code Companion chat window
-vim.keymap.set({ 'n', 'x' }, '<leader>cc', ':CodeCompanionChat<CR>', { desc = '[C]ode [C]ompanion Chat' })
 
 -- NOTE: Harpoon setup
 local harpoon = require 'harpoon'
