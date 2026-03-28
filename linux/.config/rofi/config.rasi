@@ -11,6 +11,10 @@ configuration{
     display-run: " 🏃  Run ";
     display-window: " 🪟  Window";
     sidebar-mode: true;
+    kb-remove-to-eol: "";
+    kb-accept-entry: "Control+m,Return,KP_Enter";
+    kb-row-up: "Up,Control+k,Control+p";
+    kb-row-down: "Down,Control+j,Control+n";
 }
 
 @theme "catppuccin-mocha"

@@ -6,6 +6,9 @@
     "gtk-layer-shell": true,
     "height": 25,
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
+    "hyprland/workspaces": {
+        "all-outputs": false
+    },
     "modules-center": ["clock"],
     "modules-right": ["network", "bluetooth", "temperature","cpu","memory","battery","backlight","pulseaudio","pulseaudio#microphone","tray"],
     "hyprland/window": {
