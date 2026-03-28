@@ -1,0 +1,114 @@
+{
+    "layer": "top",
+    "position": "top",
+    "exclusive": true,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "height": 25,
+    "modules-left": ["hyprland/workspaces", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right": ["network", "bluetooth", "temperature","cpu","memory","battery","backlight","pulseaudio","pulseaudio#microphone","tray"],
+    "hyprland/window": {
+        "format": "{}"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
+    },
+
+    "cpu": {
+        "interval": 2,
+        "format": "  {usage}% ",
+        "tooltip": true,
+    },
+
+    "memory": {
+        "interval": 5,
+        "format": "  {used:0.1f}G/{total:0.1f}G ",
+        "tooltip": true,
+    },
+
+    "clock": {
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "format-alt": " {:%d/%m/%Y}",
+        "format": " {:%I:%M %p}"
+    },
+
+    "backlight": {
+        "device": "intel_backlight",
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "on-scroll-up": "brightnessctl set 1%+",
+        "on-scroll-down": "brightnessctl set 1%-",
+        "min-length": 6
+    },
+
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 20
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "tooltip": false,
+        "format-muted": " Muted",
+        "on-click": "pamixer -t",
+        "on-scroll-up": "pamixer -i 5",
+        "on-scroll-down": "pamixer -d 5",
+        "scroll-step": 5,
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        }
+    },
+
+    "pulseaudio#microphone": {
+        "format": "{format_source}",
+        "format-source": " {volume}%",
+        "format-source-muted": " Muted",
+        "on-click": "pamixer --default-source -t",
+        "on-scroll-up": "pamixer --default-source -i 5",
+        "on-scroll-down": "pamixer --default-source -d 5",
+        "scroll-step": 5
+    },
+    
+    "temperature": {
+        "thermal-zone": 1,
+        "format": "{temperatureF}°F ",
+        "critical-threshold": 80,
+        "format-critical": "{temperatureC}°C "
+    },
+
+    "network": {
+        // "interface": "wlp2*", // (Optional) To force the use of this interface
+        "format-wifi": "  {signalStrength}%",
+        "format-ethernet": "{ipaddr}/{cidr}",
+        "tooltip-format": "{essid} - {ifname} via {gwaddr}",
+        "format-linked": "{ifname} (No IP)",
+        "format-disconnected": "Disconnected ⚠",
+        "format-alt": "{ifname}:{essid} {ipaddr}/{cidr}",
+    },
+
+    "bluetooth": {
+	    "format": " {status}",
+	    "format-disabled": "", // an empty format will hide the module
+	    "format-connected": " {num_connections}",
+	    "tooltip-format": "{device_alias}",
+	    "tooltip-format-connected": " {device_enumerate}",
+	    "tooltip-format-enumerate-connected": "{device_alias}"
+    }
+}
