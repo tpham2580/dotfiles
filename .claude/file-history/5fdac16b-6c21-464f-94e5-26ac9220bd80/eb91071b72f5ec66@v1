@@ -1,0 +1,20 @@
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "your-anthropic-auth-token",
+    "ANTHROPIC_BASE_URL": "http://localhost:5000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60",
+    "CLAUDE_CODE_SKIP_AUTH_LOGIN": "true"
+  },
+  "model": "opus[1m]",
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true
+  },
+  "autoUpdatesChannel": "latest"
+}

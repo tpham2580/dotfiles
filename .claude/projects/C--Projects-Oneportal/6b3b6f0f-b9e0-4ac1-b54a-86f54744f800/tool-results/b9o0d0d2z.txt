@@ -1,0 +1,1016 @@
+e9b267f9 Remove FallbackAppIdToProductResolver and register AppIdToProductResolver directly
+b6260047 managed identity primary with defaultazurecred
+bfe33cd5 error handling
+bb8ff72f logs and throwing
+d31fc9b4 dead code clean up
+1e13720b Merged PR 6501101: [Galaxy] Use defaults for storage
+031c6c32 Merged PR 6500920: Added a few more hardcoded parent product mappings
+09842f8c Merged PR 6498946: GPU Utilization GpuType and SKU Convert Refactor
+657431fc Merged PR 6494592: update packages
+770b6020 Merged PR 6483499: [Galaxy] add app storage
+b653f673 Merged PR 6495074: GPU Utilization Data Parity Fix up
+9ddcb360 Merged PR 6494044: More GPU Utilization Features
+abf262b7 Merged PR 6491619: Disable the Metric Value Scaling
+6f5ca644 Merged PR 6486157: GPU Utilization Dashboard - More Customer Asks
+137a01bc Merged PR 6483277: [Galaxy.Storage] v1.1.0: Add StorageItem DTO, rename AppStorageResult to StorageResult
+fd03b6f2 Merged PR 6483429: [Galaxy] Fix launch settings
+44986be8 Merged PR 6483165: [Galaxy] fix stylecop errors and refactor
+36bde0b7 Merged PR 6482010: more integration changes
+c563c4d1 Merged PR 6479247: [Galaxy] Add Galaxy.AppStorage
+5f55c6a3 Merged PR 6479404: [Galaxy] Use central package management
+47d4a884 Merged PR 6479297: skip duplicate package publish
+d992cff9 Merged PR 6475122: Move ExpMan library from Galaxy
+5cff4978 Merged PR 6478695: GPU Utilization Aggr Issue Fix up
+5f1c3136 Merged PR 6478406: more default parent info
+166557c1 Merged PR 6475628: 10448992: Validate completeness and correctness of all model deployments
+06240c81 Merged PR 6475575: hardcoded service tree to unblock if permission doesn't work
+2d449918 Merged PR 6475591: GPU Utilization Bugfix for "10468315: Used and Free GPU Columns are flipped"
+e7a6dc17 Merged PR 6475544: Revert "Merged PR 6472694: [SECURITY] Bump @azure/msal-browser from 2.38.3 to...
+db2574f4 Merged PR 6475553: Revert "Merged PR 6472692: [SECURITY] Bump @azure/msal-browser from 2.38.3 to...
+f163c3d4 Merged PR 6471974: Continue the work Replace Kusto metrics with MDM direct queries
+9c553a3a Merged PR 6474481: Added two more hardcoded values
+e1a25b41 Merged PR 6472692: [SECURITY] Bump @azure/msal-browser from 2.38.3 to 5.2.0 in /fleetServices/IBSite/src/Service/ClientApp
+6b006097 Merged PR 6472694: [SECURITY] Bump @azure/msal-browser from 2.38.3 to 5.2.0 in /fleetServices/IsDevPortal/src/Service/ClientApp
+33344bd2 Merged PR 6471176: Updated parent kusto query and multitenant auth
+e26d6abc Merged PR 6472421: Use PartitionCount in ibspark job
+b1fe2882 Merged PR 6456393: fix flighting api bugs and add logs
+1887dfeb Merged PR 6467305: [SECURITY] Bump jsonpath from 1.1.1 to 1.3.0 in /fleetServices/CodexSite/src/Service/ClientApp
+b3ffa652 Merged PR 6467309: [SECURITY] Bump jsonpath from 1.1.1 to 1.3.0 in /fleetServices/Hub/src/Service/ClientApp
+ed33bf9c Merged PR 6467307: [SECURITY] Bump jsonpath from 1.1.1 to 1.3.0 in /fleetServices/IsDevPortal/src/Service/ClientApp
+05a9c0b8 Merged PR 6467308: [SECURITY] Bump jsonpath from 1.1.1 to 1.3.0 in /fleetServices/IBSite/src/Service/ClientApp
+98859843 Merged PR 6470068: GPU Utilization Dashboard Configurable Corner Cases
+5c7c7d03 Merged PR 6469041: Have Table with Meaningful Name for Metric Reporting
+838f31b3 Merged PR 6462191: GPU Utilization Metrics Reporting Refinement
+82792b2c Merged PR 6461612: comment about legacy LBM model names for furture maintain
+cfae4eb7 Merged PR 6461203: fallback search for model name only when searching model traffic group in ini...
+00199cf7 Merged PR 6460489: version resolution for running local
+88f87a12 Merged PR 6448289: Enforce all newly created GLBs have at least one appid (quota id) configured
+f5eed49b Merged PR 6454345: [SECURITY] Bump node-forge from 1.3.1 to 1.3.3 in /fleetServices/Hub/src/Service/ClientApp
+2d7f05e5 Merged PR 6454473: Stop Metric Reporting Tentatively
+c5d3fa90 Merged PR 6450996: Publish Service step runs in PR and non-PR
+407dfafb Merged PR 6450956: Remove CodexSite web host project reference to fix NETSDK1152 duplicate publi...
+0e898b43 Merged PR 6450717: GPU Utilization Metric Fix
+11651d1c Merged PR 6450668: GPU Utilization Metrics Update
+005e4f98 Merged PR 6450151: GPU Utilization Metrics Fix and Update
+afcaa8a3 Merged PR 6424696: [CodexSite] Fix e2e test
+4654a600 Merged PR 6448138: fix one portal sec items
+0abaf089 Merged PR 6448041: Added GPU management fields
+7614313c Merged PR 6446877: fix prod pme sql bug
+45d5a266 Merged PR 6438825: [SECURITY] Bump minimatch from 3.1.2 to 3.1.5 in /fleetServices/Galaxy/src/Client
+74c2c77b Merged PR 6442594: service-tree parents
+8b4ea9f1 Merged PR 6442487: GPU Utilization Collection Service
+faa80fc9 Merged PR 6441828: [SECURITY] Bump rollup from 2.79.2 to 2.80.0 in /fleetServices/Hub/src/Service/ClientApp
+a2bd7993 Merged PR 6441826: [SECURITY] Bump rollup from 2.79.2 to 2.80.0 in /fleetServices/IsDevPortal/src/Service/ClientApp
+7ad187e3 Merged PR 6440646: set client id as default to address staging
+e7e9448d Merged PR 6440570: Fix some UI issues with skills view
+0f327ed5 Merged PR 6426531: Papyrus Weekly Utilization Service
+2492b21f Merged PR 6438823: [SECURITY] Bump minimatch from 3.1.2 to 3.1.5 in /fleetServices/OnePortalTemplateSite/src/Client
+58955c1d Merge pull request 6437886 from user/aicoder/cg/f013d9e9-1162-4ff6-91e8-ceb5b7b6f2d3/11901149 into master
+99a41531 Merged PR 6437776: [SECURITY] Bump qs and body-parser in /fleetServices/Hub/src/Service/ClientApp
+694a74a1 Merged PR 6433367: add param in prepare ib job
+1897d561 Merged PR 6435426: add env mapping + some fixes
+5b9f15a4 Merged PR 6435417: Revert "Merged PR 6415526: [IBSite]Skip Test"
+8d92b4d4 Merged PR 6425782: [SECURITY] Bump rollup from 2.79.1 to 2.80.0 in /fleetServices/CodexSite/src/Service/ClientApp
+9c531717 Merged PR 6432817: fix e2e tests
+53f5df51 Merged PR 6431932: add skills view
+5712d401 Merged PR 6432233: add retries and tags for AFD backend
+55964dcc Merged PR 6431626: fix dependency issues and resolve db connection issue
+df11baa4 Merged PR 6430951: fix redirects
+23de6391 Merged PR 6345332: [SECURITY] Bump node-forge from 1.3.1 to 1.3.3 in /fleetServices/IBSite/src/Service/ClientApp
+f4e0a25a Merged PR 6425783: [SECURITY] Bump rollup from 2.79.1 to 2.80.0 in /fleetServices/IBSite/src/Service/ClientApp
+37df980e Merged PR 6428962: Fix bad query parameter issue
+5abd4f56 Merged PR 6345337: [SECURITY] Bump @remix-run/router and react-router-dom in /fleetServices/Hub/src/Service/ClientApp
+a2fd278c Merged PR 6403767: [SECURITY] Bump qs and express in /fleetServices/Hub/src/Service/ClientApp
+574d97a6 Merged PR 6345324: [SECURITY] Bump @remix-run/router and react-router-dom in /fleetServices/EqSite/src/Client
+935eecb3 [Galaxy] fix template
+d5ab30b7 Merged PR 6426622: apply fix for parsing Merge Offload
+0a2fa59b Merged PR 6426572: implement services and stubs
+85d61010 Merged PR 6424042: Validate the target server in PDILive controller
+16c5c193 Merged PR 6423695: move flighting controller and create scaffolding
+560f4276 Merged PR 6423193: authenticate service connection and fix e2e test
+ad73153c Merged PR 6415314: create MergeJobInfoOffload page on IB portal
+04d17391 Merged PR 6415526: [IBSite]Skip Test
+050e8f8c Merged PR 6412235: Updated Readme.md for Codex Portals to include Galaxy Vault
+8e82a6b7 Merged PR 6402454: [SECURITY] Bump ip and react-devtools in /fleetServices/Hub/src/Service/ClientApp
+3e6d32ac Merged PR 6411901: support dockey pass in as a parameter
+cf20c006 Merged PR 6411446: fix lint errors and remove redundant lint from master CI
+0c40a3f6 Merged PR 6408938: add lint check to CI
+b1a8d541 Merged PR 6409568: Fix ESLint errors in Papyrus.d.ts
+13650804 Merged PR 6409256: linting error
+374f1d7b Merged PR 6401642: Add agent utilization and some bug fixes
+4d7c09f5 Merged PR 6387425: [SECURITY] Bump System.Data.SqlClient from 4.8.5 to 4.8.6
+c9198fe0 Merged PR 6389921: Skip frontend/npm build in E2E test pipeline stage
+be695aec Merged PR 6389764: fix triggers for service ci pipelines
+a822bea5 Merged PR 6401009: Remove ConfigRows dead code
+8741bd7c Merged PR 6398571: Download multiple jsons simultaneously
+0284076a Merged PR 6397645: Preferred Endpoint in Model Management tab
+fbb3223d Merged PR 6397127: Enforce quota values must be greater than 0 in quota management
+76536be6 Merged PR 6397357: add volatile keyword to cache entry
+99d0f7d5 Merged PR 6394235: Add json config cache
+259751b4 Merged PR 6394485: add untilization for namespace view
+85941aaa Merged PR 6393331: updated serviceregistry.json to match papyrus repo
+5d37864f Merged PR 6393457: changing the favicon to new logo
+ec5b7bd1 Merged PR 6345338: [SECURITY] Bump form-data from 3.0.2 to 3.0.4 in /fleetServices/Hub/src/Service/ClientApp
+95816d45 Merged PR 6345334: [SECURITY] Bump node-forge from 1.3.1 to 1.3.3 in /fleetServices/IsDevPortal/src/Service/ClientApp
+fef52f94 Merged PR 6345327: [SECURITY] Bump form-data from 3.0.1 to 3.0.4 in /fleetServices/IBSite/src/Service/ClientApp
+619357f6 Merged PR 6345328: [SECURITY] Bump form-data from 3.0.1 to 3.0.4 in /fleetServices/IsDevPortal/src/Service/ClientApp
+b3302bfc Merged PR 6345331: [SECURITY] Bump rollup from 2.79.1 to 2.79.2 in /fleetServices/IsDevPortal/src/Service/ClientApp
+5b8c88cb Merged PR 6345329: [SECURITY] Bump braces from 3.0.2 to 3.0.3 in /fleetServices/IBSite/src/Service/ClientApp
+cdf3b29b Merged PR 6345340: [SECURITY] Bump braces from 3.0.2 to 3.0.3 in /fleetServices/IsDevPortal/src/Service/ClientApp
+11cabe2a Merged PR 6345341: [SECURITY] Bump node-forge from 1.3.1 to 1.3.3 in /fleetServices/CodexSite/src/Service/ClientApp
+c91a3b1f Merged PR 6392410: update backend url
+6bcb1955 Merged PR 6386049: Remove dead code legacy json files
+9a3953a9 Merged PR 6389666: [Galaxy] fix npm package issue
+a313ce83 Merged PR 6389705: Fix OnePortalTemplateSite template
+2ac89bb6 Merged PR 6385581: Auto Approve for Model Traffic Group Owner
+c0ce1e56 Merged PR 6389207: init Galaxy
+15b00cf7 Merged PR 6383588: Onboard PdiLive test and Prod
+7b0a9a31 Merged PR 6384853: Allow whitelisted app-only principals in role permissions
+ed560c1f Merged PR 6385105: updated yarn lock
+b35374a7 Merged PR 6345322: [SECURITY] Bump node-forge from 1.3.1 to 1.3.3 in /frontend-libraries/oneportal-skeleton
+17422420 Merged PR 6381868: Revert 'Onboard pdilive to IsDevPortal'
+9e650c96 Merged PR 6380067: pai admin edit
+f30879b5 Merged PR 6378970: Cache user role permissions
+dadbd374 Merged PR 6375002: Model Management Create Modal UI Rework
+2a18d160 Merged PR 6374827: Added model global fields as editable and owners as required
+63f76234 Merged PR 6374807: Merge previous changes to master from dev branch
+a3da26fa Merged PR 6372230: Revert 'Merge changes to master'
+2850b3c0 Merged PR 6368133: Onboard pdilive to IsDevPortal
+a61a2ea9 Merged PR 6369940: changed text: 'Ratio of unused capacity that quota(s) cannot borrow (1=cannot borrow any quota)'
+24419745 Merged PR 6369872: fix endpoint urls
+ecd27703 Merged PR 6369478: Merge changes to master
+8f72bd6f Merged PR 6354839: Create & Edit Owners for Model Traffic Group with GUID
+03ced439 Merged PR 6365226: reverted papayrus doc link due to styling issues
+8c92537d Merged PR 6365295: updated modelclientconfig.ini file to papyrteam guid only
+ca17329e Merged PR 6365008: make active job fix for eqtasksubmiter
+2cdb49eb Merged PR 6352624: remove service CI triggers and fix packaging
+92181de2 Merged PR 6355860: Fix missing config
+e9d8a643 Merged PR 6355551: fix header css import for build
+f163cb07 Merged PR 6194046: Clarify quota validation to explicitly allow >= 0 values in Quota Management
+b987b799 Merged PR 6343753: refactored and added papyrus doc link
+e5fc398a Merged PR 6347949: show display name else show guid
+66b06cf7 Merged PR 6348371: M-T Owners in role permissions
+0dc2c69e Merged PR 6348515: fix triggers for stage CD
+493e8c34 Merged PR 6329981: Standardize y-axis to display latency in seconds for stress test charts
+180dc990 Merged PR 6347785: display name and GUID for papyrusteam
+353af520 Merged PR 6343917: [Stress Test Auth] change adocredentialfactory to managedidentity
+44e91462 Merged PR 6331701: update spark page layout and parameter
+8c845149 Merged PR 6343805: Fix null directory error
+0fd35623 Merged PR 6312954: create separate pipelines for the services
+793699d5 Adding copilot instructions
+c4cc05cc Merged PR 6339856: Load Balancer Management - endpoint input bugs
+ecc95e97 Merged PR 6333844: Add support for read and writing to multiple files
+b7a5af3c Merged PR 6339614: Updated papyrusteam with GUID for owner permissions
+3589cab0 Merged PR 6339195: Load Balance Management page bugs
+c95c9b9c Merged PR 6303162: [Stress Test in portal] add auth for stresstestcontroller
+e6b832aa Merged PR 6332570: [Stress Test] differentiate papyrus stress tests
+0d7347f0 Merged PR 6325814: Refactor Execute commands to support multiple files
+6006e133 Updated FalconFleetReleaseTemplate.yml
+a463c70e Merged PR 6320855: [Stress Test] Add input tokens and output tokens charts
+f274caaa Merged PR 6321896: fix: EQ E2E submit job test
+1ebceec1 Merged PR 6309229: added support for additional config fields: capacityrationotsubjecttoborrowing
+40b147be Merged PR 6303514: [EqSite] restrict access to fixed cosmos path
+20f6fab2 Merged PR 6303494: model traffic group alphabetic dropdown
+77593bc7 Merged PR 6302727: left nav indicator
+dcfc986e Merged PR 6276873: add spark job page
+27e6a891 Merged PR 6299526: View Owners in Model Management page
+132ec0e1 Merged PR 6300493: [EqSite] fix the urls
+06883a35 Merged PR 6300225: [IBSite]update ib schema package
+6b67891f Merged PR 6299809: [Stress Test Page] perf trends improvement
+5c2781c5 Merged PR 6299932: [IBSite]update check dockey logic
+e9fd4711 Merged PR 6299675: [EqSite] fix repro tool by using correct backend vip
+d9b3ec90 Merged PR 6299470: Fix quota error message to display seconds instead of milliseconds
+ceddc93d Merged PR 6293911: Add Second Stress Test Page for Model Perf Trends
+cd9dc861 Merged PR 6293918: [IBSite]Proxy Page Imprement
+caa1ec12 Merged PR 6290162: [EqSite] add environment specific replicas
+d54d948a Merged PR 6284742: Fix typo: Replace bing-oneptrl with bing-oneprtl in Kubernetes YAML files
+38d7d2b1 Merged PR 6245183: [EqSite] add proxy for active jobs
+ee4c152d Merged PR 6270979: Fix missing default values for additional endpoints in Model Management
+34aa5015 Merged PR 6107121: Add logging to dump OCI region quota information for debugging
+33d45887 Merged PR 6285851: Removed Model Creation and Endpoint Management tab. New Model management tab
+b4a9ae45 Merged PR 6285846: add banner for missing user perms
+c007ce59 Merged PR 6271019: Add plus icon to Add Endpoint button in Model Management page
+fde54c0f Merged PR 6281427: Visualize stress test results in portal
+ed77100b Merged PR 6285553: [IBSite]Add GenerateToken Handler
+ae978c19 Merged PR 6281321: validations for endpoint edit and add
+aa92296b Merged PR 6277589: delete from modelconfig ini file and unit test added
+8a8f7f55 Merged PR 6251853: only select the credential that support the target tenent
+bd10b3d0 Merged PR 6270899: Top Level banner when not in codex user group with link to join
+56dd02e3 Merged PR 6261204: Add Support for Individual model changes in emergency rollout
+12418a74 Merged PR 6269383: double quotes instead of single for block quote parsing
+1c437f8b Merged PR 6267232: Duplicate name fix
+a411f9af Merged PR 6264135: Model Management - Delete Model Traffic Group and All Endpoints
+f47032fd Merged PR 6252094: multiple env support eqtasksubmitter
+27cef76a Merged PR 6258595: Delete Endpoint flow
+026a4e74 Merged PR 6256911: Edit Endpoints, Create Endpoint Green
+c418404d Merged PR 6249384: Add Endpoint for existing Model Traffic Group
+40631cb1 Merged PR 6228865: add application settings
+2dac1150 Merged PR 6244424: Action button to display all model traffic and endpoint information
+39146cdc Merged PR 6243885: Add headers and fix links
+49eb05cf Merged PR 6240297: normalize model name and traffic group selections to avoid repeats
+57570ec5 Merged PR 6220025: Test new changes
+b5753ccc Merged PR 6235980: Model Management - Create Flow
+b46dc8cd Merged PR 6232216: Export CSV feature
+49168ea9 Merged PR 6228979: Unique model traffic groups only in Model Management page
+e7d2700d Merged PR 6226217: [Parent Quota Owners] Allow owners of parent quota id to edit children quota id
+ed52e887 Merged PR 6223847: [MaxAllowedTimeoutMs Bug] Test change
+261716d3 Merged PR 6224273: customize data center option
+2dd991a5 Merged PR 6223765: chore: remove OnePortalTemplate
+f3fc26ab Merged PR 6219973: Connected Model Endpoint API call to Model Management
+2c2a9450 Merged PR 6215003: Create interface for ModelEndpoint create, edit, and delete command
+055763a1 Merged PR 6215491: test obo ado modification
+ab3a527e Merged PR 6214060: create new agent dialog
+6ea9a706 Merged PR 6214629: duplicate quota validation for create service auth
+1a4137c9 Merged PR 6214177: Added new api get endpoint modelendpoint to return unison of Model + Endpoint tab
+13106e23 Merged PR 6214286: Created new ModelEndpointManagementContainer for merged view
+76141282 Merged PR 6210358: [ServiceRegistry] clean up unregistered children apps
+3d155815 Merged PR 6203126: removed owner restriction from submit check
+a3f21266 Merged PR 6191180: Namespaces page with create
+ff392b2f Merged PR 6202354: Only admin or user can edit quota and service auth
+a1de583d Merged PR 6151403: add counters
+5491f30c Merged PR 6194065: make scrapeinfo more robust
+13ae72b0 Merged PR 6198691: Updated Owners with papyrusteam for Papyrus Owned Model Traffic Groups
+5b052153 Merged PR 6193365: [Test as mock user] make mockrolepermissionsservice use MockUsers.json instead of real SGs
+a0c27d63 Merged PR 6192782: Codex Users can now create PR changes for all LBM commands
+50dfe72d Merged PR 6193668: Add comprehensive E2E tests for PapyrusConfigPRService
+7a185aa0 Merged PR 6186079: Refactor permissions to drop IdentityService and rely on RolePermissionService
+6585f981 Merged PR 6192987: Deleted RecoProbe
+cf42b1e7 Merged PR 6156243: Fix E2E test: Grant admin access for specific app in staging environment
+74ce57be Merged PR 6189958: Global admins + more links
+ca787d70 Merged PR 6065577: [INT DEPLOYMENT ONLY] experiment with separate dashboards
+0fc2ca9b Merged PR 6142563: wiki addition
+79f0644e Merged PR 6185457: fix logger and scrollbar issue
+d51d25d5 Merged PR 6172813: Moved methods out to helper util class
+824d3ff0 Merged PR 6159061: Papyrus Portal Endpoint/TrafficGroup GPU/Instance Update
+b0111205 Merged PR 6172810: Add support for teams and agent actions
+ca33a221 Merged PR 6175559: Rename field labels in Service Auth Quota Management edit/create modal
+db3491cd Merged PR 6161772: Support target server to access saasive by IsDevPortal
+20b4fa94 Merged PR 6161670: add owning team by fetching data stored in redis store per team
+b35a00e9 Merged PR 6145623: fix: eq release pipeline e2e test is broken
+4f4b7cd6 Merged PR 6160058: Change sorting direction
+89886c74 Merged PR 6159832: Added option to remove specific actions in review and submit. Also, cleaned u...
+c60b47ec Merged PR 6156420: Model Traffic Group Create now adds alias to new owners field in ModelClientConfig.ini file
+2b97eda7 Merged PR 6146421: rename IntegrationTest to FunctionalTests
+4a8ae8b5 Merged PR 6146004: add more unit test
+bc9e8ef9 Merged PR 6156477: Fix filter losing focus and translate regions
+7e5d5ada Merged PR 6153723: Add better logging to debug auth issue
+3b5c465b Merged PR 6152713: Bug Bash Squashing
+35b0a6b9 Merged PR 6152101: Fix AAD
+12ee489e Merged PR 6148895: removed identity service as proxy to check SG and directly calls
+f70526c8 Merged PR 6149100: Rename Codex Portal to Papyrus Portal
+f63dd132 Merged PR 6149099: Rename labels for clarity in Service Auth Quota Management
+8266bfc9 Merged PR 6149080: Make ModelConfig.json and ModelClientConfig.ini & ServiceRegistry.json headers more prominent
+d170c3e3 Merged PR 6148253: [Endpoint Management] Set tags to 1 as default and lock input field
+3e4e73d8 Merged PR 6148537: [papyrus portal testing e2e] add tim to some apps as owner
+a9d169b5 Merged PR 6142031: Enable URL editing for endpoints after creation
+8e6e3833 Merged PR 6144082: integrate with real pai api
+d1a12b87 Merged PR 6141821: Allow quota >= 0 in Quota Management and implement search filter for Papyrus Quota ID
+5e60fcab Merged PR 6144214: [Service Auth Quota Delete] add fix
+eaf5742c Merged PR 6142552: updated model traffic create modal
+6970b353 Merged PR 6142289: Fix comment and build warning
+3d1576f1 Merged PR 6131474: Highlight ReceiveToDispatch field when latency >= 1000 ms in UrpPerf summary tab
+aba28983 Merged PR 6141776: [Portal Bug Fix] fix permissions in papyrusmanagement.ts
+484217a7 Merged PR 6138932: Added onchange to update model purpose
+78fa3bca Merged PR 6138474: Add specified streaming to UI
+9f1f03ff Merged PR 6117177: move eqtasksubmitter to one portal, tested e2e
+6a83a1f6 Merged PR 6138038: removed usememo and changed check from isUser to isAdmin
+c8c65184 Merged PR 6132255: Add hidden override to refresh SaasLive session binding
+134e3da4 Merged PR 6134703: [Service Auth Quota] remove quota access control from left nav
+6cf0cd8f Merged PR 6134436: reingested updated ServiceRegistry
+7f7452fd Merged PR 6130784: [Service Auth Quota Management and Quota Management] use ServiceRegistry.json data for all ownership checks (don't rely on HasOwnershipPermissionAsync anymore()
+475b883c Merged PR 6132057: [End to End Testing] update test modelconfig for local testing
+75c8663b Merged PR 6131259: config-json-auto-pr: t, by: Mock User (tiy)
+7df6dfea Merged PR 6130980: Portal UI Bugs
+6de292c7 Merged PR 6131437: [EqSite] add job summary pane, fix layouts and revert the change in parent header style
+1d51a33b Merged PR 6121535: Update Submit Modal and PR creation Modal
+17b95cb4 Merged PR 6128323: User Permissions replacing identityservice
+f51d2dc6 Merged PR 6127454: [Service Auth Quotas] update serviceregistry.json
+9321ef14 Merged PR 6127217: Add streaming prod
+6170e77c Merged PR 6120924: [Portal Permissions] flush out owner permissions in new api
+12d12568 Merged PR 6117546: [EQ] add EQ frontend
+110b04fa Merged PR 6120958: [IBSite]add ISAgentProxy Page
+5e435f01 Merged PR 6121309: Quota changes from ms to secs
+5a3490d1 Merged PR 6120953: noautoopen submit window and quota papyrus id
+b8135d98 Merged PR 6117534: [IBSite]Update ISAgentProxy
+91f7e81d Merged PR 6111317: [IBSite]use local module
+d217d1ce Merged PR 6114938: Add Agent Deployment View feature to PAI section
+8e896476 Merged PR 6117603: Permissions methods to be consume by containers
+0ba617be Merged PR 6117347: turn on auto merge in prod
+398b8a6b Merged PR 6117319: add unit test for main page
+dd78074c Merged PR 6111442: set auto complete feature
+009174a5 Merged PR 6114059: Use PME token credential for data protection
+707bf9c7 Merged PR 6107246: Highlight all changes in Submit & Review Sidebar
+bfc40318 Merged PR 6111709: [IBSite]Add IB Streaming History Page
+8f927f5c Merged PR 6113707: Rename Deployment Status label from "ModelClientConfig.ini" to "ModelClientConfig.ini & ServiceRegistry.json"
+f9d32fed Merged PR 6111071: fix eqtasksubmitter skeleton
+8e98c8a0 Merged PR 6110720: Convert Model Purpose text input to dropdown menu in Model Traffic Group Creation modal
+554a1885 Merged PR 6110575: Revert "[SECURITY] Set minimum .NET SDK version via global.json to address se...
+9f49c6d2 Merged PR 6098257: eqtasksubmitter skeleton
+444c450f [SECURITY] Set minimum .NET SDK version via global.json to address security vulnerabilities
+c5535b0c Merged PR 6102103: Updated oneportaltemplate unit test with new string
+75f95d0e Merged PR 6098280: [IBSite]enable IB Navigator
+099dd846 Merged PR 6098403: [Papyrus Portal Setup] Updated Readme.md
+7f7b48b8 Merged PR 6089423: Fix overlapping column names in Load Balancer Management and Model Deployment pages
+18ae58f5 Merged PR 6077753: Persist PR properties text input between sidebar open/close cycles
+d945c8ce Merged PR 6077597: Update Model Deployments loading message to use LoadingState component
+1b9fdec8 Merged PR 6101295: Updated HealthTests.cs to fix e2e test for oneportaltemplatesite
+087927b2 Merged PR 6098460: removed recoprobe from default release pipeline
+de3f18fe Merged PR 6077871: add EQ APIs
+21d9c4f3 Merged PR 6084865: [Service Auth Quota] allow readers to view service auth quota but not edit
+e691937f Merged PR 6072982: Implement role permissions API interface for user authorization
+91878bf0 Merged PR 6093763: Disabled PRCreationTest and added work item note
+6a187fc1 Merged PR 6093471: [Service Auth Quota Mgmt] add test changes to match Quota Access Control data owners
+717e6584 Merged PR 6084791: Consolidate shared build tasks into reusable pipeline template and fix the lib random failure issue
+3772b7cc Merged PR 6060989: read more information from MPCM
+e99980af Merged PR 6088583: make one nuget.config in repo
+bae65d28 Merged PR 6062256: update fleet manager links
+735cbbda Merged PR 6076968: remove unneeded npmrc file from provisionhub
+58e39274 Merged PR 6077377: mise validation
+df4eb9e2 Merged PR 6066581: Merged PR 6065024: Add PAI Left-Navigation Panel to Codex Portal
+8599223f Merged PR 6059702: add eq lib test project
+1886d204 Merged PR 6051234: Add support for PROM IB stamp in MPCM reservation system
+49cbfab9 Merged PR 6050957: Add column visibility configuration to GenericTable component
+ca32724c Merged PR 6039043: Same create model traffic group in one pr
+9c6b8ce9 Merged PR 6048882: add EqInfrastructure.Kusto and EqInfrastructure project to .net 8
+05df51c7 Merged PR 6043330: add readme about eqsite
+d4d9c61e Merged PR 6050934: Change 'Model Name' to 'Model Definition Name' in QuotaTableContainerV3
+631c11d4 Merged PR 6047329: add mise
+af3146bd Merged PR 6044917: Enable central package management for EqSite solution
+89d05d08 Merged PR 6042417: added rest of shared.dependency and eq.core projects
+6c06b1fd Merged PR 6038943: added shared dependency and got it to build
+3d240211 Merged PR 6032228: Fix CI Pipeline
+9d21a018 Merged PR 6025588: boilerplate for eqsite
+a46579ec Merged PR 5984227: Consistent Create Modal & Progress Side Bar
+b915e26f Merged PR 5981231: [TESTING] allow owners to create/delete quota
+bc14570b Merged PR 5992328: update IBAPISchema for ISAgent Proxy
+bde5a059 Merged PR 5992040: config-json-auto-pr: test owner, by: Mock User (hossama)
+ce274f35 Merged PR 5984333: home page improvements
+ffd5b30d Merged PR 5974037: Pre-Build Endpoint Support for Codex Site using MSS/MPCM Data
+3b5b785e Merged PR 5965306: MSS/MPCM Data Presentation BugFix
+df10ef64 Merged PR 5970987:  BUG 9863896 - Hide SKU & Regions with no data
+60740050 Merged PR 5964421: Remove further unused model config fields from portal
+33275cef Merged PR 5862130: Recent Changes to Master
+dbc324bc Merged PR 5963383: [Codex Landing Page] Model Deployments href fix
+fc35f748 Merged PR 5961403: Codex Site Endpoint Interface Bugfix to Tolerate the Empy String in MSS Response
+0e1b8a09 Merged PR 5960566: [Codex Site Release Build] Revert yarn.lock changes
+7a0804a1 Merged PR 5959351: Enable the Owners can Update the Service Auth Quota Management Record
+733b161d Merge pull request 5532505 from invBootstrap into master
+bee14d5f Merged PR 5942717: [Portal Landing Page]
+18a7688b Merged PR 5938844: [Nav Bar] remove isSelected from navbar, restore quotatable and papyrusmanagement conta...
+8f759265 Merged PR 5928272: Last Refreshed Date for Quota Table changes
+c16120f9 Merged PR 5897815: Read MSS/MPCM data for presentation
+9bdc8552 Merged PR 5935914: Enable the MSS/MPCM Update
+fe0d0a72 Merged PR 5920968: Last Refreshed Date (Quota Table)
+f9772873 Merged PR 5913148: [Nav Bar] Improvement
+c5204b25 Merged PR 5898041: Fix up the Missing CodexSite DI
+da44ef5a Merged PR 5847310: MPCM/MSS API Integration
+15bac5c1 Merged PR 5887321: [Work in Progress] enable local testing as different users
+6cc22bd5 Merged PR 5893390: Authentication and Validity Check for Introducing Service Tree Ids
+3bb3e814 Merged PR 5895673: update production branch classification [one portal sec items]
+76efd859 Merged PR 5891684: config-json-auto-pr: Test, by: Tao Zhang
+9b70a5c3 Merged PR 5884997: Service Registry File Change Conflict Detection
+8bb569b1 Merged PR 5875604: Special Format QuotaAppId Handling
+46572c96 Merged PR 5878369: Remove unused GLB fields from portal
+c6c2aba7 Merged PR 5861839: [IBSite]add api for ISAgentProxy
+bafd1177 Merged PR 5875017: [Quota Access Control] change checkadminspermissions to checkreadpermissions
+fdff34c4 Merged PR 5868410: added cloudtest credential
+9a9280c3 Merged PR 5865894: Add code submittion time to portal
+c85ae56c Merged PR 5858215: [Papyrus Portal Owners List] Allow owners to add new owners to their apps
+f555a381 Merged PR 5861402: Add node selector to various services in oneprtl
+10d4114b Merged PR 5858432: Add nodeselector info to codexsite.
+0426c6fe Merged PR 5845896: Restrict the ServiceAuthQuota Management Feature to Admin
+e7e6f6ba Merged PR 5841899: Update data deployment snapshot to contain lkg and rolling commit information
+7a96260c Merged PR 5837741: Recent changes for dev portal ,merge to master
+8c5bc4b0 Merged PR 5827922: Allow only admin to emergency rollout
+6dc8772c Merged PR 5831766: Modify the Service Registry File Path in Staging/PROD env.
+f674b1c3 Merged PR 5825602: [Code Site] Service and Quota Management
+f83bb654 Merged PR 5820852: config-json-auto-pr: demo, by: Tao Zhang
+5b44d32e Merged PR 5819301: Add Data deployment snapshot
+c0b3adcf Merged PR 5816743: Updated ServiceRegistry.json to Eliminate the Duplicate Data
+ae904314 Merged PR 5814331: [Codex Site] Initialize the ServiceRegistry.json for Service Tree Id to Papyrus Quota Id
+ce3abdc2 Merged PR 5774859: Update CodexSite Readme.md Documentation
+91c6179b Merged PR 5794327: [IBSite]remove \r\n
+df2a24bb Merged PR 5783888: [IBSite]add search docid page
+4e19133c Merged PR 5771878: Revert 'Revert 'add ib subscription''
+73d59d0f Merged PR 5774001: Move force rollout option to column
+4528d886 Merged PR 5767655: add more logs
+07a3ef65 Merged PR 5764770: add tags and output build id
+513e4d17 Merged PR 5763023: Revert 'add ib subscription'
+7839064f Merged PR 5749029: Add user alias to emergency rollout API
+13303fe8 Merged PR 5680849: add ib subscription
+9b87dce4 Merged PR 5739117: remove rest depenedency
+82a7510b Merged PR 5738871: Add emergency rollout to pending commits support in portal
+948e7d8a Merged PR 5737963: remove active directory
+02090ede Merged PR 5738047: remove uneeded credential for Galaxy
+efee4230 Merged PR 5730380: button to hide 0 quota sku and regions
+b06ac138 Merged PR 5715964: Add Papyrus Traffic Group Name to Self Serve API Created deployments
+9bb85f3a Merged PR 5703198: Add pending commits list feature to portal
+3c432b2e Merged PR 5710807: [IBSite]Remove leading space
+8a5b9c9f Merged PR 5696060: [IBSite]Update Port number
+141d6c5e Merged PR 5688124: Merge Dev Portal change to master
+451c4377 Merged PR 5688408: fix cd pipeline
+3ae1312c Merged PR 5680431: enable gitclient test
+d3a5991c Merged PR 5639393: [IBSite]call different Endpoint based on different region
+2bbfc1ba Merged PR 5673475: update cd pipelines
+302e21f2 Merged PR 5614140: Merge IS Dev Portal into Master
+d794571d Merged PR 5668876: Updated IdentityService.cs
+ba175910 Merged PR 5661918: add ado credential
+c8252f86 Updated Falcon Fleet CI Build.yml
+a62a2768 Merged PR 5661456: Home Page Templates and Pattern Matching for Hierarchy Nodes
+a4711f41 Merged PR 5648032: Fetch Galaxy Jobs for Hierarchy Node and have Properties for Nodes
+2ae14a8f Merged PR 5639922: ProvisionHub Main Page Galaxy APIs
+fe361013 Merged PR 5636359: Enhanced Qualification Tasks UI with Drag-and-Drop Support
+1a4faa8a Merged PR 5627084: fix glbtable name issue
+a13428d2 Merged PR 5635253: delete outdated quota
+d58dede9 Merged PR 5603566: Updated GenericTable to make it work when Search filed is object array.
+afb72529 Merged PR 5623508: Add Galaxy Job Details View in ProvisionHub
+aae77be1 Merged PR 5615678: [IBSite]Parse doc history
+ecfac1c4 Merged PR 5620940: Updated GalaxyAADAuthProvider.cs
+78def974 Merged PR 5619874: Add Galaxy API Integration to ProvisionHub
+c29c61da Merged PR 5616527: Implement Qualification Task Delete & UI Enhancements
+971b12b5 Merged PR 5614874: Qualification Tasks and Hierarchical Display System
+753845fa Merged PR 5605650: Job Qualification and Hierarchy Management System
+967d85c2 Merged PR 5564250: [IBSite]Fixes Schema
+b9f44479 Merged PR 5602788: fix ci pipeline
+e4f328ee Updated ClusterFleetExtension.json
+aac9cb33 Merged PR 5596648: Automatically use the right credential factory
+4b98a739 Merged PR 5595457: Fix: EF dependencies and add dev db for faster developlment
+bbb9f60a Merged PR 5581575: use "azureml-model-group": " if traffic group is missing in tag when read aoai deployment
+f2e66b47 Merged PR 5546708: [IS Dev Portal] Service Mesh Data page
+6faf9f71 Merged PR 5587260: Include start.bat
+6d335c03 Merged PR 5587127: Revert "Merged PR 5514839: Revert "Merged PR 5505777: update document about n...
+bc9093aa Merged PR 5401563: use auth proxy image for pai
+6417d45e Merged PR 5567733: ProvisionHub JobService Backend
+b6d38edf Merged PR 5570740: Fix Oneportal config env vars override
+94cc650c Merged PR 5560122: Migrate ProvisionHub to Vite
+3410e088 Merged PR 5558163: Revert "Merged PR 5532091: temporary fix bug 9323221
+a12d0276 Merged PR 5557141: [IBSite]onboard web grounding
+fa5e6d05 Merged PR 5560146: move AmePrototype to other folder to unblock pipeline
+4259f402 Merged PR 5556749: [IBSite]apply rename
+086ae8a5 Merged PR 5551777: Add Recoprobe
+ccb709bd Merged PR 5553266: API Specs for ProvisionHub
+39b7ab47 Merged PR 5506661: Provision Hub FrontEnd Working Mocks with dummy data
+3371e799 Merged PR 5541592: [IBSite]URRS Scheduler Info Page
+b1d60014 Merged PR 5536044: Added Falcon Log Dump Step
+6b0883fe Merged PR 5524317: Migrated OnePortal Template to New Structure
+ee008503 Merged PR 5506511: ui adjustiments
+f9d24b24 Merged PR 5536482: [IBSite]Quick fixes format
+ee01233d Merged PR 5482026: feat: use VirtulEndpointCount to get real endoint configs
+1a9cae14 Merged PR 5532091: temporary fix bug 9323221
+77d088b6 Inventory drift
+fd942279 Merged PR 5521801: Fix Isolated New Vite Template Build
+be20d8be Merged PR 5518730: Quota label change
+f32d6fc7 Merged PR 5514971: [IBSite]add one option for dump ib output and onboard fluid-int
+8f36b0a4 Merged PR 5514839: Revert "Merged PR 5505777: update document about new npm credential provider
+ef762fb5 Merged PR 5511064: Text changes for Papyrus Management menu option and Organization page text ch...
+b77c802c Merged PR 5513409: Update ISExpAuthToolkit version to 1.2.11-beta
+7ea3b37e Merged PR 5501642: [IBSite]add dump ib output and display error message for dockey search
+2c09fd9f Merged PR 5504993: Fixed Quota Change Validation to Check on Apps Under the Same Model Traffic Group Pair
+e50f3758 Merged PR 5498375: Support for the new parameter of endpoint
+e674e14c Merged PR 5504797: fix IBSite solo cloud build error
+05ad6792 Merged PR 5504238: Add support for new AME apps
+a25f495e Merged PR 5505777: update document about new npm credential provider
+de9ada0f Merged PR 5501473: add onboarding new partner tsg
+5d9ac248 Merged PR 5500043: Fix Codex admin whitelist
+453b0f0e Merged PR 5504163: Fix startup error "Cannot redirect to the authorization endpoint"
+e7eb1429 Merged PR 5501598: Dev Portal stamp log page
+f2848506 Updated AddNewPortal.md
+66a1b41b Merged PR 5482268: user error for corrupted model config
+4decdad7 Merged PR 5498025: add papyrus gpum identity to admin whitelist
+824fb7b6 Merged PR 5493083: support multiple aether credentials
+44ef67ae Merged PR 5483640: [IBSite]add supporting search real time and some bug fixes
+c2d33cb4 Merged PR 5490630: Fix Rename Model Name Flow
+80a2e776 Merged PR 5476287: Papyrus Self-serving quota management feedback
+4d9cf9f0 Merged PR 5482374: add instance counter for trafficgroups
+72c35ec0 Merged PR 5486512: Fix Identity Manager Cache Policy
+a75c9222 Merged PR 5482495: Codex: allow access to Codex API for hardcoded msi
+1727f85b Merged PR 5483130: Add default values for the new model parameters
+1166b495 Merged PR 5466941: [IBSite]IDF Page Improvment
+a52c15a3 Merged PR 5476281: Fixed non-admins cannot send POST requests
+32a41ec1 Merged PR 5460891: ProvisionHub Backend Database Layer
+0ac4367e Merged PR 5461990: draft for stamp log page
+f1dca8b3 Merged PR 5469286: Removed & updated some deps
+6e2a8d7c Merged PR 5468806: Fix retrieving Papyrus GLBs
+a73a336e Merged PR 5460985: Support 'Any' default value for GLB SupportedModel
+463e2756 Merged PR 5460767: [IBSite]add one link to display link
+d463a1b3 Merged PR 5429711: Add Server Side Self-servingQuota Update Validation
+9063e5c7 Merged PR 5425953: Add Trafficgroup metric to codexupdater
+a50ccf9b Merged PR 5427287: Add Bar Charts for Unused SKU Data
+af6d0a3b Merged PR 5450003: update techhub client and package
+87aed6ce Merged PR 5403276: Boilerplate for ProvisionHub
+fd6a1288 Merged PR 5418940: fix styling of new portal
+e35458af Merged PR 5415814: Added owners field to app quota data
+758936ef Merged PR 5425650: Fix: Throwing user exceptiion in case of same key in .ini file
+be790317 Merged PR 5422318: Updated SnapshotHistoryContainer.js
+d3388709 Merged PR 5421788: Fix app quota update failure
+b9b0a12f Merged PR 5418658: [IBSite]remove useless file and support GGB index at doc history search
+863d7f51 Merged PR 5405506: Add Unit Tests to Templates
+e4a2f1b3 Merged PR 5401121: 1p auth proxy: allow config override from env vars
+9ffdec69 Merged PR 5415441: Update ModelConfig.ini url file to new location in PapyrusConstants
+b63005da Merged PR 5407890: make refactor portal template deployable to falconfleet
+ccc7e04e Merged PR 5413669: Added CapacityTracking
+801da21a Merged PR 5411529: [tested e2e] added model pool name to table and disabled edit and delete for null aoaideployment
+15098a0b Merged PR 5406742: [IBSite]split lines for idf
+8618f5e7 Merged PR 5405719: Add available GLBs options
+424bcc47 Merged PR 5397686: Integrate Org ACL with Backend
+74df1327 Merged PR 5389959: Add the new created model to dataconfig.ini
+3dcfaa18 Merged PR 5395546: Add grouping by to sku management page
+fd541fb0 Merged PR 5394608: fix bug that k8s setting should be all in lower case
+ee41eb7f Merged PR 5391418: Improve Script and Update Guide
+bf65f6c5 Merged PR 5391326: Make tag editable
+e6f7d2fe Merged PR 5385644: get rid of getfungibledeploymentstatus
+49f19cc3 Merged PR 5384166:  fix deployment of new portal
+650bb8a8 Merged PR 5384082: create is dev portal
+573e8ef4 Merged PR 5383924: update portal read me
+3cccfc39 Merged PR 5382317: Add DataConfig.ini file for dev Environment
+8f5ea7eb Merged PR 5380053: Add host builder implementation
+d29b9dbe Merged PR 5378455: PR Svc: temporarily hide deployed status
+a99cb5eb Merged PR 5353527: Create New Endpoints for Papyrus App Org Access
+8878b8c2 Merged PR 5368086: Add unit tests with CI support
+59bbff4d Merged PR 5376804: Add API to retrieve available GLBs from Papyrus repo
+2fe12859 Merged PR 5371803: merge ci for lib and service
+9d7e3a02 Merged PR 5346852: [IBSite]Fixes issue
+f099fe90 Merged PR 5367439: Papyrus Management: Add search and group by support for endpoint and appquota tabs
+d5311830 Merged PR 5355541: get rid of getfungiblityendpoint apis
+8c8a82ed Merged PR 5368422: fix the library build pipeline
+43db6a75 Merged PR 5350304: New SPA Template
+00d8529e Merged PR 5353087: Add model traffic group management tab for model creation and update details
+503619f6 Merged PR 5360012: tag docker images with isexp service id
+92395428 Merged PR 5353263: Onboard PAI auth proxy portal
+a469c05c Merged PR 5350108: Auto Generate Portals
+8e1c9f1e Merged PR 5339830: Add New Page for App Org Access Management
+99926525 Merged PR 5345077: fix missing project in solution
+0d2571b0 Merged PR 5352457: Fix GitClient.FunctionaTest load in SLN file
+18c057cf Merged PR 5346768: fix security bugs
+1665b1cf Merged PR 5345070: 1p: support optional pme api access
+c25f6625 Merged PR 5345539: enable deployment check for prod
+0929c870 Merged PR 5337705: Add Style Check
+57757bdd Merged PR 5322432: added swagger auth to proxy, tested e2e
+692db2ec Merged PR 5335113: [IBSite]redirct to IBAPI instead of accessing HDFS directly
+04ea667b Merged PR 5339753: 1p auth proxy: fix "Misused header name" error on oaas image upload
+cc7e9f58 Merged PR 5334617: OnePortal: allow aad auth app id override
+746861a8 Merged PR 5326237: introduce oneportal-skeleton from shared libraries to codexsite + fix auth issue after away time
+27b1d5b0 Merged PR 5325877: Disable Invalid Papyrus Traffic Group and Model Name Pairs
+23a8f445 Merged PR 5329050: fix search bug in generic table
+02e604e1 Merged PR 5329200: Revert "Merged PR 5322665: stop call prservices
+12e44521 Merged PR 5327998: Codex: Fix model-trafficgroup hash lookup + fix model traffic group drop down options
+3830cbc6 Merged PR 5325812: Add GitClient FunctionalTests
+6fe49a39 Merged PR 5325766: 1p auth proxy: fix unsupported body write + fix websocket scheme replacement
+8c29187f Merged PR 5326089: Update GitClient nuget package version to 0.1.0
+ff8eebeb Merged PR 5325933: Fixed Merged ESLint Errors
+fdeed4f8 Merged PR 5325247: Add SD to Git Needed Features
+e540d649 Merged PR 5319231: Update OaaS portal link
+cb41bd8e Merged PR 5321514: migrate read file modules from SG to Git
+96784a05 Merged PR 5314460: change oaas proxy target
+83ca16b7 Merged PR 5323930: fix repo name
+cee3e1c5 Merged PR 5322665: stop call prservices
+bb871aec Merged PR 5322318: update ado link path
+ded1f613 Merged PR 5316609: add multiple deployments to codesite
+f3090d7c Merged PR 5319688: Add Frontend Tech Talk Slides/ReadMe
+c972c765 Merged PR 5315514: Add missing features in Codex GitClient from Galaxy GitClient
+bd5685ef Merged PR 5312384: support creating new configrow from backend
+5199ef3a Merged PR 5275186: return useful error response for proxy apis
+ac1f01ce Merged PR 5315433: remove isxpauthtoolkit dep from gitclient
+9d71e048 Merged PR 5315362: Update ISEXpAuthToolkit version 1.2.3-beta
+6e905269 Merged PR 5315333: Add nuget files to GitClient.Interface proj
+16d4dc8a Merged PR 5311829: change oneportal auth proxy target
+8f2f5a5f Merged PR 5312015: Add GitClient NuGet files
+126e5dc6 Merged PR 5312016: update ISExpAuthToolkit nuget package version to 1.2.3-beta
+3e363bc6 Merged PR 5307078: add generic table for codexsite
+9dacb20f Merged PR 5306541: feat: add custom dialog
+4e352a8f Merged PR 5304460: update capacity and descigned capacity, fix aoai update
+07d94391 Merged PR 5296970: add sku column
+a6a9583e Merged PR 5295181: add delete and other aoai ops improvements
+4c25c398 Merged PR 5298004: Update terminology
+e4b4c0ac Merged PR 5286446: Fix Azure.Security.KeyVault.Keys vuln
+ebd437ad Merged PR 5291640: feat: edit and delete portals
+1f758927 Merged PR 5287244: create aoai endpoint v1, tested e2e
+98efaf97 Merged PR 5288638: Fix failing e2e
+571dc6a8 Merged PR 5284356: update bond to 13.3
+a16746b6 Merged PR 5285824: add update aoai ui
+f4bbbbbd Merged PR 5282709: add edit and delete and icon for sku management page
+29f289a3 Merged PR 5280311: Add Right Panel for Traffic Group Info
+9639cf2d Merged PR 5278131: Add the Hub table and connect the hub to the database
+03f9c987 Merged PR 5281158: update aoai client side
+ec9b1ea0 Merged PR 5279030: Oaas: change proxy target url + refactoring
+c24028dc Merged PR 5264308: Connect aml endpoints to interfacing aoai endpoints
+02c1dcd0 Merged PR 5272102: Auth proxy: send auth header + enhancements
+3a3066b5 Merged PR 5272592: Updated Falcon Fleet CI Build.yml
+7cfa1fde Merged PR 5273463: add special logic to legacy standard sku
+948d272f Merged PR 5270475: fix version issue
+1ee19291 Merged PR 5272598: fix create new endpoint with existing hash
+f0b65bd4 Merged PR 5271857: PR Service: add testing data to dev config json
+79531254 Merged PR 5270473: add more logs to codex updater
+275ff5fb Merged PR 5262346: Add AOAI Load Balancer Data
+b74806f0 Merged PR 5260655: create and edit sku and sku family functionality
+acbf5e34 Merged PR 5269246: Fix CI Service Names Parsing
+19b1502e Merged PR 5264036: fix codex authentication
+fc3ebcd9 Merged PR 5262128: 1p auth proxy - add support for proxying websocket connections
+8e9ff361 Updated Falcon Fleet CD.yml
+c088e39d Merged PR 5261871: add probes for codexupdater and fix bug in gpu display
+7240d7aa Merged PR 5246753: refactor Papyrus sdk for cleaner dependency graph
+a777b73c Merged PR 5253860: Convert oaas portal to auth proxy
+cd508ae3 Merged PR 5259433: hot fix the cd pipeline
+553dba69 hot fix Falcon Fleet CD.yml
+723c3eec Merged PR 5258344: add the falcon fleet ci dev pipeline
+43271484 Merged PR 5257760: Add portal
+c9f360c2 Merged PR 5252380: view sku's and sku family in portal
+c2917092 Merged PR 5251346: Add Table
+8eec5fce Merged PR 5251147: Update outdated info in readme files
+9cec1a9f Merged PR 5249491: add skumanagement api's
+9bf5a2a1 Merged PR 5252480: remove the appid checking, new app id is allowed
+3a70df2b Merged PR 5252065: Updated onboard-site-to-az-frontdoor.md
+83643e1e Merged PR 5246884: Fixed AOAI URL Deployment Validation Regex
+6bcc891c Merged PR 5248621: Cross out old values after update
+e98a322f Merged PR 5248937: Updated Falcon Fleet CD
+3eaf8ebf Merged PR 5248627: Make OnePortal proxy service configurable via json file
+8a6fa26d Merged PR 5250457: fix the cd pipeline in stage environment
+188d57b9 Merged PR 5248086: PR Service: Disable rollout status check for prod
+87403c42 Merged PR 5246700: PR Service: better validation error messages
+2f58eda0 Merged PR 5246191: fix the cd pipeline security issue
+4ca02cff Merged PR 5240250: Add Dropdowns for Papyrus Model Name and Traffic Groups
+b66173cb Merged PR 5246392: Add Central Hub Portal
+e6019e2c Merged PR 5246708: PR Service: fix json object merge bug
+38b9c66e Merged PR 5246701: remove tests targeting removed code
+785f8e51 Merged PR 5245213: PR service: Modify current changes
+6e3a839e Merged PR 5242751: read model and version from aoai layer
+86de799c Merged PR 5241390: improve cd pipeline
+114d2290 Merged PR 5234048: PR Service: Retrieve & Display PR deployment status
+80c94cdd Merged PR 5234548: Remove old Papyrus Code
+d3138e91 Merged PR 5239544: AFD guide tiny fix
+bb2aa71d Merged PR 5229516: Validate AOAI Exception Message
+2443c9e4 Merged PR 5237075: [IBSite]try to fix dll issue by using another package
+f9ebdc39 Merged PR 5234484: disable ibsite e2e tests
+4551f6fc Merged PR 5234323: Update Default Values for Papyrus Create Operations
+95c42a57 Merged PR 5232753: Disable Text Fields Other Than Weight and Online Quota for Papyrus
+bbe4e7ee Merged PR 5228953: OnePortal: Fix bad redirect on stale token
+3010f60d Merged PR 5229079: OnePortal: separate eq.shared.core dependency from libOnePortal
+03e33797 Merged PR 5225863: Add Papyrus App Id Validation for App Quota creation
+e8aabe13 Merged PR 5228139: PR Service: augment & fix E2E tests
+eb8c0109 Merged PR 5228166: One portal auth proxy: clean up unused frontend code
+a843018e Merged PR 5222964: AuthProxy: Make Spa and Swagger configurable in OnePortal
+f28dc6ce Merged PR 5226671: View Changes before submit on submit dialog
+e7055bc0 Merged PR 5223776: Add AOAI URLs Validation
+1ed78c58 Merged PR 5216570: enable ibsite e2e tests
+ff193d25 Merged PR 5226870: Fix Recoprobe e2e tests
+f6ee2265 Merged PR 5226553: PR Service: Fix PR creation failure / revert AI change
+4a3a50d4 Merged PR 5226920: onboard site to azure front door documentation
+22e540dc Merged PR 5225753: add stylecop to IBSite
+81029784 Merged PR 5225754: add stylecop to Oaas
+ea5cf50d Merged PR 5225756: add stylecop to OnePortalAuth
+f8097650 Merged PR 5225758: add stylecop to RecoProbe
+c7a7e88c Merged PR 5225751: add stylecop to TezzCache
+2ccabe75 Merged PR 5225730: add stylecop to OnePortalTemplateSite
+29fb4626 Merged PR 5222971: Auth proxy: add sample get proxy to galaxydev
+a63a69f1 Merged PR 5192036: Add styling and enhance xml documentations CodexLib
+f13f51a4 Merged PR 5220899: Added Papyrus Config Validation Layer
+dd98cf88 Merged PR 5223063: Add reset button for papyrus management tabs
+9c6f7529 Merged PR 5220493: Add sample e2e tests to RecoProbe & OnePortalTemplateSite
+c827261a Merged PR 5208360: Add oneportal auth service boilerplate
+7e59e774 Merged PR 5220815: Change readinessProbe route to keepalive in all portals
+19af440b Merged PR 5220599: Add redux for better state management
+0840da13 revert the debug info and fix e2e test
+b981b6ad Merged PR 5219625: Enable logging in oneportal falcon fleet
+d9545abd Merged PR 5216138: Fix missing name & email in E2e test identity claims
+7659db12 Merged PR 5217158: IDFSnapshot backend and bug fix
+88b50a19 Updated Falcon Fleet CD.yml
+6f1af7fe Merged PR 5213940: Fix Codex API request timeout issue
+3e0518a9 Merged PR 5213728: PR Service: Refactor work item and reviewer linkage
+7da9d4fb Merged PR 5215406: add json auto mrege support
+2c6984a6 Merged PR 5215173: add unknown property to test auto merging
+8fe9ec17 Merged PR 5213537: fix deployment issue for oneportaltemplatesite + new onboarded portals
+f10d9af8 Merged PR 5211166: Re-enable PRCreationTest
+e8b1909c Merged PR 5212053: refactor and fix e2e test
+f5ab35cf Merged PR 5211184: Add missing behavior for modification + fixes
+954c7d54 Merged PR 5210793: PR Service: fix EP creation in an empty model name traffic group
+2f27517c Merged PR 5208931: PR Service: fix empty string split
+31ab9564 Merged PR 5208531: add boilterplate for RecoProbe++
+7a376296 Merged PR 5210285: fix e2e test
+f38b5265 Merged PR 5209320: IBHistory portal imprvment
+a51fc1ec Merged PR 5185278: Fix single service CI pipeline build error
+2ba23ea2 Merged PR 5206198: fix sku bug
+cc2c37b9 Merged PR 5208884: One Submit button for endpoint and quotaManagement tabs
+7a623c52 Merged PR 5207052: fix build issue in codex repo
+d3f3aa5c Merged PR 5191994: Add styling and enhance xml documentations GitClient
+a53f7f87 Merged PR 5193431: Add styling and enhance xml documnetations of AMEPrototype
+b3ececfc Merged PR 5206487: allow e2e pipeline credential as codex users and enable the e2e test
+872601a0 Merged PR 5203184: No Pass Secret by environment variable
+5a252669 Merged PR 5202340: PR Service: extra fields + PR submit dialog + error handling
+02d68271 Merged PR 5199682: PR Service: Support custom reviewer aliases, custom linked work item, custom PR title
+8d8d9a16 Merged PR 5191998: Add styling and enhance xml documentations ISExpAuthToolkit
+212215fb Merged PR 5192038: Add styling and enhance xml documentations Papyrus SDK
+621cc9cb Merged PR 5192021: Add styling and enhance xml documentations EQ.Shared.Core
+898c47b5 Merged PR 5193942: PR Service: add manual tests
+13746de7 Merged PR 5194017: PR Service: display missing fields
+5422261f Merged PR 5193451: Add styling and enhance xml documentations of CodexUpdater
+69f1d32c Merged PR 5193853: fix aggregate feature
+d580397a Updated Falcon Fleet CD.yml
+6eba1ffa Merged PR 5193700: PR Service: frontend PR sorting sorting
+d21bc338 Merged PR 5192211: Clean up code
+4d2a3b92 Merged PR 5192024: Add styling and enhance xml documnetations
+d672ad07 Merged PR 5192029: Add styling and enhance xml documnetations
+3cbbed8b Merged PR 5192027: Add styling and enhance xml documnetations
+f7ae184f Merged PR 5191157: add e2e test to new cd pipeline
+446ef027 Merged PR 5171345: added wrapper classes and replaced calls in codexsite, tested e2e
+e6015ebf Merged PR 5188892: fix ci output too big issues
+5195d791 Updated Falcon Fleet CD.yml
+572b5b20 Updated Falcon Fleet CI Build.yml
+3a892afb Updated Falcon Fleet CI Build.yml
+89fd7589 Updated Falcon Fleet CD.yml
+d82141a6 Updated Falcon Fleet CI Build.yml
+322b22cd Updated Falcon Fleet CI Build.yml
+e2676326 Updated Falcon Fleet CD.yml
+fec41d08 Updated Falcon Fleet CD.yml
+d2e90d54 Merged PR 5188861: add cd pipeline that supports deploy multiple service at the same time
+19aca948 Merged PR 5181954: Fix expiring VssConnection
+b6f35bab Merged PR 5185176: PR Service: PR filtering frontend
+082e0625 Merged PR 5052868: enable multi-arch images
+8a34918f Merged PR 5169746: Better Visualization for delete, create and update
+64600060 Merged PR 5182752: PR Service: pull requests filtering backend changes
+022c5495 Merged PR 5179711: PR Service: Model traffic group update command
+0f7eb355 Merged PR 5180152: refactor liboneportal interface
+f4963cf9 Merged PR 5178884: Boilerplate portal for Oaas
+0854e794 Merged PR 5137175: implement all need api for ame reverse proxy, test e2e
+090a3039 Merged PR 5169116: papyrus quota control portal small feedbacks
+ca4578a5 Merged PR 5166307: add more comprehensive test to codex dashboard, tested e2e
+75543a43 Merged PR 5162881: create a new endpoint with existing hash
+d2e4600a Merged PR 5144592: PR Service: update endpoints get format
+eba675c5 Merged PR 5162245: PR Service: include hash in model traffic group get
+85744304 Merged PR 5161925: PR Service: use lower case for appid + minor fixes
+3e516e74 Merged PR 5157140: PR Service: fix prod json path
+604bcfa1 Merged PR 5156968: PR Service: get model traffic group
+6bcd47e0 Merged PR 5156281: PR Service: optional pr user filtering + fixes
+a8336f30 Merged PR 5154996: Added Pull Requests tab to papyrus management
+b012e348 Merged PR 5154896: PR Service: add papyrus reviewer
+ae6a4fc0 Merged PR 5147582: Show dialog after submitting for better feedback
+b89f5a9f Merged PR 5147144: PR Service: pull request client token refresh using delegating handlers
+47841b34 Merged PR 5146969: PR Service: list commands in generated pr description
+38b742c5 Merged PR 5146885: rethrow exception for debug enabled environments, minor additions
+7a84533b Merged PR 5145227: PR Service: fix mis-updated validation hash, update tests
+b6c91415 Merged PR 5145014: Return real value of Hash replacing hardcoded value + fixes + enhancements
+d006457b Merged PR 5144369: PR Service: handle user presentable errors
+7ff30573 Merged PR 5144540: PR Service: add PR creation E2E test
+a8eb708b Merged PR 5142822: updated frontend with new appQuota type
+1d54574a Merged PR 5142125: Run Codex service when E2E tests are ran locally
+9764d426 Merged PR 5142161: PR Service: fix cannot record pr vote for someone else
+f90657f8 Merged PR 5142030: PR Service: return whole appquotas on api/papyrus/config/appquotas
+83dd26d9 Merged PR 5141195: 1 batch call for endpoint management tab for Create, Delete and Update
+b9d4ab23 Merged PR 5141374: PR service: switch to new staging json path
+3c51545b Merged PR 5141409: return model traffic group hash on config retrieval APIs
+826f2970 Merged PR 5141417: fix missing usage of config props resolution fn
+97e0f5c6 Merged PR 5137970: update FalconClusterFleetPackager version and revert hard coded image tag
+c04733ad Merged PR 5136339: PR Service: move config relate code out of papyrus client
+7b05b216 Merged PR 5136142: PR Service: auto merge
+7143b35e Merged PR 5135822: PR Service: allow E2E tests to run locally, minor refactoring
+1fd0edf4 Merged PR 5136346: Enable full exceptions except for prod
+699d878b Merged PR 5136060: fix misplaced validation hash on submit dto, change tests
+dc274246 Merged PR 5132998: enable c# linting for codexcore, fix errors
+0caf3038 Merged PR 5127566: PR Service: temporarily use Galaxy identities for communication with ADO
+eee573bf Merged PR 5125225: bug fix for 8363000 and resolve  codexupdater random stuck issue
+a2226524 Merged PR 5110603: remove v2 code and use v3 only
+7862bdd7 Merged PR 5127244: PR service: prevent out of date config change
+6e320023 Merged PR 5127218: PR Service: add staging json path, unify path resolution
+08e5fdc5 Merged PR 5126980: PR Service: make hash calculation per row
+675f55f2 Merged PR 5109240: Fix Codex Papyrus DTOs
+d7903202 Merged PR 5118400: PR Service: status poll API
+e1a179f1 Merged PR 5110684: [IBSite]Add search idf snapshot
+9a9e411b Merged PR 5116922: PR service: AppQuota commands + autogen GlobalId
+04de969d Merged PR 5114864: PR Service: temp revert to papyrus api
+a2954956 Merged PR 5125690: temp fix for CI error
+5076ff94 Merged PR 5114984: PR Service: EP delete command, return PR URL
+abd61741 Merged PR 5113814: PR service: fix pr info
+8bb69a4b Merged PR 5114285: PR Service: set and compare endpoint object hash
+8e1f3d57 Merged PR 5111752: PR Service: fix whitespace in PR
+dcf8c50e Merged PR 5111418: PR Service: data contract changes & fixes
+df8210fd Merged PR 5109320: add & use OnePortalCredentialFactory
+0ebd8206 Merged PR 5107122: refactoring to remove unneeded aoai static store
+e6468822 Merged PR 5109291: [WIP] PR Service: submit changes api activation
+9dec1e32 Merged PR 5109100: PR service: submit changes API
+02611b6f Merged PR 5094076: Add support for multi-row update (FE only)
+05e738a8 Merged PR 5099754: add endpoint create and update commands + tests
+52aee1e4 Merged PR 5102776: add codex updater as a service in falcon fleet
+aff2cb06 Merged PR 5102194: quota display is wrong
+a49fb780 Merged PR 5094755: added new routing prefixes, test for ibsite, tested e2e
+41c111e5 Merged PR 5075277: ConvertGPU functions into to CodexPortal API
+922b1c6e Merged PR 5082086: added tests
+09248c89 Merged PR 5083777: [IBSite]Add a new one page 'IDFSnapshot'(Front end only)
+a26c36f2 Merged PR 5076388: add options to defaultazurecredential
+7d650f0d Merged PR 5077933: fix linting config and violations
+d7d67da0 Merged PR 5076349: Read Papyrus Entities from Config File
+85f18d46 Merged PR 5081766: add bearer token authentication
+7af54050 Merged PR 5055343: Add Git Client to Codex
+13472e27 Merged PR 5062462: enable geneva for logging history
+d01e9848 Merged PR 5072706: fix gpu count bug
+533fafd8 Merged PR 5055409: Add aggregation for numerical values in ModelViewTable
+0d54a973 Merged PR 5056332: pr service create request interface
+a056472a Merged PR 5062144: [IBSite]print both number timestamp and readable timestamp.
+30aee889 Merged PR 5055272: add isexpauthtoolkit usage examples
+79bea122 Merged PR 5053501: Move Papyrus Related Classes to Separate Project
+d9916a96 Merged PR 5052875: Fix warnings & enable warnings as errors in codex portal
+e7afc959 Merged PR 5052838: fix failing tests for libraries
+c6523c63 Merged PR 5053224: use Galaxy vault to get papyurs keyvault secret as a temp solution
+3bc3f846 Merged PR 5050839: remove falcon classic obsolete services and code
+9c0a6e8c Merged PR 5050696: Fix Aether credential validation for AME -> PME
+b1325934 Merged PR 5037206: Cache Identity at Codex Client
+58cda7a2 Merged PR 5047354: increment eq.shared.core package version
+a059ee97 Merged PR 5047483: Update MicrosoftGraphApi to use SNI
+09ba337f Merged PR 5045209: improve ci pipeline
+c23b97e1 Merged PR 5025213: create a thread to update the data base
+7d284903 Merged PR 5036641: obsolete legacy classes after refactoring + fix vulnerability
+1cb1db03 Merged PR 5036880: Fix Merged ESLint Errors
+a187d0cf Merged PR 5034129: Implement ISExpAuthToolkit Console Test app
+ef36845f Merged PR 5035070: remove secret reading
+31f378d6 Merged PR 4988464: refactor ISExpAuthToolkit
+00b4fb52 Merged PR 5030754: separate env detection
+b084954e Merged PR 5015642: Move oneportal-skeleton to Codex repo
+e594ea13 Merged PR 4998722: Add Properties Details Modal for Codex (Papyrus)
+f9607671 Merged PR 5020479: remember last aggregation for Model View Table when switching between tabs
+6570c315 Merged PR 5017740: set searchFilters state based on the current tab to prevent reading from null
+62db3488 Merged PR 5010156: Fix deployment
+372ae945 Merged PR 5011339: reduce the build time by allowing what portal to build
+a39c1eb1 Merged PR 5008495: TezzCache Setup
+2780622a Merged PR 5000111: fix default display aggregation value is not correct
+c436fe80 Merged PR 5000123: fix double scroll issue with model view table
+ccb99a20 Merged PR 5003099: fix filter boxes don't work in quota page capacity tab
+a0f1fe9e Merged PR 5000409: Remove Duplicate Code: Task 2 Remove unused config files
+7a108554 Merged PR 4967307: Papyrus Different API URLs for Different Environments
+c02a96bf Merged PR 4991173: use falconmtapp for papyrus keyvault
+480ea104 Merged PR 4991116: remove secret use in oneportal service startup
+7bed6bcf Merged PR 4980100: access from AP
+859c8fa8 Merged PR 4972880: Remove Redundant Code: Task 1
+5e630e18 Merged PR 4985428: Use secretless auth for Papyrus Control API & Keyvault
+0f885bea Merged PR 4985400: Use FaclonMtApp identity with AOAIClient
+fb0fc71b Merged PR 4968519: refactor codex db
+38a0aec8 Merged PR 4971140: Add total defautl value to quota column in Quota Management Table
+a6f7d1a5 Merged PR 4972762: Add FluentProvider to dropdown to fix the styling issue
+c079309b Merged PR 4963382: use falcon fleet managed identity for db aad auth
+494ee2de Merged PR 4967461: Add New Weight Property to Papyrus Endpoint Management
+2c56118f Merged PR 4964460: fix: bug in capacity view
+6822bfe8 Merged PR 4959576: Add Papyrus Management Client-side Permission Control
+2fbbc871 Merged PR 4962024: fix Quota table columns missed up
+c8a744b0 Merged PR 4963442: fix build error
+817c29c5 Merged PR 4962419: falcon aad auth minor refactoring
+6df8196c Merged PR 4962279: remove unused secretmanager dep from falcon services
+68b21143 Merged PR 4959237: use a single dbcontext for each api request
+cfaf5cc8 Merged PR 4953633: skip cert validation for internal AP MT access
+cb765e2b Merged PR 4959125: read from db not cache
+25238e79 Merged PR 4959045: Fix ValidateTargetSPI method
+33d8243a Merged PR 4948355: Fix double scroll bars in Quota Management view
+4aeee286 Merged PR 4956498: Change Traffic Group view component
+4b00fbe2 Merged PR 4954640: bind manage identity with azure application
+26d1d1f9 Merged PR 4948049: Add support more than one app for the same MI
+b8380cde Merged PR 4948253: Papyrus Management Follow-ups
+9f7b5cfa Merged PR 4945061: update aoai status with new aoai api 
+210b4f3c Merged PR 4950192: fix deployment config
+2ec5f334 Merged PR 4922207: Add support for starlite compute
+6bb2a09e Merged PR 4943565: Add Regions with no usage
+009e711b Merged PR 4945353: Fix some buttons not visible in Quota Page
+2fa62646 Merged PR 4945108: Change Traffic group attribute name from 'Model Names' to 'Load Balancer Names'
+5c3b6925 Merged PR 4937102: Move Papyrus Control Related Endpoints to Separate Controller and Service
+753e11d8 Merged PR 4943173: support manage identity in one portal
+6009a792 Merged PR 4935122: update readme for falcon fleet
+7fe93315 Merged PR 4885139: Fix Codex Portal ESLint Errors
+99eb8f21 Merged PR 4906717: switch to new page
+323902e5 Merged PR 4930925: basic falcon fleet info
+1dc68c0a Merged PR 4929699: Fix inconsistent validation issue
+20f19b41 Merged PR 4927420: display deployemnt count now, should be instance count
+b7f29a7a Merged PR 4923418: add aoai api
+8fd2ee9b Merged PR 4924629: fix IBService dockey parsing
+dbff8591 Merged PR 4925245: Fix Corrupt Papyrus Control API URL
+e4788ae7 Merged PR 4921155: fix functional test
+fe2a3cc8 Merged PR 4900634: Add Middleware for Papyrus Endpoint Calls
+9742f965 Merged PR 4906697: Update content for capacity view data
+cb8d5829 Merged PR 4919791: fix aether bug
+e7e6852f Merged PR 4918362: Minor fixes/enhancements
+935cd4eb Merged PR 4916645: convert token cred creation fn to sync
+09c12b6f Merged PR 4911635: fix codexsite
+16ee7f65 Merged PR 4908561: move codex site to falcon fleet
+21de45a2 Merged PR 4895492: port new features to codex repro
+0c4b6d3a Merged PR 4905827: hide internal class
+be9535c1 Merged PR 4900417: Support single tenant credentials
+789455e2 Merged PR 4900109: feat: add region status API endpoint
+852e1cfd Merged PR 4892850: [draft] IB to Falcon Fleet
+74d7a140 Merged PR 4894310: Implement Papyrus Endpoints Management Page UI
+878aa3fc Merged PR 4898843: TokenCredentialFactory minor refactoring
+629070ed Merged PR 4898783: Support Aggregate By Type
+d638193d Merged PR 4898683: Add EQ support
+90a9d9d3 Merged PR 4898722: Fixed development environment vars
+2d1c3d67 Merged PR 4896297: batch query for ib server
+c0ad46a0 Merged PR 4870129: Fix wrong IB service hostname for CO01
+e9cb4e1a Merged PR 4888037: Papyrus Management UI Follow-ups
+cb5e23be Merged PR 4889633: remove uneeded codes
+8e500f85 Merged PR 4888810: make authentication works in falcon fleet
+28d3c50d Merged PR 4888147: fix pipeline/remove traces of old oneportaltemplatesite
+91250cf8 Merged PR 4880701: fix the starup issue of falcon fleet portal tempate and remove the template portal for falcon classic
+c75b89d5 Merged PR 4873042: DB access auth upgrade
+5ecdb211 Merged PR 4883488: Enable Hot-reload on Client-side dev on port 86
+255afb43 Merged PR 4883465: Support Quota Filtering
+21ab730a Merged PR 4866785: Connect Quota Management CRUD Operations
+947c3b1c Merged PR 4883430: Fix Conflicting Styles
+0a0a8164 Merged PR 4883311: Support Quota Sorting
+8cdbc274 Merged PR 4883260: add quota endpoints toggle
+3160e8e6 Merged PR 4879359: Deterministically load PME managed identities on AutoPilot
+00a0bffc Merged PR 4870102: add export data feature
+8baea872 Merged PR 4866609: Fix auth redirect issue
+17b643ac Merged PR 4822976: Connect Quota Management UI to API
+76bd8a9a Merged PR 4858129: add missing project ref
+8c3e5334 Merged PR 4843178: Fix OnlineEndpointTests
+6bf0ca08 Merged PR 4849522: Update Codex Site Dev Env and Docs
+962ab655 Merged PR 4858098: fix missing dependency after refactor
+b983547b Merged PR 4855690: use workflow identity to do authentication for falcon fleet
+8cfbd4cb Merged PR 4853450: added aad to swagger
+15a5361d Merged PR 4835782: protect swagger ui with aad
+8f16724c Merged PR 4838648: add https support for falcon fleet
+fbb8d0d0 Merged PR 4837679: add external vip setup for falcon fleet
+5c0b3b04 Merged PR 4825937: finish the basic version of fleet cd pipeline
+13b675ad Merged PR 4821500: Fix Falcon fleet oneportal example build failure
+ef2efbd9 Merged PR 4813017: Fix bad azure key object identifier format
+575f9931 Merged PR 4813547: Fix multi-step keyvault access in Codex portal
+95b823bd Merged PR 4798625: Add support for Papyrus Control in Codex Papyrus Client
+05116f02 Merged PR 4812521: Add nuget proj skeleton
+1c29f824 Merged PR 4796334: Migrate Codex frontend
+88f39659 Merged PR 4739729: Change prom-a endpoint's data to prom-sahara-a to fix unit tests
+67f0bcc0 Merged PR 4746047: upgrade falcon sdk
+b73fb44b Merged PR 4723080: Fix IBSite dll load issue
+6cd30683 Merged PR 4746642: [IBSite]reverse  snapshot
+592d1183 Merged PR 4695784: Split CodexLibTest into unit tests and integration tests
+24701986 Merged PR 4723035: fix start.bat to resolve working directory issue
+836351bb Merged PR 4721270: Migrate Codex controllers, organize dependencies
+57c69c8b Merged PR 4718799: fix release pipeline urls for OnePortal instances
+ad00f3c4 Merged PR 4713908: apply oneportal homepage handler fix to OnePortalTemplateSite, CodexSite, TezzCachePortal, WebDataOfflineBatchPortal
+96b6c9e0 Merged PR 4716892: revert unneeded changes
+1e52d3d0 Merged PR 4712935: add falcon fleet build
+6e141413 Merged PR 4712860: Migrate Codex database, entities, tests
+d2c73387 Merged PR 4698147: change home page to oneportal react home instead of asp.net sample page
+dc71960f Merged PR 4702548: refactor eq.shared.core
+1565cb18 Merged PR 4695768: Add sample projects for TezzCache and WebDataOfflineBatch
+0f4bab2a Merged PR 4683406: [partial] migrate codex portal backend
+38b0fd4d Merged PR 4697858: on board platinum index
+b5d9fb8c Merged PR 4679524: migrate IB frontend
+4b3b389a Merged PR 4676382: remove bond example service
+c460d2ce Merged PR 4676419: Fix IBSite keyvault access error
+543bd8e4 Merged PR 4642686: remove bond service related codes
+324f0af9 Merged PR 4651160: use dev exception page on testing
+a4e8e6ee Merged PR 4650830: Fix IBSite falcon namespace
+b62c5404 Merged PR 4621287: migrate IB portal backend to Falcon
+8ae453ac Merged PR 4637393: Fix BaseAOAIClient initialization
+8dbfe9f0 Merged PR 4626714: Make http client configuration more flexible
+f599ac2b Merged PR 4625386: no hard code redirect url
+acad913d Merged PR 4615882: fix namespace to new one
+fec33fd0 Merged PR 4608288: use oneportal skeleton package, change & remove needed
+99680d6e Merged PR 4609178: [DRAFT]update namespace
+964c2722 Merged PR 4601470: add api to support oci
+9617b03e This pull request includes baselines **with an expiration date of 180 days from now** automatically generated for your 1ES PT-based pipelines. Complete this pull request as soon as possible to make sure that your pipeline becomes compliant. Longer delays in completing this PR can trigger additional emails or S360 alerts in the future.
+6808794f Merged PR 4579199: get endpoint and demployments tags
+0c55fc71 Merged PR 4598519: Support AAD Authentication multiple machines
+ae770287 Merged PR 4578795: add secret and logging examples
+41fa809b Merged PR 4555159: add ixp
+7bae18a4 Merged PR 4552144: example of DI and support per environment setting
+8b7be3e8 Merged PR 4536955: Introduce OnePortal frontend
+e7bac762 Merged PR 4541538: add aad and swagger
+9c842fe8 Merged PR 4534556: fix publish symbol
+20efcefe Merged PR 4527176: fix ci pipeline path
+733398c6 Merged PR 4523463: Client Certificate AAD Auth provider
+75d37745 Merged PR 4524364: check in falcon CI pipeline
+622deee4 Merged PR 4520175: Scaffold for Service OnePortalTemplateSite
+ef5669ef Merged PR 4513865: support runtime dynamic AOAI API config options
+655fef9e Merged PR 4497310: [AOAI] Support ARM API
+27771ba7 Merged PR 4497442: BaseAOAIClient + Auth changes to adapt to Papyrus changes
+99b28ab1 Merged PR 4474828: AOAI endpoints realtime status
+1eeb1702 Merged PR 4441502: Import shared code from Papyrus's GPUConvert
+1a793409 Merged PR 4411983: add oci endpoint test
+fe5082de Merged PR 4393578: fix json Deserialize
+c53c5ccf Merged PR 4348884: Implement AetherSecretManager [pending test]
+68b8940c Merged PR 4377644: codex refactoring and change for support pme scenario.
+4a67e1ac Merged PR 4354473: add ArmClient in codex lib
+78b03a9a Merged PR 4335699: add endpoint is lowpriority
+1525305d Merged PR 4332200: get utilization
+56f6d3c4 Merged PR 4325691: Remove obsolete NEX related code
+984b18a2 Merged PR 4322876: no hard coded auth in package
+772aff62 Merged PR 4320113: stylecop enable for codex lib
+2a7c547a Merged PR 4308236: return zero quota region
+125a85cb Merged PR 4301626: update AML machine learning packages
+018e051d Merged PR 4299937: Update secret manager lib
+71c6dee0 Merged PR 4288986: Add AOAI Client to codex nuget package
+55d053e0 Merged PR 4264237: fix the await issue
+f0a85f27 Merged PR 4258407: Added New DevBoxSecretManager Constructor
+b6f2946c Merged PR 4244661: add new overload GetMachineLearningResource
+7c5ce9ce Merged PR 4209550: Remove filter as workspace
+0f7fa264 Merged PR 4209820: enable / update traffic group configs
+50c63d5a Merged PR 4204370: bug fix and update version
+8571887b Merged PR 4191682: update version
+b15ee00b Merged PR 4182348: update dependency
+ff547f7a Merged PR 4185204: support endpoint schema at EQ
+6b5da76e Merged PR 4179806: set up nuget binplace and publish
+73b9e8cf Merged PR 4177436: remove useless file and update readMe
+f3428140 Merged PR 4177405: Update nuspec file
+a21f621f Merged PR 4173226: easily check all workspace's region
+38fd2aa6 Merged PR 4172287: add secret manager lib
+3f0cfa32 Merged PR 4163142: add GPU info at DeploymentInfo
+d0d8597a Merged PR 4122655: Add implement
+9d226455 Merged PR 4111716: add interface
+b2107748 Merged PR 2447662: Migrate to 1ES hosted pool
+f24c85ba Merged PR 2003544: Get rid of deprecated symbol task
+e91b0880 Merged PR 2265866: Updated README.md to fix section
+792e9061 Merged PR 2262581: Update readme to remove references to Resharper and clarify VS dependency
+968a768f Merged PR 2045693: Renamed SCD build.yml to SCD Build.yml

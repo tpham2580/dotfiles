@@ -1,0 +1,12 @@
+GET http://localhost:86/static/js/bundle.js net::ERR_ABORTED 500 (Internal Server Error)
+
+(index):61  GET http://localhost:86/index.bundle.css net::ERR_ABORTED 500 (Internal Server Error)
+favicon.ico:1  GET http://localhost:86/assets/favicon.ico 500 (Internal Server Error)
+favicon.ico:1  GET http://localhost:86/assets/favicon.ico 500 (Internal Server Error)
+favicon-32x32.png:1  GET http://localhost:86/assets/favicon-32x32.png 500 (Internal Server Error)
+favicon-32x32.png:1  GET http://localhost:86/assets/favicon-32x32.png 500 (Internal Server Error)
+favicon-16x16.png:1  GET http://localhost:86/assets/favicon-16x16.png 500 (Internal Server Error)
+favicon-16x16.png:1  GET http://localhost:86/assets/favicon-16x16.png 500 (Internal Server Error)
+favicon-48x48.png:1  GET http://localhost:86/assets/favicon-48x48.png 500 (Internal Server Error)
+favicon-48x48.png:1  GET http://localhost:86/assets/favicon-48x48.png 500 (Internal Server Error)
+coast-228x228.png:1  GET http://localhost:86/assets/coast-228x228.png 500 (Internal Server Error)

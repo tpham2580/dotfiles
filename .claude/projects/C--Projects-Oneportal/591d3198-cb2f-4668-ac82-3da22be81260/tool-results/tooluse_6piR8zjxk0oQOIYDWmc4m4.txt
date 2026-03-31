@@ -1,0 +1,125 @@
+C:\Projects\Oneportal\miscellaneous\AMEPrototype\AMEPrototype\WebApplication1\Program.cs:92:            builder.Services.AddSingleton<IArmClientWrapper>(sp =>
+C:\Projects\Oneportal\miscellaneous\AMEPrototype\AMEPrototype\WebApplication1\Program.cs:98:            builder.Services.AddSingleton<IArmRestApiWrapper>(sp =>
+C:\Projects\Oneportal\miscellaneous\AMEPrototype\AMEPrototype\WebApplication1\Program.cs:104:            builder.Services.AddSingleton<BaseAADAuthProvider>(sp =>
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:63:            services.AddSingleton<IArmClientWrapper, ArmClientAPIProxyWrapper>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:64:            services.AddSingleton<IArmRestApiWrapper, ArmRestClientAPIProxyWrapper>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:65:            services.AddSingleton<ISecretStore, GalaxyVaultSecretStore>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:67:            services.AddSingleton<DBConnectionProperties>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:68:            services.AddScoped<IUnitOfCodeX, UnitOfCodeX>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:69:            services.AddSingleton<IAOAIClient, AOAIClient>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:70:            services.AddSingleton<IOCIRestApiClient>(sp => new OCIRestApiClient(new BasicTokenCredAuthProvider(sp.GetService<ICredentialFactory>().CreateTokenCredential(AADTenant.PME))));
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:71:            services.AddSingleton<IEnvironmentProperties, EnvironmentProperties>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:72:            services.AddSingleton<IPapyrusClient, PapyrusClient>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:73:            services.AddScoped<EndpointUpdater>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:74:            services.AddScoped<MssAndMpcpUpdater>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:75:            services.AddScoped<ICodeXService, CodeXService>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:76:            services.AddScoped<ISKUService, SKUService>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:77:            services.AddSingleton<AdoCredentialFactory>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:78:            services.AddSingleton<IGitClient>(sp => new GitClient(new TokenProviderDelegatingHandler(new AzureCredentialTokenProvider(new[] { ISExpAuthToolkit.Constants.AzureADDevOpsScope }, sp.GetService<AdoCredentialFactory>().GetPrimaryAdoCredential()))));
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:79:            services.AddSingleton<CodexCore.Services.ICapacityCounterMetricsCounters, CodexImplementation.CapacityCounterMetricsCounters>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:88:            services.AddSingleton<PapyrusEnvironmentProperties>(sp => EnvUtil.ResolvePapyrusEnvProperties(sp.GetService<IEnvironmentProperties>()));
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:89:            services.AddSingleton<IPullRequestClient>(sp =>
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:100:            services.AddScoped<IPapyrusConfigService, PapyrusConfigService>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:101:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByModelOrgRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByModelOrgBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:102:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByAppIdRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByAppIdBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:103:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByRootAppIdBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:104:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuAllocationByModelRegionRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuAllocationByModelRegionBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:105:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GlobalGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.GlobalGpuAvailabilityBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:106:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.RegionalGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.RegionalGpuAvailabilityBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:107:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.SubscriptionGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.SubscriptionGpuAvailabilityBuilder>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:108:            services.AddScoped<CodeXCore.UtilizationMetricCollection.UtilizationMetricCollector>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:112:            services.AddSingleton(sp =>
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:125:            services.AddSingleton<IKeyVaultCertProvider, KeyVaultCertProvider>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:126:            services.AddSingleton<IPapyrusModelUtilizationService, PapyrusModelUtilizationMdmService>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:127:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Counter.IUtilizationCounterManager, CodeXCore.UtilizationMetricCollection.Counter.CompositeUtilizationCounterManager>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:128:            services.AddSingleton(ServiceTreeKustoOptions.FromEnvironment());
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:129:            services.AddSingleton<IServiceTreeNodeLookup, ServiceTreeKustoClient>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:130:            services.AddSingleton<IServiceTreeParentResolver, ServiceTreeParentResolver>();
+C:\Projects\Oneportal\fleetServices\CodexUpdater\src\Service\Startup.cs:131:            services.AddScoped<IAppIdToProductResolver, AppIdToProductResolver>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:197:            services.AddSingleton<EqDbConnectionProperties>(sp =>
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:239:            services.AddSingleton<IUnitOfWorkFactory, UnitOfWorkFactory>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:241:            services.AddScoped<IUnitOfWork, UnitOfWork>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:260:            services.AddScoped<IActiveJobService>(sp =>
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:270:            services.AddSingleton<AdoCredentialFactory>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:271:            services.AddSingleton<IGitClient>(sp => new GitClient(new TokenProviderDelegatingHandler(new AzureCredentialTokenProvider(new[] { ISExpAuthToolkit.Constants.AzureADDevOpsScope }, sp.GetService<AdoCredentialFactory>().GetPrimaryAdoCredential()))));
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:274:            services.AddSingleton<IEngineInfoReader>(sp =>
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:291:            services.AddSingleton<ISecretStore, GalaxyVaultSecretStore>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:297:            services.AddScoped<ITechHubClient, TechHubClient>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:307:            services.AddSingleton<IVcCredentials>(serviceProvider =>
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:314:            services.AddSingleton<ICosmosClientFactory>(serviceProvider =>
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:321:            services.AddSingleton<ICosmosUtils, CosmosUtils>();
+C:\Projects\Oneportal\fleetServices\EQTaskSubmitter\src\Service\Startup.cs:323:            services.AddSingleton<ICosmos>(sp =>
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:40:        services.AddSingleton(sp =>
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:71:        services.AddScoped<FlightingQueryModel>();
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:72:        services.AddScoped<FlightJobRepository>();
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:75:        services.AddScoped<IFlightJobRepository, FlightJobRepository>();
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:78:        services.AddScoped<IRepositoryFactory, RepositoryFactory>();
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:79:        services.AddScoped<IJobsCancellationOperation, JobsCancellationOperation>();
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:87:        services.AddSingleton(sp =>
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:91:        services.AddSingleton<IAppStorageService>(sp =>
+C:\Projects\Oneportal\fleetServices\Galaxy\src\Service\GalaxyService.cs:99:        services.AddSingleton<ISecretService>(sp =>
+C:\Projects\Oneportal\fleetServices\Oaas\src\Service\OaasService.cs:28:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\Pai\src\Service\Pai.cs:27:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\IsDevPortal\src\Service\IsDevPortal.cs:47:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\IBSite\src\Service\IBSite.cs:51:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\IBSite\src\Service\IBSite.cs:52:            services.AddSingleton<ISecretStore, GalaxyVaultSecretStore>();
+C:\Projects\Oneportal\fleetServices\IBSite\src\Service\IBSite.cs:53:            services.AddSingleton<IIBService>(sp => new IBService(sp.GetService<IEnvironmentProperties>().Environment.ToString(), sp.GetRequiredService<IHttpClientFactory>()));
+C:\Projects\Oneportal\fleetServices\IBSite\src\Service\IBSite.cs:54:            services.AddSingleton<IISAgentService>(sp => new ISAgentService(sp.GetService<IEnvironmentProperties>().Environment.ToString(), sp.GetRequiredService<IHttpClientFactory>()));
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:92:        services.AddSingleton<EqDbConnectionProperties>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:100:        services.AddScoped<IUnitOfWork, UnitOfWork>();
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:101:        services.AddScoped<IKustoFunctions, KustoFunctions>();
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:102:        services.AddScoped<IDGrepLogClient>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:115:        services.AddScoped<IHDFSService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:122:        services.AddScoped<ISparkService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:130:        services.AddScoped<IBlackListRuleService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:136:        services.AddScoped<ITaskScheduleRecordService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:142:        services.AddScoped<IZombieJobService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:148:        services.AddScoped<IBlockedJobService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:154:        services.AddScoped<IFetchMetaDataService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:162:        services.AddScoped<IReproService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:171:        services.AddScoped<IScrapingJobService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:177:        services.AddScoped<IActiveJobService>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:207:        services.AddSingleton<Shared.Dependency.IVcCredentials>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:213:        services.AddSingleton<Shared.Core.Cosmos.ICosmosClientFactory>(sp =>
+C:\Projects\Oneportal\fleetServices\EqSite\src\Service\EqSiteService.cs:219:        services.AddSingleton<Shared.Core.Cosmos.ICosmos>(sp =>
+C:\Projects\Oneportal\fleetServices\OnePortalAuth\src\Service\OnePortalAuth.cs:27:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:65:            services.AddSingleton<IEnvironmentProperties, EnvironmentProperties>();
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:66:            services.AddSingleton<ICredentialFactory>(sp => sp.GetService<IEnvironmentProperties>()!.Environment == EnvironmentEnum.DevMachine ? new DefaultCredentialFactory() : new OnePortalCredentialFactory());
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:67:            services.AddSingleton<TokenCredential>(sp => sp.GetService<ICredentialFactory>()!.CreateTokenCredential());
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:86:            services.AddSingleton<IEnvironmentProperties, EnvironmentProperties>();
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:87:            services.AddSingleton<ICredentialFactory>(sp => sp.GetService<IEnvironmentProperties>()!.Environment == EnvironmentEnum.DevMachine ? new DefaultCredentialFactory() : new OnePortalCredentialFactory());
+C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalServiceCollectionExtension.cs:88:            services.AddSingleton<TokenCredential>(sp => sp.GetService<ICredentialFactory>()!.CreateTokenCredential());
+C:\Projects\Oneportal\fleetServices\Hub\src\Service\Hub.cs:30:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\Hub\src\Service\Hub.cs:31:            services.AddSingleton<DBConnectionProperties>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:63:            services.AddSingleton<IEnvironmentSetting, EnvironmentSetting>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:64:            services.AddSingleton<ISecretStore, GalaxyVaultSecretStore>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:65:            services.AddSingleton<IMicrosoftGraphApiClient, MicrosoftGraphApiClient>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:67:            services.AddSingleton<IArmClientWrapper, ArmClientAPIProxyWrapper>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:68:            services.AddSingleton<IArmRestApiWrapper, ArmRestClientAPIProxyWrapper>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:70:            services.AddSingleton<DBConnectionProperties>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:71:            services.AddScoped<IUnitOfCodeX, UnitOfCodeX>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:72:            services.AddSingleton<IAOAIClient>(sp => new AOAIClient(sp.GetService<ICredentialFactory>().CreateTokenCredential(AADTenant.PME)));
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:73:            services.AddSingleton<IOCIRestApiClient>(sp => new OCIRestApiClient(new BasicTokenCredAuthProvider(sp.GetService<ICredentialFactory>().CreateTokenCredential(AADTenant.PME))));
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:74:            services.AddSingleton<IPaiApiClient>(sp => new PaiApiClient(
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:78:            services.AddSingleton<IEnvironmentProperties, EnvironmentProperties>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:79:            services.AddSingleton<IPapyrusClient, PapyrusClient>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:80:            services.AddScoped<EndpointUpdater>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:81:            services.AddScoped<ISKUService, SKUService>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:82:            services.AddScoped<MssAndMpcpUpdater>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:83:            services.AddScoped<ICodeXService, CodeXService>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:85:            services.AddSingleton<IPerfHubStressTestService, PerfHubStressTestService>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:86:            services.AddSingleton<AdoCredentialFactory>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:87:            services.AddSingleton<IGitClient>(sp => new GitClient(new TokenProviderDelegatingHandler(new AzureCredentialTokenProvider(new[] { ISExpAuthToolkit.Constants.AzureADDevOpsScope }, sp.GetService<AdoCredentialFactory>().GetPrimaryAdoCredential()))));
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:89:            services.AddSingleton<PapyrusEnvironmentProperties>(sp => EnvUtil.ResolvePapyrusEnvProperties(sp.GetService<IEnvironmentProperties>()));
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:90:            services.AddSingleton<IPullRequestClient>(sp =>
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:101:            services.AddScoped<IPapyrusConfigService, PapyrusConfigService>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:103:            services.AddSingleton<IKeyVaultCertProvider, KeyVaultCertProvider>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:104:            services.AddSingleton<CodexCore.Services.ICapacityCounterMetricsCounters, CodexImplementation.CapacityCounterMetricsCounters>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:105:            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Counter.IUtilizationCounterManager, CodeXCore.UtilizationMetricCollection.Counter.CompositeUtilizationCounterManager>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:106:            services.AddScoped<IPapyrusConfigChangeValidator, PapyrusConfigChangeValidator>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:107:            services.AddSingleton(ServiceTreeKustoOptions.FromEnvironment());
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:108:            services.AddSingleton<IServiceTreeNodeLookup, ServiceTreeKustoClient>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:109:            services.AddScoped<IServiceTreeParentResolver, ServiceTreeParentResolver>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:110:            services.AddScoped<IAppIdToProductResolver, AppIdToProductResolver>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:115:                services.AddScoped<IRolePermissionService, CodeXCore.Mocks.MockRolePermissionService>();
+C:\Projects\Oneportal\fleetServices\CodexSite\src\Service\CodexSite.cs:119:                services.AddScoped<IRolePermissionService, RolePermissionService>();

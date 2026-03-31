@@ -1,0 +1,363 @@
+1202:    /// There are no comments for ServiceHierarchySingle in the schema.
+1204:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchySingle")]
+1205:    public partial class ServiceHierarchySingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceHierarchy>
+1208:        /// Initialize a new ServiceHierarchySingle object.
+1210:        public ServiceHierarchySingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+1214:        /// Initialize a new ServiceHierarchySingle object.
+1216:        public ServiceHierarchySingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+1220:        /// Initialize a new ServiceHierarchySingle object.
+1222:        public ServiceHierarchySingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceHierarchy> query)
+1230:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> Children
+1240:                    this._Children = Context.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy>(GetPath("Children"));
+1246:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> _Children;
+1249:    /// There are no comments for ServiceHierarchy in the schema.
+1255:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchy")]
+1256:    public partial class ServiceHierarchy : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+1259:        /// Create a new ServiceHierarchy object.
+1264:        public static ServiceHierarchy CreateServiceHierarchy(global::System.Guid ID, global::TreeODataClient.TreeWebApp.Models.EntityLifeCycleStatus status)
+1266:            ServiceHierarchy serviceHierarchy = new ServiceHierarchy();
+1506:        public global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> Children
+1521:        private global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> _Children = new global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy>(null, global::Microsoft.OData.Client.TrackingMode.None);
+1522:        partial void OnChildrenChanging(global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> value);
+2937:    /// UpstreamServiceHierarchyId
+2938:    /// DownstreamServiceHierarchyId
+2940:    [global::Microsoft.OData.Client.Key("UpstreamServiceHierarchyId", "DownstreamServiceHierarchyId")]
+2947:        /// <param name="upstreamServiceHierarchyId">Initial value of UpstreamServiceHierarchyId.</param>
+2948:        /// <param name="downstreamServiceHierarchyId">Initial value of DownstreamServiceHierarchyId.</param>
+2953:        public static Dependency CreateDependency(global::System.Guid upstreamServiceHierarchyId, global::System.Guid downstreamServiceHierarchyId, global::TreeODataClient.TreeWebApp.Models.DependencyType type, global::System.DateTimeOffset created, global::System.DateTimeOffset modified)
+2956:            dependency.UpstreamServiceHierarchyId = upstreamServiceHierarchyId;
+2957:            dependency.DownstreamServiceHierarchyId = downstreamServiceHierarchyId;
+2964:        /// There are no comments for Property UpstreamServiceHierarchyId in the schema.
+2967:        [global::Microsoft.OData.Client.OriginalNameAttribute("UpstreamServiceHierarchyId")]
+2968:        public global::System.Guid UpstreamServiceHierarchyId
+2972:                return this._UpstreamServiceHierarchyId;
+2976:                this.OnUpstreamServiceHierarchyIdChanging(value);
+2977:                this._UpstreamServiceHierarchyId = value;
+2978:                this.OnUpstreamServiceHierarchyIdChanged();
+2979:                this.OnPropertyChanged("UpstreamServiceHierarchyId");
+2983:        private global::System.Guid _UpstreamServiceHierarchyId;
+2984:        partial void OnUpstreamServiceHierarchyIdChanging(global::System.Guid value);
+2985:        partial void OnUpstreamServiceHierarchyIdChanged();
+2987:        /// There are no comments for Property DownstreamServiceHierarchyId in the schema.
+2990:        [global::Microsoft.OData.Client.OriginalNameAttribute("DownstreamServiceHierarchyId")]
+2991:        public global::System.Guid DownstreamServiceHierarchyId
+2995:                return this._DownstreamServiceHierarchyId;
+2999:                this.OnDownstreamServiceHierarchyIdChanging(value);
+3000:                this._DownstreamServiceHierarchyId = value;
+3001:                this.OnDownstreamServiceHierarchyIdChanged();
+3002:                this.OnPropertyChanged("DownstreamServiceHierarchyId");
+3006:        private global::System.Guid _DownstreamServiceHierarchyId;
+3007:        partial void OnDownstreamServiceHierarchyIdChanging(global::System.Guid value);
+3008:        partial void OnDownstreamServiceHierarchyIdChanged();
+3079:        /// There are no comments for Property UpstreamServiceHierarchyName in the schema.
+3082:        [global::Microsoft.OData.Client.OriginalNameAttribute("UpstreamServiceHierarchyName")]
+3083:        public string UpstreamServiceHierarchyName
+3087:                return this._UpstreamServiceHierarchyName;
+3091:                this.OnUpstreamServiceHierarchyNameChanging(value);
+3092:                this._UpstreamServiceHierarchyName = value;
+3093:                this.OnUpstreamServiceHierarchyNameChanged();
+3094:                this.OnPropertyChanged("UpstreamServiceHierarchyName");
+3098:        private string _UpstreamServiceHierarchyName;
+3099:        partial void OnUpstreamServiceHierarchyNameChanging(string value);
+3100:        partial void OnUpstreamServiceHierarchyNameChanged();
+3102:        /// There are no comments for Property DownstreamServiceHierarchyName in the schema.
+3105:        [global::Microsoft.OData.Client.OriginalNameAttribute("DownstreamServiceHierarchyName")]
+3106:        public string DownstreamServiceHierarchyName
+3110:                return this._DownstreamServiceHierarchyName;
+3114:                this.OnDownstreamServiceHierarchyNameChanging(value);
+3115:                this._DownstreamServiceHierarchyName = value;
+3116:                this.OnDownstreamServiceHierarchyNameChanged();
+3117:                this.OnPropertyChanged("DownstreamServiceHierarchyName");
+3121:        private string _DownstreamServiceHierarchyName;
+3122:        partial void OnDownstreamServiceHierarchyNameChanging(string value);
+3123:        partial void OnDownstreamServiceHierarchyNameChanged();
+3274:        /// <param name="upstreamServiceHierarchyId">Initial value of UpstreamServiceHierarchyId.</param>
+3275:        /// <param name="downstreamServiceHierarchyId">Initial value of DownstreamServiceHierarchyId.</param>
+3281:                    global::System.Guid upstreamServiceHierarchyId, 
+3282:                    global::System.Guid downstreamServiceHierarchyId, 
+3289:            provisioningStatus.UpstreamServiceHierarchyId = upstreamServiceHierarchyId;
+3290:            provisioningStatus.DownstreamServiceHierarchyId = downstreamServiceHierarchyId;
+3365:        /// There are no comments for Property UpstreamServiceHierarchyId in the schema.
+3368:        [global::Microsoft.OData.Client.OriginalNameAttribute("UpstreamServiceHierarchyId")]
+3369:        public global::System.Guid UpstreamServiceHierarchyId
+3373:                return this._UpstreamServiceHierarchyId;
+3377:                this.OnUpstreamServiceHierarchyIdChanging(value);
+3378:                this._UpstreamServiceHierarchyId = value;
+3379:                this.OnUpstreamServiceHierarchyIdChanged();
+3380:                this.OnPropertyChanged("UpstreamServiceHierarchyId");
+3384:        private global::System.Guid _UpstreamServiceHierarchyId;
+3385:        partial void OnUpstreamServiceHierarchyIdChanging(global::System.Guid value);
+3386:        partial void OnUpstreamServiceHierarchyIdChanged();
+3388:        /// There are no comments for Property DownstreamServiceHierarchyId in the schema.
+3391:        [global::Microsoft.OData.Client.OriginalNameAttribute("DownstreamServiceHierarchyId")]
+3392:        public global::System.Guid DownstreamServiceHierarchyId
+3396:                return this._DownstreamServiceHierarchyId;
+3400:                this.OnDownstreamServiceHierarchyIdChanging(value);
+3401:                this._DownstreamServiceHierarchyId = value;
+3402:                this.OnDownstreamServiceHierarchyIdChanged();
+3403:                this.OnPropertyChanged("DownstreamServiceHierarchyId");
+3407:        private global::System.Guid _DownstreamServiceHierarchyId;
+3408:        partial void OnDownstreamServiceHierarchyIdChanging(global::System.Guid value);
+3409:        partial void OnDownstreamServiceHierarchyIdChanged();
+3521:    /// There are no comments for ServiceMetadataSingle in the schema.
+3523:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataSingle")]
+3524:    public partial class ServiceMetadataSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadata>
+3527:        /// Initialize a new ServiceMetadataSingle object.
+3529:        public ServiceMetadataSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+3533:        /// Initialize a new ServiceMetadataSingle object.
+3535:        public ServiceMetadataSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+3539:        /// Initialize a new ServiceMetadataSingle object.
+3541:        public ServiceMetadataSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadata> query)
+3546:    /// There are no comments for ServiceMetadata in the schema.
+3552:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadata")]
+3553:    public partial class ServiceMetadata : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+3556:        /// Create a new ServiceMetadata object.
+3561:        /// <param name="serviceHierarchyId">Initial value of ServiceHierarchyId.</param>
+3566:        public static ServiceMetadata CreateServiceMetadata(int ID, 
+3574:            ServiceMetadata serviceMetadata = new ServiceMetadata();
+3578:            serviceMetadata.ServiceHierarchyId = serviceHierarchyId;
+3654:        /// There are no comments for Property ServiceHierarchyId in the schema.
+3657:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchyId")]
+3658:        public global::System.Guid ServiceHierarchyId
+3662:                return this._ServiceHierarchyId;
+3666:                this.OnServiceHierarchyIdChanging(value);
+3667:                this._ServiceHierarchyId = value;
+3668:                this.OnServiceHierarchyIdChanged();
+3669:                this.OnPropertyChanged("ServiceHierarchyId");
+3673:        private global::System.Guid _ServiceHierarchyId;
+3674:        partial void OnServiceHierarchyIdChanging(global::System.Guid value);
+3675:        partial void OnServiceHierarchyIdChanged();
+3833:    /// There are no comments for ServiceMetadataDefinitionSingle in the schema.
+3835:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinitionSingle")]
+3836:    public partial class ServiceMetadataDefinitionSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadataDefinition>
+3839:        /// Initialize a new ServiceMetadataDefinitionSingle object.
+3841:        public ServiceMetadataDefinitionSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+3845:        /// Initialize a new ServiceMetadataDefinitionSingle object.
+3847:        public ServiceMetadataDefinitionSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+3851:        /// Initialize a new ServiceMetadataDefinitionSingle object.
+3853:        public ServiceMetadataDefinitionSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadataDefinition> query)
+3858:    /// There are no comments for ServiceMetadataDefinition in the schema.
+3864:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinition")]
+3865:    public partial class ServiceMetadataDefinition : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+3868:        /// Create a new ServiceMetadataDefinition object.
+3882:        public static ServiceMetadataDefinition CreateServiceMetadataDefinition(string ID, 
+3894:            ServiceMetadataDefinition serviceMetadataDefinition = new ServiceMetadataDefinition();
+4305:    /// ServiceHierarchyId
+4307:    [global::Microsoft.OData.Client.Key("SubscriptionId", "ServiceHierarchyId")]
+4317:        /// <param name="serviceHierarchyId">Initial value of ServiceHierarchyId.</param>
+4336:            azureSubscription.ServiceHierarchyId = serviceHierarchyId;
+4436:        /// There are no comments for Property ServiceHierarchyId in the schema.
+4439:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchyId")]
+4440:        public global::System.Guid ServiceHierarchyId
+4444:                return this._ServiceHierarchyId;
+4448:                this.OnServiceHierarchyIdChanging(value);
+4449:                this._ServiceHierarchyId = value;
+4450:                this.OnServiceHierarchyIdChanged();
+4451:                this.OnPropertyChanged("ServiceHierarchyId");
+4455:        private global::System.Guid _ServiceHierarchyId;
+4456:        partial void OnServiceHierarchyIdChanging(global::System.Guid value);
+4457:        partial void OnServiceHierarchyIdChanged();
+5334:    /// There are no comments for ServiceMetadataDefinitionWithMetadataSingle in the schema.
+5336:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinitionWithMetadataSingle")]
+5337:    public partial class ServiceMetadataDefinitionWithMetadataSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadataDefinitionWithMetadata>
+5340:        /// Initialize a new ServiceMetadataDefinitionWithMetadataSingle object.
+5342:        public ServiceMetadataDefinitionWithMetadataSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+5346:        /// Initialize a new ServiceMetadataDefinitionWithMetadataSingle object.
+5348:        public ServiceMetadataDefinitionWithMetadataSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+5352:        /// Initialize a new ServiceMetadataDefinitionWithMetadataSingle object.
+5354:        public ServiceMetadataDefinitionWithMetadataSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ServiceMetadataDefinitionWithMetadata> query)
+5362:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> Values
+5372:                    this._Values = Context.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata>(GetPath("Values"));
+5378:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> _Values;
+5381:    /// There are no comments for ServiceMetadataDefinitionWithMetadata in the schema.
+5387:    [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinitionWithMetadata")]
+5388:    public partial class ServiceMetadataDefinitionWithMetadata : ServiceMetadataDefinition
+5391:        /// Create a new ServiceMetadataDefinitionWithMetadata object.
+5405:        public static ServiceMetadataDefinitionWithMetadata CreateServiceMetadataDefinitionWithMetadata(string ID, 
+5417:            ServiceMetadataDefinitionWithMetadata serviceMetadataDefinitionWithMetadata = new ServiceMetadataDefinitionWithMetadata();
+5440:        public global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> Values
+5455:        private global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> _Values = new global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata>(null, global::Microsoft.OData.Client.TrackingMode.None);
+5456:        partial void OnValuesChanging(global::Microsoft.OData.Client.DataServiceCollection<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> value);
+5859:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchyAuthorization")]
+5860:        ServiceHierarchyAuthorization = 2
+5960:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle specified by key from an entity set
+5964:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+5966:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+5969:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle specified by key from an entity set
+5973:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source,
+5980:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchySingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6064:        /// <param name="upstreamServiceHierarchyId">The value of upstreamServiceHierarchyId</param>
+6065:        /// <param name="downstreamServiceHierarchyId">The value of downstreamServiceHierarchyId</param>
+6067:            global::System.Guid upstreamServiceHierarchyId, 
+6068:            global::System.Guid downstreamServiceHierarchyId)
+6072:                { "UpstreamServiceHierarchyId", upstreamServiceHierarchyId }, 
+6073:                { "DownstreamServiceHierarchyId", downstreamServiceHierarchyId }
+6101:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle specified by key from an entity set
+6105:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+6107:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6110:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle specified by key from an entity set
+6114:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> source,
+6121:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6124:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle specified by key from an entity set
+6128:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+6130:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6133:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle specified by key from an entity set
+6137:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> source,
+6144:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6168:                { "ServiceHierarchyId", serviceHierarchyId }
+6219:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle specified by key from an entity set
+6223:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+6225:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6228:        /// Get an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata as global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle specified by key from an entity set
+6232:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> source,
+6239:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+6242:        /// Cast an entity of type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition to its derived type global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata
+6245:        public static global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle CastToServiceMetadataDefinitionWithMetadata(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> source)
+6247:            global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> query = source.CastTo<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata>();
+6248:            return new global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadataSingle(source.Context, query.GetPath(null));
+7155:        /// There are no comments for ServiceHierarchy in the schema.
+7158:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceHierarchy")]
+7159:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> ServiceHierarchy
+7163:                if ((this._ServiceHierarchy == null))
+7165:                    this._ServiceHierarchy = base.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy>("ServiceHierarchy");
+7167:                return this._ServiceHierarchy;
+7171:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> _ServiceHierarchy;
+7263:        /// There are no comments for ServiceMetadata in the schema.
+7266:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadata")]
+7267:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> ServiceMetadata
+7271:                if ((this._ServiceMetadata == null))
+7273:                    this._ServiceMetadata = base.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata>("ServiceMetadata");
+7275:                return this._ServiceMetadata;
+7279:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> _ServiceMetadata;
+7281:        /// There are no comments for ServiceMetadataDefinitions in the schema.
+7284:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinitions")]
+7285:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> ServiceMetadataDefinitions
+7289:                if ((this._ServiceMetadataDefinitions == null))
+7291:                    this._ServiceMetadataDefinitions = base.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition>("ServiceMetadataDefinitions");
+7293:                return this._ServiceMetadataDefinitions;
+7297:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> _ServiceMetadataDefinitions;
+7353:        /// There are no comments for ServiceMetadataDefinitionWithMetadata in the schema.
+7356:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinitionWithMetadata")]
+7357:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> ServiceMetadataDefinitionWithMetadata
+7361:                if ((this._ServiceMetadataDefinitionWithMetadata == null))
+7363:                    this._ServiceMetadataDefinitionWithMetadata = base.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata>("ServiceMetadataDefinitionWithMetadata");
+7365:                return this._ServiceMetadataDefinitionWithMetadata;
+7369:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> _ServiceMetadataDefinitionWithMetadata;
+7389:        /// There are no comments for ServiceMetadataDefinition in the schema.
+7392:        [global::Microsoft.OData.Client.OriginalNameAttribute("ServiceMetadataDefinition")]
+7393:        public global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> ServiceMetadataDefinition
+7397:                if ((this._ServiceMetadataDefinition == null))
+7399:                    this._ServiceMetadataDefinition = base.CreateQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition>("ServiceMetadataDefinition");
+7401:                return this._ServiceMetadataDefinition;
+7405:        private global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> _ServiceMetadataDefinition;
+7457:        /// There are no comments for ServiceHierarchy in the schema.
+7460:        public void AddToServiceHierarchy(global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy serviceHierarchy)
+7462:            base.AddObject("ServiceHierarchy", serviceHierarchy);
+7505:        /// There are no comments for ServiceMetadata in the schema.
+7508:        public void AddToServiceMetadata(global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata serviceMetadata)
+7510:            base.AddObject("ServiceMetadata", serviceMetadata);
+7513:        /// There are no comments for ServiceMetadataDefinitions in the schema.
+7516:        public void AddToServiceMetadataDefinitions(global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition serviceMetadataDefinition)
+7518:            base.AddObject("ServiceMetadataDefinitions", serviceMetadataDefinition);
+7545:        /// There are no comments for ServiceMetadataDefinitionWithMetadata in the schema.
+7548:        public void AddToServiceMetadataDefinitionWithMetadata(global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata serviceMetadataDefinitionWithMetadata)
+7550:            base.AddObject("ServiceMetadataDefinitionWithMetadata", serviceMetadataDefinitionWithMetadata);
+7561:        /// There are no comments for ServiceMetadataDefinition in the schema.
+7564:        public void AddToServiceMetadataDefinition(global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition serviceMetadataDefinition)
+7566:            base.AddObject("ServiceMetadataDefinition", serviceMetadataDefinition);
+7640:      <EntityType Name=""ServiceHierarchy"">
+7654:        <NavigationProperty Name=""Children"" Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+7720:          <PropertyRef Name=""UpstreamServiceHierarchyId"" />
+7721:          <PropertyRef Name=""DownstreamServiceHierarchyId"" />
+7723:        <Property Name=""UpstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7724:        <Property Name=""DownstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7728:        <Property Name=""UpstreamServiceHierarchyName"" Type=""Edm.String"" />
+7729:        <Property Name=""DownstreamServiceHierarchyName"" Type=""Edm.String"" />
+7742:        <Property Name=""UpstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7743:        <Property Name=""DownstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7749:      <EntityType Name=""ServiceMetadata"" OpenType=""true"">
+7756:        <Property Name=""ServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7764:      <EntityType Name=""ServiceMetadataDefinition"">
+7787:          <PropertyRef Name=""ServiceHierarchyId"" />
+7793:        <Property Name=""ServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+7835:      <EntityType Name=""ServiceMetadataDefinitionWithMetadata"" BaseType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition"">
+7836:        <NavigationProperty Name=""Values"" Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata)"" />
+7860:        <Member Name=""ServiceHierarchyAuthorization"" Value=""2"" />
+7998:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8002:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8005:      <Function Name=""GetMetadata"" IsBound=""true"">
+8006:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8007:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata)"" />
+8009:      <Function Name=""GetMetadataDefinitionsWithMetadata"" IsBound=""true"">
+8010:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8011:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata)"" />
+8013:      <Function Name=""GetMetadataDefinitionsWithMetadataPerPs"" IsBound=""true"">
+8014:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8015:        <Parameter Name=""UpstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+8017:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata)"" />
+8020:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8024:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8028:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8032:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8036:        <Parameter Name=""bindingParameter"" Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+8037:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+8040:        <Parameter Name=""bindingParameter"" Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+8041:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+8049:        <ReturnType Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition)"" />
+8054:        <ReturnType Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition"" />
+8059:        <ReturnType Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition"" />
+8062:        <Parameter Name=""bindingParameter"" Type=""Collection(Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy)"" />
+8066:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8070:      <Action Name=""AddMetadata"" IsBound=""true"">
+8071:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8072:        <Parameter Name=""ServiceMetadata"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata"" />
+8073:        <ReturnType Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata"" />
+8076:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8081:        <Parameter Name=""bindingParameter"" Type=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"" />
+8082:        <Parameter Name=""UpstreamServiceHierarchyId"" Type=""Edm.Guid"" Nullable=""false"" />
+8204:        <EntitySet Name=""ServiceHierarchy"" EntityType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy"">
+8205:          <NavigationPropertyBinding Path=""Children"" Target=""ServiceHierarchy"" />
+8212:        <EntitySet Name=""ServiceMetadata"" EntityType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata"" />
+8213:        <EntitySet Name=""ServiceMetadataDefinitions"" EntityType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition"">
+8214:          <NavigationPropertyBinding Path=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata/Values"" Target=""ServiceMetadata"" />
+8219:        <EntitySet Name=""ServiceMetadataDefinitionWithMetadata"" EntityType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata"">
+8220:          <NavigationPropertyBinding Path=""Values"" Target=""ServiceMetadata"" />
+8223:        <EntitySet Name=""ServiceMetadataDefinition"" EntityType=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition"">
+8224:          <NavigationPropertyBinding Path=""Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata/Values"" Target=""ServiceMetadata"" />
+8274:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.AzureSubscription> GetAzureSubscriptions(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8287:        public static global::Microsoft.OData.Client.DataServiceQuerySingle<string> GetAzureSubscriptionsAsCsv(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8297:        /// There are no comments for GetMetadata in the schema.
+8299:        [global::Microsoft.OData.Client.OriginalNameAttribute("GetMetadata")]
+8300:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> GetMetadata(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8307:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata>("ServiceTree.GetMetadata", false);
+8310:        /// There are no comments for GetMetadataDefinitionsWithMetadata in the schema.
+8312:        [global::Microsoft.OData.Client.OriginalNameAttribute("GetMetadataDefinitionsWithMetadata")]
+8313:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> GetMetadataDefinitionsWithMetadata(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8320:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata>("ServiceTree.GetMetadataDefinitionsWithMetadata", false);
+8323:        /// There are no comments for GetMetadataDefinitionsWithMetadataPerPs in the schema.
+8325:        [global::Microsoft.OData.Client.OriginalNameAttribute("GetMetadataDefinitionsWithMetadataPerPs")]
+8326:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata> GetMetadataDefinitionsWithMetadataPerPs(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::System.Guid UpstreamServiceHierarchyId, global::System.Guid ProvisioningStatusId)
+8333:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinitionWithMetadata>("ServiceTree.GetMetadataDefinitionsWithMetadataPerPs", false, new global::Microsoft.OData.Client.UriOperationParameter("UpstreamServiceHierarchyId", UpstreamServiceHierarchyId),
+8340:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Dependency> GetUpstreamDependencies(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8353:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Dependency> GetDownstreamDependencies(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8366:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ProvisioningStatus> GetDownstreamServicesProvisioningStatus(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8379:        public static global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.UserProfile> GetCurrentUserProfile(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8392:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> GetFlatList(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8399:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy>("ServiceTree.GetFlatList", false);
+8405:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> GetRetired(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8412:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy>("ServiceTree.GetRetired", false);
+8431:        public static global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> GetSubscribedMetadataDefinitions(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Service> source)
+8438:            return source.CreateFunctionQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition>("ServiceTree.GetSubscribedMetadataDefinitions", false);
+8444:        public static global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.UserProfile> GetCurrentUserBaseProfileTemp(this global::Microsoft.OData.Client.DataServiceQuery<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source)
+8548:        public static global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> SubscribeToMetadataDefinition(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Service> source, string MetadataDefinitionNameId)
+8555:            return new global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition>(source.Context, source.AppendRequestUri("ServiceTree.SubscribeToMetadataDefinition"), new global::Microsoft.OData.Client.BodyOperationParameter("MetadataDefinitionNameId", MetadataDefinitionNameId));
+8561:        public static global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition> UnsubscribeFromMetadataDefinition(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Service> source, string MetadataDefinitionNameId)
+8568:            return new global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadataDefinition>(source.Context, source.AppendRequestUri("ServiceTree.UnsubscribeFromMetadataDefinition"), new global::Microsoft.OData.Client.BodyOperationParameter("MetadataDefinitionNameId", MetadataDefinitionNameId));
+8574:        public static global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.AzureSubscription> AddAzureSubscription(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.AzureSubscription AzureSubscription)
+8584:        /// There are no comments for AddMetadata in the schema.
+8586:        [global::Microsoft.OData.Client.OriginalNameAttribute("AddMetadata")]
+8587:        public static global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata> AddMetadata(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata ServiceMetadata)
+8594:            return new global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceMetadata>(source.Context, source.AppendRequestUri("ServiceTree.AddMetadata"), new global::Microsoft.OData.Client.BodyOperationParameter("ServiceMetadata", ServiceMetadata));
+8600:        public static global::Microsoft.OData.Client.DataServiceActionQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Dependency> AddUpstreamDependency(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.Dependency Dependencies)
+8613:        public static global::Microsoft.OData.Client.DataServiceActionQuery DeleteUpstreamDependency(this global::Microsoft.OData.Client.DataServiceQuerySingle<global::TreeODataClient.Microsoft.Tree.CommonServiceFunctionalities.ViewModels.ServiceHierarchy> source, global::System.Guid UpstreamServiceHierarchyId)
+8620:            return new global::Microsoft.OData.Client.DataServiceActionQuery(source.Context, source.AppendRequestUri("ServiceTree.DeleteUpstreamDependency"), new global::Microsoft.OData.Client.BodyOperationParameter("UpstreamServiceHierarchyId", UpstreamServiceHierarchyId));

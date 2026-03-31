@@ -1,0 +1,113 @@
+cs, LineNumber: 46, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:32.983 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=1, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:33.037 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at Microsoft.Falcon.LibOnePortal.Utility.OnePortalApplicationBuilderExtension.<>c.<<UseOnePortal>b__1_5>d.MoveNext() in C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalApplicationBuilderExtension.cs:line 180
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=3, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:33.039 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware, LogLevel=Error, EventId=1, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:33.041 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Message: Request ends, MemberName: InvokeAsync, FilePath: C:\Projects\Oneportal\libraries\LibOnePortal\Middleware\OnePortalMiddleware.cs, LineNumber: 68, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:33.041 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Request finished HTTP/1.1 GET http://localhost:86/assets/favicon-48x48.png - 500 - text/plain;+charset=utf-8 60.8505ms, Category=Microsoft.AspNetCore.Hosting.Diagnostics, LogLevel=Information, EventId=2, TraceId=5d4be65e970e4ad5a0b5eda9682d6825, RequestId=0HNK51NHALSO2:0000000B, CorrelationId=5d4be65e970e4ad5a0b5eda9682d6825
+2026-03-18 16:48:33.045 Z, Route.Others.Latency: 61, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.049 Z, Route.Others: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.052 Z, RequestCount: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.056 Z, Route.Others.ResponseSize: 9859, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.108 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Request starting HTTP/1.1 GET http://localhost:86/assets/favicon-48x48.png - - -, Category=Microsoft.AspNetCore.Hosting.Diagnostics, LogLevel=Information, EventId=1, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.109 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Message: Request starts, MemberName: InvokeAsync, FilePath: C:\Projects\Oneportal\libraries\LibOnePortal\Middleware\OnePortalMiddleware.cs, LineNumber: 46, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.111 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=1, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.140 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at Microsoft.Falcon.LibOnePortal.Utility.OnePortalApplicationBuilderExtension.<>c.<<UseOnePortal>b__1_5>d.MoveNext() in C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalApplicationBuilderExtension.cs:line 180
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=3, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.142 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware, LogLevel=Error, EventId=1, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.145 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Message: Request ends, MemberName: InvokeAsync, FilePath: C:\Projects\Oneportal\libraries\LibOnePortal\Middleware\OnePortalMiddleware.cs, LineNumber: 68, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.145 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Request finished HTTP/1.1 GET http://localhost:86/assets/favicon-48x48.png - 500 - text/plain;+charset=utf-8 36.6541ms, Category=Microsoft.AspNetCore.Hosting.Diagnostics, LogLevel=Information, EventId=2, TraceId=ed18fb5d3a87454386f58c6e198bc011, RequestId=0HNK51NHALSO2:0000000C, CorrelationId=ed18fb5d3a87454386f58c6e198bc011
+2026-03-18 16:48:33.149 Z, Route.Others.Latency: 37, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.152 Z, Route.Others: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.156 Z, RequestCount: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.160 Z, Route.Others.ResponseSize: 9859, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.160 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Request starting HTTP/1.1 GET http://localhost:86/assets/coast-228x228.png - - -, Category=Microsoft.AspNetCore.Hosting.Diagnostics, LogLevel=Information, EventId=1, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.160 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Message: Request starts, MemberName: InvokeAsync, FilePath: C:\Projects\Oneportal\libraries\LibOnePortal\Middleware\OnePortalMiddleware.cs, LineNumber: 46, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.163 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=1, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.190 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at Microsoft.Falcon.LibOnePortal.Utility.OnePortalApplicationBuilderExtension.<>c.<<UseOnePortal>b__1_5>d.MoveNext() in C:\Projects\Oneportal\libraries\LibOnePortal\Utility\OnePortalApplicationBuilderExtension.cs:line 180
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware, LogLevel=Error, EventId=3, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.192 Z, ServiceException, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, ExceptionType=System.AggregateException, Message=One or more errors occurred. (One or more errors occurred. (The NPM script 'start' exited without indicating that the create-react-app server was listening for requests. The error output was: npm warn Unknown project config "always-auth". This will stop working in the next major version of npm.
+
+)), StackTrace=   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at Microsoft.AspNetCore.SpaServices.Extensions.Util.TaskTimeoutExtensions.WithTimeout[T](Task`1 task, TimeSpan timeoutDelay, String message)
+   at Microsoft.AspNetCore.SpaServices.Extensions.Proxy.SpaProxy.PerformProxyRequest(HttpContext context, HttpClient httpClient, Task`1 baseUriTask, CancellationToken applicationStoppingToken, Boolean proxy404s)
+   at Microsoft.AspNetCore.Builder.SpaProxyingExtensions.<>c__DisplayClass2_0.<<UseProxyToSpaDevelopmentServer>b__0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.HandleException(HttpContext context, ExceptionDispatchInfo edi)
+   at Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddlewareImpl.<Invoke>g__Awaited|10_0(ExceptionHandlerMiddlewareImpl middleware, HttpContext context, Task task)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context), Source=System.Private.CoreLib, Category=Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware, LogLevel=Error, EventId=1, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.194 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Message: Request ends, MemberName: InvokeAsync, FilePath: C:\Projects\Oneportal\libraries\LibOnePortal\Middleware\OnePortalMiddleware.cs, LineNumber: 68, TID: 24, Category=LibOnePortal.Middleware.OnePortalMiddleware, LogLevel=Information, EventId=0, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.194 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, Message=Request finished HTTP/1.1 GET http://localhost:86/assets/coast-228x228.png - 500 - text/plain;+charset=utf-8 33.9431ms, Category=Microsoft.AspNetCore.Hosting.Diagnostics, LogLevel=Information, EventId=2, TraceId=3ad46a5bbf83413f9b59fc2b57bb74c8, RequestId=0HNK51NHALSO2:0000000D, CorrelationId=3ad46a5bbf83413f9b59fc2b57bb74c8
+2026-03-18 16:48:33.199 Z, Route.Others.Latency: 34, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.202 Z, Route.Others: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.205 Z, RequestCount: 1, StatusCode=500, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes
+2026-03-18 16:48:33.208 Z, Route.Others.ResponseSize: 9859, ServiceId=CodexSite, Environment=Development, TrafficType=Untagged, LoggingNamespace=Microsoft.Falcon.Service.Routes

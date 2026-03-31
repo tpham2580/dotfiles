@@ -1,0 +1,151 @@
+// <copyright file="Startup.cs" company="Microsoft">
+// Copyright (c) Microsoft. All rights reserved.
+// </copyright>
+
+namespace Microsoft.Falcon.CodexUpdater
+{
+    using System;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using ArmWrapperImp;
+    using CodeXCore.AOAI;
+    using CodeXCore.Models;
+    using CodeXCore.Services;
+    using CodeXCore.ServiceTree;
+    using CodexCore.Util;
+    using CodeXDataBase;
+    using CodeXEntities;
+    using CodexLib.AADAuthProvider;
+    using CodexLib.OCI;
+    using GitClient.Services;
+    using GitClientInterface;
+    using global::Microsoft.AspNetCore.Builder;
+    using global::Microsoft.Extensions.DependencyInjection;
+    using ICodexLib.AOAI;
+    using ICodexLib.CodexARMClient;
+    using ICodexLib.OCI;
+    using ISExpAuthToolkit;
+    using ISExpAuthToolkit.Credential;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Falcon.Configuration;
+    using Microsoft.Falcon.LibOnePortal.Secret;
+    using Microsoft.Falcon.LibOnePortal.Utility;
+    using Microsoft.Falcon.Logging.Mdm;
+    using Papyrus.SDK;
+    using Papyrus.SDK.DTOs;
+    using Papyrus.SDK.Interfaces;
+    using Papyrus.SDK.Services;
+    using Shared.Core.GraphicAPI;
+    using Shared.Core.Secret;
+    using Shared.Core.Utility;
+
+    /// <summary>
+    /// Configures ASP.NET Core application during startup.
+    /// </summary>
+    public sealed class Startup
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        public Startup()
+        {
+        }
+
+        /// <summary>
+        /// Configures the services for the application.
+        /// </summary>
+        /// <param name="services">The services collection.</param>
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOnePortalFalconBackendServices("CodexUpdater");
+            services.AddSingleton<IArmClientWrapper, ArmClientAPIProxyWrapper>();
+            services.AddSingleton<IArmRestApiWrapper, ArmRestClientAPIProxyWrapper>();
+            services.AddSingleton<ISecretStore, GalaxyVaultSecretStore>();
+
+            services.AddSingleton<DBConnectionProperties>();
+            services.AddScoped<IUnitOfCodeX, UnitOfCodeX>();
+            services.AddSingleton<IAOAIClient, AOAIClient>();
+            services.AddSingleton<IOCIRestApiClient>(sp => new OCIRestApiClient(new BasicTokenCredAuthProvider(sp.GetService<ICredentialFactory>().CreateTokenCredential(AADTenant.PME))));
+            services.AddSingleton<IEnvironmentProperties, EnvironmentProperties>();
+            services.AddSingleton<IPapyrusClient, PapyrusClient>();
+            services.AddScoped<EndpointUpdater>();
+            services.AddScoped<MssAndMpcpUpdater>();
+            services.AddScoped<ICodeXService, CodeXService>();
+            services.AddScoped<ISKUService, SKUService>();
+            services.AddSingleton<AdoCredentialFactory>();
+            services.AddSingleton<IGitClient>(sp => new GitClient(new TokenProviderDelegatingHandler(new AzureCredentialTokenProvider(new[] { ISExpAuthToolkit.Constants.AzureADDevOpsScope }, sp.GetService<AdoCredentialFactory>().GetPrimaryAdoCredential()))));
+            services.AddSingleton<CodexCore.Services.ICapacityCounterMetricsCounters, CodexImplementation.CapacityCounterMetricsCounters>();
+            services.AddMdmLogging(options =>
+            {
+                options.AddCounterRule(
+                    "Microsoft.Falcon.CodexSite",
+                    "BingIndexServeGalaxy",
+                    "CodexCapacity");
+            });
+
+            services.AddSingleton<PapyrusEnvironmentProperties>(sp => EnvUtil.ResolvePapyrusEnvProperties(sp.GetService<IEnvironmentProperties>()));
+            services.AddSingleton<IPullRequestClient>(sp =>
+            {
+                var papyrusEnvProps = sp.GetService<PapyrusEnvironmentProperties>();
+                var adoCredFactory = sp.GetService<AdoCredentialFactory>();
+                return new PullRequestClient(
+                    papyrusEnvProps.AdoOrg,
+                    papyrusEnvProps.AdoProject,
+                    papyrusEnvProps.AdoRep,
+                    adoCredFactory.GetPrimaryAdoCredential(),
+                    prApprovalCredential: adoCredFactory.GetSecondaryAdoCredential());
+            });
+            services.AddScoped<IPapyrusConfigService, PapyrusConfigService>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByModelOrgRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByModelOrgBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByAppIdRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByAppIdBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.GpuUtilizationByRootAppIdBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GpuAllocationByModelRegionRow>, CodeXCore.UtilizationMetricCollection.Transform.GpuAllocationByModelRegionBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.GlobalGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.GlobalGpuAvailabilityBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.RegionalGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.RegionalGpuAvailabilityBuilder>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Transform.IMetricsTableBuilder<CodeXCore.UtilizationMetricCollection.Transform.SubscriptionGpuAvailabilityRow>, CodeXCore.UtilizationMetricCollection.Transform.SubscriptionGpuAvailabilityBuilder>();
+            services.AddScoped<CodeXCore.UtilizationMetricCollection.UtilizationMetricCollector>();
+            services.AddHostedService<CodeXCore.UtilizationMetricCollection.UtilizationMetricBackgroundService>();
+
+            // Papyrus metrics: MDM-based implementation (replaces Kusto-based PapyrusWeeklyUtilizationService).
+            services.AddSingleton(sp =>
+            {
+                var config = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+                return new PapyrusMdmOptions
+                {
+                    Account = config["PapyrusMdm:Account"]
+                        ?? Environment.GetEnvironmentVariable("PAPYRUS_MDM_ACCOUNT")
+                        ?? "PapyrusTelemetry",
+                    Namespace = config["PapyrusMdm:Namespace"]
+                        ?? Environment.GetEnvironmentVariable("PAPYRUS_MDM_NAMESPACE")
+                        ?? "Papyrus",
+                };
+            });
+            services.AddSingleton<IKeyVaultCertProvider, KeyVaultCertProvider>();
+            services.AddSingleton<IPapyrusModelUtilizationService, PapyrusModelUtilizationMdmService>();
+            services.AddSingleton<CodeXCore.UtilizationMetricCollection.Counter.IUtilizationCounterManager, CodeXCore.UtilizationMetricCollection.Counter.CompositeUtilizationCounterManager>();
+            services.AddSingleton(ServiceTreeKustoOptions.FromEnvironment());
+            services.AddSingleton<IServiceTreeNodeLookup, ServiceTreeKustoClient>();
+            services.AddSingleton<IServiceTreeParentResolver, ServiceTreeParentResolver>();
+            services.AddScoped<IAppIdToProductResolver, AppIdToProductResolver>();
+        }
+
+        /// <summary>
+        /// Configures the application.
+        /// </summary>
+        /// <param name="app">The application builder.</param>
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/{anything}", async context =>
+                {
+                    await context.Response.WriteAsync("OK");
+                });
+                endpoints.MapControllers();
+            });
+        }
+    }
+}

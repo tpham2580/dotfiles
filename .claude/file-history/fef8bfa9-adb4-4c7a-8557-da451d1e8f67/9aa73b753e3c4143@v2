@@ -1,0 +1,469 @@
+// <copyright file="ServiceTreeKustoClient.cs" company="Microsoft">
+// Copyright (c) Microsoft. All rights reserved.
+// </copyright>
+
+namespace CodeXCore.ServiceTree
+{
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Security.Cryptography;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using global::Azure.Core;
+    using global::Azure.Identity;
+    using global::Kusto.Data;
+    using global::Kusto.Data.Common;
+    using global::Kusto.Data.Net.Client;
+    using ISExpAuthToolkit;
+    using ISExpAuthToolkit.Credential;
+    using Microsoft.Extensions.Logging;
+
+#pragma warning disable CA1303 // Log messages are not localized.
+
+    /// <summary>
+    /// Kusto-backed Service Tree node lookup.
+    /// </summary>
+    public sealed class ServiceTreeKustoClient : IServiceTreeNodeLookup
+    {
+        private readonly ServiceTreeKustoOptions kustoOptions;
+        private readonly ServiceTreeClientOptions authOptions;
+        private readonly ILogger<ServiceTreeKustoClient> logger;
+        private readonly TokenCredential? tokenCredential;
+        private readonly string tokenScope;
+        private readonly bool isConfigured;
+        private readonly int maxBatchSize;
+        private readonly int maxConcurrency = 4;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceTreeKustoClient"/> class.
+        /// </summary>
+        /// <param name="kustoOptions">Kusto options.</param>
+        /// <param name="authOptions">Auth options.</param>
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="credentialFactory">Optional credential factory for cross-tenant support.</param>
+        public ServiceTreeKustoClient(
+            ServiceTreeKustoOptions kustoOptions,
+            ServiceTreeClientOptions authOptions,
+            ILogger<ServiceTreeKustoClient> logger,
+            ICredentialFactory credentialFactory = null)
+        {
+            this.kustoOptions = kustoOptions ?? throw new ArgumentNullException(nameof(kustoOptions));
+            this.authOptions = authOptions ?? throw new ArgumentNullException(nameof(authOptions));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            if (string.IsNullOrWhiteSpace(this.kustoOptions.ClusterUri)
+                || string.IsNullOrWhiteSpace(this.kustoOptions.Database))
+            {
+                this.logger.LogWarning("ServiceTreeKustoClient: Kusto cluster or database is not configured.");
+                this.isConfigured = false;
+                return;
+            }
+
+            this.tokenScope = this.ResolveTokenScope(this.kustoOptions);
+            if (string.IsNullOrWhiteSpace(this.tokenScope))
+            {
+                this.logger.LogWarning("ServiceTreeKustoClient: Token scope is not configured.");
+                this.isConfigured = false;
+                return;
+            }
+
+            this.tokenCredential = this.ResolveTokenCredential(credentialFactory, this.authOptions);
+            if (this.tokenCredential == null)
+            {
+                this.logger.LogWarning("ServiceTreeKustoClient: No AAD credentials configured for Kusto.");
+                this.isConfigured = false;
+                return;
+            }
+
+            this.maxBatchSize = this.kustoOptions.MaxBatchSize <= 0 ? 200 : this.kustoOptions.MaxBatchSize;
+            this.isConfigured = true;
+
+            this.logger.LogInformation(
+                "ServiceTreeKustoClient: Configured. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, TokenScope={TokenScope}.",
+                this.kustoOptions.ClusterUri,
+                this.kustoOptions.Database,
+                this.kustoOptions.HierarchyTableName,
+                this.tokenCredential.GetType().Name,
+                this.tokenScope);
+        }
+
+        /// <inheritdoc/>
+        public async Task<IReadOnlyDictionary<string, ServiceTreeNode>> GetHierarchyNodesByServiceIdsAsync(
+            IEnumerable<string> serviceIds,
+            CancellationToken cancellationToken)
+        {
+            var results = new ConcurrentDictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+            if (!this.isConfigured)
+            {
+                return results;
+            }
+
+            var uniqueIds = (serviceIds ?? Enumerable.Empty<string>())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (uniqueIds.Count == 0)
+            {
+                return results;
+            }
+
+            var batches = this.SplitStringBatches(uniqueIds, this.maxBatchSize);
+            using var semaphore = new SemaphoreSlim(this.maxConcurrency);
+            var tasks = batches.Select(async batch =>
+            {
+                await semaphore.WaitAsync(cancellationToken);
+                try
+                {
+                    var batchResults = await this.QueryHierarchyBatchAsync(batch, cancellationToken);
+                    foreach (var pair in batchResults)
+                    {
+                        results[pair.Key] = pair.Value;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogWarning(
+                        ex,
+                        "ServiceTreeKustoClient: Batch of {BatchCount} IDs failed; continuing with remaining batches.",
+                        batch.Count);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }).ToList();
+
+            await Task.WhenAll(tasks);
+            return results;
+        }
+
+        private static string EscapeKustoString(string value)
+        {
+            return value.Replace("'", "''", StringComparison.Ordinal);
+        }
+
+        private async Task<IReadOnlyDictionary<string, ServiceTreeNode>> QueryHierarchyBatchAsync(
+            IReadOnlyList<string> batch,
+            CancellationToken cancellationToken)
+        {
+            var results = new Dictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+            if (batch.Count == 0)
+            {
+                return results;
+            }
+
+            // Build a fast-lookup set of the (already-lowercased) input IDs so we can
+            // cross-key results by whichever hierarchy column matched each row.
+            var batchSet = new HashSet<string>(
+                batch.Select(id => id.ToLowerInvariant()),
+                StringComparer.OrdinalIgnoreCase);
+
+            var hierarchyTable = this.NormalizeIdentifier(this.kustoOptions.HierarchyTableName);
+            var builder = new StringBuilder();
+            builder.AppendLine("let ids = datatable(TargetId:string)[");
+            builder.Append(string.Join(", ", batch.Select(id => $"'{EscapeKustoString(id.ToLowerInvariant())}'")));
+            builder.AppendLine("];");
+            builder.AppendLine($"{hierarchyTable}");
+            builder.AppendLine("| where tolower(ServiceId) in (ids)");
+            builder.AppendLine("    or tolower(column_ifexists(\"TeamGroupId\", \"\")) in (ids)");
+            builder.AppendLine("    or tolower(column_ifexists(\"ServiceGroupId\", \"\")) in (ids)");
+            builder.AppendLine("    or tolower(column_ifexists(\"OrganizationId\", \"\")) in (ids)");
+            builder.AppendLine("    or tolower(column_ifexists(\"DivisionId\", \"\")) in (ids)");
+            builder.AppendLine("| project");
+            builder.AppendLine("    Id = tostring(ServiceId),");
+            builder.AppendLine("    Name = tostring(column_ifexists(\"ServiceName\", \"\")),");
+            builder.AppendLine("    Level = tostring(column_ifexists(\"ServiceLevel\", \"\")),");
+            builder.AppendLine("    TeamGroupId = tostring(column_ifexists(\"TeamGroupId\", \"\")),");
+            builder.AppendLine("    TeamGroupName = tostring(column_ifexists(\"TeamGroupName\", \"\")),");
+            builder.AppendLine("    ServiceGroupId = tostring(column_ifexists(\"ServiceGroupId\", \"\")),");
+            builder.AppendLine("    ServiceGroupName = tostring(column_ifexists(\"ServiceGroupName\", \"\")),");
+            builder.AppendLine("    OrganizationId = tostring(column_ifexists(\"OrganizationId\", \"\")),");
+            builder.AppendLine("    OrganizationName = tostring(column_ifexists(\"OrganizationName\", \"\")),");
+            builder.AppendLine("    DivisionId = tostring(column_ifexists(\"DivisionId\", \"\")),");
+            builder.AppendLine("    DivisionName = tostring(column_ifexists(\"DivisionName\", \"\"))");
+            var query = builder.ToString();
+
+            var requestProperties = new ClientRequestProperties();
+            requestProperties.ClientRequestId = $"CodexSite.ServiceTreeHierarchy.{Guid.NewGuid():N}";
+
+            try
+            {
+                this.logger.LogInformation(
+                    "ServiceTreeKustoClient: Executing hierarchy query for {BatchCount} IDs against {Cluster}/{Database}/{Table}.",
+                    batch.Count,
+                    this.kustoOptions.ClusterUri,
+                    this.kustoOptions.Database,
+                    this.kustoOptions.HierarchyTableName);
+
+                using var provider = this.CreateQueryProvider();
+                using var reader = await provider.ExecuteQueryAsync(this.kustoOptions.Database, query, requestProperties);
+
+                do
+                {
+                    var idOrdinal = this.TryGetOrdinal(reader, "Id");
+                    if (idOrdinal < 0)
+                    {
+                        continue;
+                    }
+
+                    var nameOrdinal = this.TryGetOrdinal(reader, "Name");
+                    var levelOrdinal = this.TryGetOrdinal(reader, "Level");
+                    var teamGroupIdOrdinal = this.TryGetOrdinal(reader, "TeamGroupId");
+                    var serviceGroupIdOrdinal = this.TryGetOrdinal(reader, "ServiceGroupId");
+                    var serviceGroupNameOrdinal = this.TryGetOrdinal(reader, "ServiceGroupName");
+                    var organizationIdOrdinal = this.TryGetOrdinal(reader, "OrganizationId");
+                    var organizationNameOrdinal = this.TryGetOrdinal(reader, "OrganizationName");
+                    var divisionIdOrdinal = this.TryGetOrdinal(reader, "DivisionId");
+                    var divisionNameOrdinal = this.TryGetOrdinal(reader, "DivisionName");
+
+                    while (reader.Read())
+                    {
+                        var id = this.ReadString(reader, idOrdinal);
+                        if (string.IsNullOrWhiteSpace(id))
+                        {
+                            continue;
+                        }
+
+                        var node = new ServiceTreeNode
+                        {
+                            Id = id,
+                            Name = this.ReadString(reader, nameOrdinal),
+                            Level = this.ReadString(reader, levelOrdinal),
+                            ServiceGroupId = this.ReadString(reader, serviceGroupIdOrdinal),
+                            ServiceGroupName = this.ReadString(reader, serviceGroupNameOrdinal),
+                            OrganizationId = this.ReadString(reader, organizationIdOrdinal),
+                            OrganizationName = this.ReadString(reader, organizationNameOrdinal),
+                            DivisionId = this.ReadString(reader, divisionIdOrdinal),
+                            DivisionName = this.ReadString(reader, divisionNameOrdinal),
+                        };
+
+                        // Always key by the native ServiceId for backward compatibility.
+                        results[id] = node;
+
+                        // Also key by any hierarchy ancestor ID that the caller asked for.
+                        // This lets a caller who passed an OrganizationId (or ServiceGroupId etc.)
+                        // find the result via hierarchyResults.TryGetValue(inputId).
+                        var teamGroupId = this.ReadString(reader, teamGroupIdOrdinal);
+                        foreach (var hierarchyId in new[]
+                        {
+                            teamGroupId,
+                            node.ServiceGroupId,
+                            node.OrganizationId,
+                            node.DivisionId,
+                        })
+                        {
+                            if (!string.IsNullOrWhiteSpace(hierarchyId)
+                                && batchSet.Contains(hierarchyId.ToLowerInvariant()))
+                            {
+                                results[hierarchyId] = node;
+                            }
+                        }
+                    }
+                }
+                while (results.Count == 0 && reader.NextResult());
+
+                this.logger.LogInformation(
+                    "ServiceTreeKustoClient: Hierarchy query completed. Returned {ResultCount} results for {BatchCount} input IDs.",
+                    results.Count,
+                    batch.Count);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(
+                    ex,
+                    "ServiceTreeKustoClient: hierarchy query failed. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, BatchCount={BatchCount}.",
+                    this.kustoOptions.ClusterUri,
+                    this.kustoOptions.Database,
+                    this.kustoOptions.HierarchyTableName,
+                    this.tokenCredential?.GetType().Name ?? "null",
+                    batch.Count);
+                throw;
+            }
+
+            return results;
+        }
+
+        private ICslQueryProvider CreateQueryProvider()
+        {
+            var kcsb = new KustoConnectionStringBuilder(this.kustoOptions.ClusterUri, this.kustoOptions.Database)
+                .WithAadAzureTokenCredentialsAuthentication(this.tokenCredential!);
+            return KustoClientFactory.CreateCslQueryProvider(kcsb);
+        }
+
+        private IEnumerable<IReadOnlyList<string>> SplitStringBatches(IReadOnlyList<string> ids, int batchSize)
+        {
+            for (int i = 0; i < ids.Count; i += batchSize)
+            {
+                var count = Math.Min(batchSize, ids.Count - i);
+                var batch = new List<string>(count);
+                for (int j = 0; j < count; j++)
+                {
+                    batch.Add(ids[i + j]);
+                }
+
+                yield return batch;
+            }
+        }
+
+        private string ResolveTokenScope(ServiceTreeKustoOptions options)
+        {
+            if (!string.IsNullOrWhiteSpace(options.TokenScope))
+            {
+                return options.TokenScope;
+            }
+
+            if (Uri.TryCreate(options.ClusterUri, UriKind.Absolute, out var uri))
+            {
+                return $"{uri.GetLeftPart(UriPartial.Authority)}/.default";
+            }
+
+            return string.Empty;
+        }
+
+        private TokenCredential? ResolveTokenCredential(
+            ICredentialFactory? credentialFactory,
+            ServiceTreeClientOptions options)
+        {
+            // When ICredentialFactory is available AND auth mode is DefaultAzureCredential,
+            // use the factory for cross-tenant support (PME MSI → MSFT tenant token).
+            if (credentialFactory != null
+                && options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+            {
+                try
+                {
+                    var cred = credentialFactory.CreateTokenCredential(AADTenant.MSFT);
+                    this.logger.LogInformation(
+                        "ServiceTreeKustoClient: Using ICredentialFactory for MSFT-tenant credential (type={CredType}).",
+                        cred.GetType().Name);
+                    return cred;
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError(
+                        ex,
+                        "ServiceTreeKustoClient: ICredentialFactory.CreateTokenCredential failed.");
+                    throw;
+                }
+            }
+
+            return this.CreateTokenCredential(options);
+        }
+
+        private TokenCredential? CreateTokenCredential(ServiceTreeClientOptions options)
+        {
+            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+            {
+                return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                {
+                    ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.AadClientId) ? null : options.AadClientId,
+                });
+            }
+
+            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.Aad)
+            {
+                if (!string.IsNullOrWhiteSpace(options.AadClientSecret)
+                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+                {
+                    return new ClientSecretCredential(options.AadTenantId, options.AadClientId, options.AadClientSecret);
+                }
+
+                if (!string.IsNullOrWhiteSpace(options.AadClientCertificateBase64)
+                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+                {
+#pragma warning disable CA2000 // Certificate lifetime is tied to the credential.
+                    var cert = this.LoadAadCertificate(options);
+#pragma warning restore CA2000
+
+                    return new ClientCertificateCredential(
+                        options.AadTenantId,
+                        options.AadClientId,
+                        cert,
+                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
+                }
+
+                if (!string.IsNullOrWhiteSpace(options.AadClientId))
+                {
+                    return new ManagedIdentityCredential(options.AadClientId);
+                }
+
+                return new ManagedIdentityCredential();
+            }
+
+            return null;
+        }
+
+        private string NormalizeIdentifier(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            var trimmed = value.Trim();
+            return trimmed.All(ch => char.IsLetterOrDigit(ch) || ch == '_' || ch == '.')
+                ? trimmed
+                : trimmed.Replace("`", string.Empty, StringComparison.Ordinal);
+        }
+
+        private int TryGetOrdinal(IDataReader reader, string name)
+        {
+            try
+            {
+                return reader.GetOrdinal(name);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return -1;
+            }
+        }
+
+        private string ReadString(IDataReader reader, int ordinal)
+        {
+            if (ordinal < 0 || reader.IsDBNull(ordinal))
+            {
+                return string.Empty;
+            }
+
+            var value = reader.GetValue(ordinal);
+            return value?.ToString() ?? string.Empty;
+        }
+
+        private X509Certificate2 LoadAadCertificate(ServiceTreeClientOptions options)
+        {
+            try
+            {
+                var raw = Convert.FromBase64String(options.AadClientCertificateBase64);
+                return new X509Certificate2(raw, options.AadClientCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
+            }
+            catch (FormatException ex)
+            {
+                this.logger.LogError(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+                throw;
+            }
+            catch (CryptographicException ex)
+            {
+                this.logger.LogError(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+                throw;
+            }
+        }
+    }
+
+#pragma warning restore CA1303
+}

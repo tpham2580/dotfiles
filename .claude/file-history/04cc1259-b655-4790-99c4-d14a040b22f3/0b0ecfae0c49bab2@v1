@@ -1,0 +1,2 @@
+registry=https://msasg.pkgs.visualstudio.com/_packaging/IndexServe/npm/registry
+always-auth=true

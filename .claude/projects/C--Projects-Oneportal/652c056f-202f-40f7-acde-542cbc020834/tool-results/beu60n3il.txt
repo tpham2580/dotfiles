@@ -1,0 +1,2462 @@
+==> ./fleetServices/CodexSite/Readme.md <==
+# CodexSite
+
+Codex Portal, a website that manages quota and access for LLM endpoints
+
+## Access
+
+- prod:     https://codexsite-external.bing-oneprtl.ingress.wus2.microsoft-falcon.net/
+- staging:  https://codexsite-external.bing-oneprtl.ingress.eus2.microsoft-falcon.net/
+- dev:      https://codexsite-external.bing-oneprtl.ingress.ncus.microsoft-falcon.net/
+- local:    https://localhost:86/
+
+## Development guide
+
+please refer to OnePortal wiki [1pWiki](https://eng.ms/docs/experiences-devices/webxt/bing-fundamentals/indexserve/experiment/oneportal/overview/oneportaloverview)
+
+## Development hints
+
+- Make sure you have joined [galexyadmins security group](https://idweb.microsoft.com/IdentityManagement/aspx/groups/MyMemberships.aspx?popupFromClipboard=%2Fidentitymanagement%2Faspx%2FGroups%2FEditGroup.aspx%3Fid%3D8bfe0b1f-93e9-4168-be49-cd0ee9ec797e). Wait a couple hours for permissions to propogate.
+- After joining galexyadmins security group you can access [Galexy-Vault-1](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/14d85404-557a-4a46-875f-8798799660dd/resourceGroups/Galaxy/providers/Microsoft.KeyVault/vaults/Galaxy-Vault1/access_policies). 
+  - Click the create button to create an access policy. 
+  - Click "Select All" for all Permissions tab. 
+  - In Principal tab search for your alias. 
+  - Application tab can be skipped. 
+  - Click review and create, and wait a couple mins for permissions to propogate. 
+- Ensure the directory (C:\Users\<your_alias>\AppData\Roaming\ASP.NET\https>) is existing to host the oneportal cert, mkdir the directory if not existing.
+- Run `yarn install` and `yarn build` inside ClientApp folder and oneportal-skeleton folder to install client-side dependencies.
+  - In case you get a 401 error you need to authenticate to Azure Artifacts
+  - Please follow up the link https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/azure-artifacts/npm-credprovider to set up the npm credential serviceProvider
+  - run artifacts-npm-credprovider in the folder where the .npmrc is
+  - run 'yarn install' on the same folder 
+- Run `npm start` inside ClientApp folder
+- Open CodexSite solution.
+- Build and run the Microsoft.Falcon.CodexSite project
+  - Ensure you have **Debug** and **x64** selected in the drop down menus at the top of Visual Studio. If you do not have x64 selected, you may see an error like "Metadata file 'Q:\source\Oneportal\fleetServices\CodexSite\src\Service\obj\Debug\net8.0\ref\Microsoft.Falcon.CodexSite.dll' could not be found"
+- Both backend and frontend instances will be up and running on port 86. 
+  - The frontend should be running with hot-reload enabled. This means any changes you save to the frontend code will automatically refresh the changes in the running instance without needing to manually refresh the browser.
+  - The backend will automatically rebuild on save and an instance will be running with the updates included. However, the webpage will not be reloaded automatically. 
+
+## Release Notes
+
+* 1.0
+    * Release notes for 1.0
+* 2.0
+    * Release notes for 2.0
+
+## Reviewers
+
+-- Reviewer groups or individuals --
+
+## Contact
+
+-- Contact information --
+
+## Secret Keyvault setup
+We can setup own Key Vault to manage secret, the following is detail
+1. The key vault has to be in PME 
+2. we needs to give Falcone accounts (PME) the following roles to the key vault.   
+
+    Accounts:
+    - FalconServiceLauncher-SF-Testing
+    - FalconServiceLauncher-SF-Staging
+    - FalconServiceLauncher-Prod  
+
+    Roles:
+    - Key Vault Reader
+    - Key Vault Secrets User
+    - Key Vault Certificate User
+3. How to use the keyvalue
+
+- Configurate for Environment
+Make following change to  Service.json to reference the secret
+>      "Secrets": [
+>        {
+>         "Name": "Foo",
+>          "Value": "https://galaxypmekeyvault.vault.azure.net/secrets/test"
+>        }
+>       ],
+>
+
+
+
+- Configurate for DevBox (No check in)
+Make following change to Service.ini
+>[Secret]
+>Foo=<VALUE>
+
+- Consume the secret
+Use IConfiguration (Microsoft.Extensions.Configuration.IConfiguration), and the instance will be created by DI 
+
+>        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration config, ILogger<Startup> logger)
+>        {
+>            var test = config?["Secret:Foo"];
+
+In ConfigureServices function, because DI is not fully setup. we need to using following code to use the secret
+
+>        public void ConfigureServices(IServiceCollection services)
+>        {
+>            // we can't use DI in this function as DI is not setup before this service is called
+>            var serviceProvider = services.BuildServiceProvider();
+>            var config = serviceProvider.GetService<IConfiguration>();
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/@adobe/css-tools/Readme.md <==
+# @adobe/css-tools
+
+> This is a fork of the npm css package due to low maintenance
+
+CSS parser / stringifier.
+
+## Installation
+
+    $ npm install @adobe/css-tools
+
+## Usage
+
+```js
+import { parse, stringify } from '@adobe/css-tools'
+let obj = parse('body { font-size: 12px; }', options);
+let css = stringify(obj, options);
+```
+
+## API
+
+### parse(code, [options])
+
+Accepts a CSS string and returns an AST `object`.
+
+`options`:
+
+- silent: silently fail on parse errors.
+- source: the path to the file containing `css`. Makes errors and source
+  maps more helpful, by letting them know where code comes from.
+
+### stringify(object, [options])
+
+Accepts an AST `object` (as `css.parse` produces) and returns a CSS string.
+
+`options`:
+
+- indent: the string used to indent the output. Defaults to two spaces.
+- compress: omit comments and extraneous whitespace.
+
+### Example
+
+```js
+var ast = parse('body { font-size: 12px; }', { source: 'source.css' });
+
+var css = stringify(ast);
+```
+
+### Errors
+
+Errors thrown during parsing have the following properties:
+
+- message: `String`. The full error message with the source position.
+- reason: `String`. The error message without position.
+- filename: `String` or `undefined`. The value of `options.source` if
+  passed to `css.parse`. Otherwise `undefined`.
+- line: `Integer`.
+- column: `Integer`.
+- source: `String`. The portion of code that couldn't be parsed.
+
+When parsing with the `silent` option, errors are listed in the
+`parsingErrors` property of the [`stylesheet`](#stylesheet) node instead
+of being thrown.
+
+If you create any errors in plugins such as in
+[rework](https://github.com/reworkcss/rework), you __must__ set the same
+properties for consistency.
+
+## AST
+
+Interactively explore the AST with <http://iamdustan.com/reworkcss_ast_explorer/>.
+
+### Common properties
+
+All nodes have the following properties.
+
+#### position
+
+Information about the position in the source string that corresponds to
+the node.
+
+`Object`:
+
+- start: `Object`:
+  - line: `Number`.
+  - column: `Number`.
+- end: `Object`:
+  - line: `Number`.
+  - column: `Number`.
+- source: `String` or `undefined`. The value of `options.source` if passed to
+  `css.parse`. Otherwise `undefined`.
+- content: `String`. The full source string passed to `css.parse`.
+
+The line and column numbers are 1-based: The first line is 1 and the first
+column of a line is 1 (not 0).
+
+The `position` property lets you know from which source file the node comes
+from (if available), what that file contains, and what part of that file was
+parsed into the node.
+
+#### type
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/@leichtgewicht/ip-codec/Readme.md <==
+# @leichtgewicht/ip-codec
+
+Small package to encode or decode IP addresses from buffers to strings.
+Supports IPV4 and IPV6.
+
+## Usage
+
+The basics are straigthforward
+
+```js
+import { encode, decode, sizeOf, familyOf } from '@leichtgewicht/ip-codec'
+
+const uint8Array = encode("127.0.0.1")
+const str = decode(uint8Array)
+
+try {
+  switch sizeOf(str) {
+    case 4: // IPv4
+    case 16: // IPv6
+  }
+  switch familyOf(str) {
+    case: 1: // IPv4
+    case: 2: // IPv6
+  }
+} catch (err) {
+  // Invalid IP
+}
+```
+
+By default the library will work with Uint8Array's but you can bring your own buffer:
+
+```js
+const buf = Buffer.alloc(4)
+encode('127.0.0.1', buf)
+```
+
+It is also possible to de-encode at a location inside a given buffer
+
+```js
+const buf = Buffer.alloc(10)
+encode('127.0.0.1', buf, 4)
+```
+
+Allocation of a buffer may be difficult if you don't know what type the buffer:
+you can pass in a generator to allocate it for you:
+
+```js
+encode('127.0.0.1', Buffer.alloc)
+```
+
+You can also de/encode ipv4 or ipv6 specifically:
+
+```js
+import { v4, v6 } from '@leichtgewicht/ip-codec'
+
+v4.decode(v4.encode('127.0.0.1'))
+v6.decode(v6.encode('::'))
+```
+
+## History
+
+The code in this package was originally extracted from [node-ip](https://github.com/indutny/node-ip) and since improved.
+
+Notable changes are the removal of the `Buffer` dependency and better support for detection of
+formats and allocation of buffers.
+
+## License
+
+[MIT](./LICENSE)
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/@types/testing-library__jest-dom/node_modules/jest-util/Readme.md <==
+# `@jest/utils`
+
+This packages is a collection of utilities and helper functions
+
+## `ErrorWithStack`
+
+This custom error class can be useful when you need to capture the stack trace of an error and provide additional context to the error message. By default, JavaScript errors only capture the stack trace when they are thrown, but this class allows you to capture the stack trace at any point in your code by calling its constructor.
+
+## `clearLine`
+
+It ensures that the clearing operation is only performed when running in a terminal environment, and not when the output is redirected to a file or another non-terminal destination.
+
+## `convertDescriptorToString`
+
+It defines a function named `convertDescriptorToString` that takes a descriptor as input and converts it to a string based on its type. It handles various types such as functions, numbers, strings, and undefined values. If the input doesn't match any of these types, it throws an error with a descriptive message.
+
+## `createDirectory`
+
+It creates new directory and also allows creation of nested directories.
+
+## `deepCyclicCopy`
+
+The `deepCyclicCopy` function provides deep copying of JavaScript objects and arrays, including handling circular references. It offers optional customization through a `DeepCyclicCopyOptions` parameter, allowing users to blacklist properties and preserve object prototypes. The function returns a completely independent deep copy of the input data structure.
+
+## `formatTime`
+
+This function is useful for formatting time values with appropriate SI unit prefixes for readability. It expresses time in various units (e.g., milliseconds, microseconds, nanoseconds) while ensuring the formatting is consistent and human-readable.
+
+## `globsToMatcher`
+
+The code efficiently converts a list of glob patterns into a reusable function for matching paths against those patterns, considering negated patterns and optimizing for performance.
+
+## `installCommonGlobals`
+
+Sets up various global variables and functions needed by the Jest testing framework. It ensures that these globals are properly set up for testing scenarios while maintaining compatibility with the environment's global object.
+
+## `interopRequireDefault`
+
+Provides a way to ensure compatibility between ES modules and CommonJS modules by handling the default export behavior appropriately.
+
+## `invariant`
+
+It is a utility used for asserting that a given condition is true. It's often used as a debugging aid during development to catch situations where an expected condition is not met.
+
+## `isInteractive`
+
+Checks whether the current environment is suitable for interactive terminal interactions.
+
+## `isNonNullable`
+
+Used to narrow down the type of a variable within a TypeScript code block, ensuring that it is safe to assume that the value is non-nullable. This can help avoid runtime errors related to null or undefined values.
+
+## `isPromise`
+
+It helps in order to determine whether a given value conforms to the structure of a Promise-like object, which typically has a `then` method. This can be useful when working with asynchronous code to ensure dealing with promises correctly.
+
+## `pluralize`
+
+This function is used to easily generate grammatically correct phrases in text output that depend on the count of items. It ensures that the word is correctly pluralized when needed.
+
+## `preRunMessage`
+
+These functions are intended for use in interactive command-line tools or scripts which provide informative messages to the user while ensuring a clean and responsive interface.
+
+## `replacePathSepForGlob`
+
+The function takes a string `path` as input and replaces backslashes ('\\') with forward slashes ('/') in the path. Used to normalize file paths to be compatible with glob patterns, ensuring consistency in path representation for different operating systems.
+
+## `requireOrImportModule`
+
+This function provides a unified way to load modules regardless of whether they use CommonJS or ESM syntax. It ensures that the default export is applied consistently when needed, allowing users to work with modules that might use different module systems.
+
+## `setGlobal`
+
+Used to set properties with specified values within a global object. It is designed to work in both browser-like and Node.js environments by accepting different types of global objects as input.
+
+## `specialChars`
+
+It defines constants and conditional values for handling platform-specific behaviors in a terminal environment. It determines if the current platform is Windows ('win32') and sets up constants for various symbols and terminal screen clearing escape sequences accordingly, ensuring proper display and behavior on both Windows and non-Windows operating systems.
+
+## `testPathPatternToRegExp`
+
+This function is used for consistency when serializing/deserializing global configurations and ensures that consistent regular expressions are produced for matching test paths.
+
+## `tryRealpath`
+
+Used to resolve the real path of a given path, but if the path doesn't exist or is a directory, it doesn't throw an error and returns the original path string. This can be useful for gracefully handling path resolution in scenarios where some paths might not exist or might be directories.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/batch/Readme.md <==
+
+# batch
+
+  Simple async batch with concurrency control and progress reporting.
+
+## Installation
+
+```
+$ npm install batch
+```
+
+## API
+
+```js
+var Batch = require('batch')
+  , batch = new Batch;
+
+batch.concurrency(4);
+
+ids.forEach(function(id){
+  batch.push(function(done){
+    User.get(id, done);
+  });
+});
+
+batch.on('progress', function(e){
+
+});
+
+batch.end(function(err, users){
+
+});
+```
+
+### Progress events
+
+  Contain the "job" index, response value, duration information, and completion data.
+
+```
+{ index: 1,
+  value: 'bar',
+  pending: 2,
+  total: 3,
+  complete: 2,
+  percent: 66,
+  start: Thu Oct 04 2012 12:25:53 GMT-0700 (PDT),
+  end: Thu Oct 04 2012 12:25:53 GMT-0700 (PDT),
+  duration: 0 }
+```
+
+## License
+
+[MIT](LICENSE)
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/bytes/Readme.md <==
+# Bytes utility
+
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Build Status][ci-image]][ci-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
+
+Utility to parse a string bytes (ex: `1TB`) to bytes (`1099511627776`) and vice-versa.
+
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```bash
+$ npm install bytes
+```
+
+## Usage
+
+```js
+var bytes = require('bytes');
+```
+
+#### bytes(number｜string value, [options]): number｜string｜null
+
+Default export function. Delegates to either `bytes.format` or `bytes.parse` based on the type of `value`.
+
+**Arguments**
+
+| Name    | Type     | Description        |
+|---------|----------|--------------------|
+| value   | `number`｜`string` | Number value to format or string value to parse |
+| options | `Object` | Conversion options for `format` |
+
+**Returns**
+
+| Name    | Type             | Description                                     |
+|---------|------------------|-------------------------------------------------|
+| results | `string`｜`number`｜`null` | Return null upon error. Numeric value in bytes, or string value otherwise. |
+
+**Example**
+
+```js
+bytes(1024);
+// output: '1KB'
+
+bytes('1KB');
+// output: 1024
+```
+
+#### bytes.format(number value, [options]): string｜null
+
+Format the given value in bytes into a string. If the value is negative, it is kept as such. If it is a float, it is
+ rounded.
+
+**Arguments**
+
+| Name    | Type     | Description        |
+|---------|----------|--------------------|
+| value   | `number` | Value in bytes     |
+| options | `Object` | Conversion options |
+
+**Options**
+
+| Property          | Type   | Description                                                                             |
+|-------------------|--------|-----------------------------------------------------------------------------------------|
+| decimalPlaces | `number`｜`null` | Maximum number of decimal places to include in output. Default value to `2`. |
+| fixedDecimals | `boolean`｜`null` | Whether to always display the maximum number of decimal places. Default value to `false` |
+| thousandsSeparator | `string`｜`null` | Example of values: `' '`, `','` and `'.'`... Default value to `''`. |
+| unit | `string`｜`null` | The unit in which the result will be returned (B/KB/MB/GB/TB). Default value to `''` (which means auto detect). |
+| unitSeparator | `string`｜`null` | Separator to use between number and unit. Default value to `''`. |
+
+**Returns**
+
+| Name    | Type             | Description                                     |
+|---------|------------------|-------------------------------------------------|
+| results | `string`｜`null` | Return null upon error. String value otherwise. |
+
+**Example**
+
+```js
+bytes.format(1024);
+// output: '1KB'
+
+bytes.format(1000);
+// output: '1000B'
+
+bytes.format(1000, {thousandsSeparator: ' '});
+// output: '1 000B'
+
+bytes.format(1024 * 1.7, {decimalPlaces: 0});
+// output: '2KB'
+
+bytes.format(1024, {unitSeparator: ' '});
+// output: '1 KB'
+```
+
+#### bytes.parse(string｜number value): number｜null
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/co/Readme.md <==
+# co
+
+[![Gitter][gitter-image]][gitter-url]
+[![NPM version][npm-image]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![Downloads][downloads-image]][downloads-url]
+
+  Generator based control flow goodness for nodejs and the browser,
+  using promises, letting you write non-blocking code in a nice-ish way.
+
+## Co v4
+
+  `co@4.0.0` has been released, which now relies on promises.
+  It is a stepping stone towards [ES7 async/await](https://github.com/lukehoban/ecmascript-asyncawait).
+  The primary API change is how `co()` is invoked.
+  Before, `co` returned a "thunk", which you then called with a callback and optional arguments.
+  Now, `co()` returns a promise.
+
+```js
+co(function* () {
+  var result = yield Promise.resolve(true);
+  return result;
+}).then(function (value) {
+  console.log(value);
+}, function (err) {
+  console.error(err.stack);
+});
+```
+
+  If you want to convert a `co`-generator-function into a regular function that returns a promise,
+  you now use `co.wrap(fn*)`.
+
+```js
+var fn = co.wrap(function* (val) {
+  return yield Promise.resolve(val);
+});
+
+fn(true).then(function (val) {
+
+});
+```
+
+## Platform Compatibility
+
+  `co@4+` requires a `Promise` implementation.
+  For versions of node `< 0.11` and for many older browsers,
+  you should/must include your own `Promise` polyfill.
+
+  When using node 0.11.x or greater, you must use the `--harmony-generators`
+  flag or just `--harmony` to get access to generators.
+
+  When using node 0.10.x and lower or browsers without generator support,
+  you must use [gnode](https://github.com/TooTallNate/gnode) and/or [regenerator](http://facebook.github.io/regenerator/).
+
+  io.js is supported out of the box, you can use `co` without flags or polyfills.
+
+## Installation
+
+```
+$ npm install co
+```
+
+## Associated libraries
+
+Any library that returns promises work well with `co`.
+
+- [mz](https://github.com/normalize/mz) - wrap all of node's code libraries as promises.
+
+View the [wiki](https://github.com/visionmedia/co/wiki) for more libraries.
+
+## Examples
+
+```js
+var co = require('co');
+
+co(function *(){
+  // yield any promise
+  var result = yield Promise.resolve(true);
+}).catch(onerror);
+
+co(function *(){
+  // resolve multiple promises in parallel
+  var a = Promise.resolve(1);
+  var b = Promise.resolve(2);
+  var c = Promise.resolve(3);
+  var res = yield [a, b, c];
+  console.log(res);
+  // => [1, 2, 3]
+}).catch(onerror);
+
+// errors can be try/catched
+co(function *(){
+  try {
+    yield Promise.reject(new Error('boom'));
+  } catch (err) {
+    console.error(err.message); // "boom"
+ }
+}).catch(onerror);
+
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/combined-stream/Readme.md <==
+# combined-stream
+
+A stream that emits multiple other streams one after another.
+
+**NB** Currently `combined-stream` works with streams version 1 only. There is ongoing effort to switch this library to streams version 2. Any help is welcome. :) Meanwhile you can explore other libraries that provide streams2 support with more or less compatibility with `combined-stream`.
+
+- [combined-stream2](https://www.npmjs.com/package/combined-stream2): A drop-in streams2-compatible replacement for the combined-stream module.
+
+- [multistream](https://www.npmjs.com/package/multistream): A stream that emits multiple other streams one after another.
+
+## Installation
+
+``` bash
+npm install combined-stream
+```
+
+## Usage
+
+Here is a simple example that shows how you can use combined-stream to combine
+two files into one:
+
+``` javascript
+var CombinedStream = require('combined-stream');
+var fs = require('fs');
+
+var combinedStream = CombinedStream.create();
+combinedStream.append(fs.createReadStream('file1.txt'));
+combinedStream.append(fs.createReadStream('file2.txt'));
+
+combinedStream.pipe(fs.createWriteStream('combined.txt'));
+```
+
+While the example above works great, it will pause all source streams until
+they are needed. If you don't want that to happen, you can set `pauseStreams`
+to `false`:
+
+``` javascript
+var CombinedStream = require('combined-stream');
+var fs = require('fs');
+
+var combinedStream = CombinedStream.create({pauseStreams: false});
+combinedStream.append(fs.createReadStream('file1.txt'));
+combinedStream.append(fs.createReadStream('file2.txt'));
+
+combinedStream.pipe(fs.createWriteStream('combined.txt'));
+```
+
+However, what if you don't have all the source streams yet, or you don't want
+to allocate the resources (file descriptors, memory, etc.) for them right away?
+Well, in that case you can simply provide a callback that supplies the stream
+by calling a `next()` function:
+
+``` javascript
+var CombinedStream = require('combined-stream');
+var fs = require('fs');
+
+var combinedStream = CombinedStream.create();
+combinedStream.append(function(next) {
+  next(fs.createReadStream('file1.txt'));
+});
+combinedStream.append(function(next) {
+  next(fs.createReadStream('file2.txt'));
+});
+
+combinedStream.pipe(fs.createWriteStream('combined.txt'));
+```
+
+## API
+
+### CombinedStream.create([options])
+
+Returns a new combined stream object. Available options are:
+
+* `maxDataSize`
+* `pauseStreams`
+
+The effect of those options is described below.
+
+### combinedStream.pauseStreams = `true`
+
+Whether to apply back pressure to the underlaying streams. If set to `false`,
+the underlaying streams will never be paused. If set to `true`, the
+underlaying streams will be paused right after being appended, as well as when
+`delayedStream.pipe()` wants to throttle.
+
+### combinedStream.maxDataSize = `2 * 1024 * 1024`
+
+The maximum amount of bytes (or characters) to buffer for all source streams.
+If this value is exceeded, `combinedStream` emits an `'error'` event.
+
+### combinedStream.dataSize = `0`
+
+The amount of bytes (or characters) currently buffered by `combinedStream`.
+
+### combinedStream.append(stream)
+
+Appends the given `stream` to the combinedStream object. If `pauseStreams` is
+set to `true, this stream will also be paused right away.
+
+`streams` can also be a function that takes one parameter called `next`. `next`
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/commander/Readme.md <==
+# Commander.js
+
+[![Build Status](https://github.com/tj/commander.js/workflows/build/badge.svg)](https://github.com/tj/commander.js/actions?query=workflow%3A%22build%22)
+[![NPM Version](http://img.shields.io/npm/v/commander.svg?style=flat)](https://www.npmjs.org/package/commander)
+[![NPM Downloads](https://img.shields.io/npm/dm/commander.svg?style=flat)](https://npmcharts.com/compare/commander?minimal=true)
+[![Install Size](https://packagephobia.now.sh/badge?p=commander)](https://packagephobia.now.sh/result?p=commander)
+
+The complete solution for [node.js](http://nodejs.org) command-line interfaces.
+
+Read this in other languages: English | [简体中文](./Readme_zh-CN.md)
+
+- [Commander.js](#commanderjs)
+  - [Installation](#installation)
+  - [Declaring _program_ variable](#declaring-program-variable)
+  - [Options](#options)
+    - [Common option types, boolean and value](#common-option-types-boolean-and-value)
+    - [Default option value](#default-option-value)
+    - [Other option types, negatable boolean and boolean|value](#other-option-types-negatable-boolean-and-booleanvalue)
+    - [Required option](#required-option)
+    - [Variadic option](#variadic-option)
+    - [Version option](#version-option)
+    - [More configuration](#more-configuration)
+    - [Custom option processing](#custom-option-processing)
+  - [Commands](#commands)
+    - [Specify the argument syntax](#specify-the-argument-syntax)
+    - [Action handler](#action-handler)
+    - [Stand-alone executable (sub)commands](#stand-alone-executable-subcommands)
+  - [Automated help](#automated-help)
+    - [Custom help](#custom-help)
+    - [Display help from code](#display-help-from-code)
+    - [.usage and .name](#usage-and-name)
+    - [.helpOption(flags, description)](#helpoptionflags-description)
+    - [.addHelpCommand()](#addhelpcommand)
+    - [More configuration](#more-configuration-1)
+  - [Custom event listeners](#custom-event-listeners)
+  - [Bits and pieces](#bits-and-pieces)
+    - [.parse() and .parseAsync()](#parse-and-parseasync)
+    - [Parsing Configuration](#parsing-configuration)
+    - [Legacy options as properties](#legacy-options-as-properties)
+    - [TypeScript](#typescript)
+    - [createCommand()](#createcommand)
+    - [Node options such as `--harmony`](#node-options-such-as---harmony)
+    - [Debugging stand-alone executable subcommands](#debugging-stand-alone-executable-subcommands)
+    - [Override exit and output handling](#override-exit-and-output-handling)
+    - [Additional documentation](#additional-documentation)
+  - [Examples](#examples)
+  - [Support](#support)
+    - [Commander for enterprise](#commander-for-enterprise)
+
+For information about terms used in this document see: [terminology](./docs/terminology.md)
+
+## Installation
+
+```bash
+npm install commander
+```
+
+## Declaring _program_ variable
+
+Commander exports a global object which is convenient for quick programs.
+This is used in the examples in this README for brevity.
+
+```js
+const { program } = require('commander');
+program.version('0.0.1');
+```
+
+For larger programs which may use commander in multiple ways, including unit testing, it is better to create a local Command object to use.
+
+```js
+const { Command } = require('commander');
+const program = new Command();
+program.version('0.0.1');
+```
+
+For named imports in ECMAScript modules, import from `commander/esm.mjs`.
+
+```js
+// index.mjs
+import { Command } from 'commander/esm.mjs';
+const program = new Command();
+```
+
+And in TypeScript:
+
+```ts
+// index.ts
+import { Command } from 'commander';
+const program = new Command();
+```
+
+
+## Options
+
+Options are defined with the `.option()` method, also serving as documentation for the options. Each option can have a short flag (single character) and a long name, separated by a comma or space or vertical bar ('|').
+
+The parsed options can be accessed by calling `.opts()` on a `Command` object, and are passed to the action handler. Multi-word options such as "--template-engine" are camel-cased, becoming `program.opts().templateEngine` etc.
+
+Multiple short flags may optionally be combined in a single argument following the dash: boolean flags, followed by a single option taking a value (possibly followed by the value).
+For example `-a -b -p 80` may be written as `-ab -p80` or even `-abp80`.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/compression/node_modules/bytes/Readme.md <==
+# Bytes utility
+
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Build Status][travis-image]][travis-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
+
+Utility to parse a string bytes (ex: `1TB`) to bytes (`1099511627776`) and vice-versa.
+
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```bash
+$ npm install bytes
+```
+
+## Usage
+
+```js
+var bytes = require('bytes');
+```
+
+#### bytes.format(number value, [options]): string｜null
+
+Format the given value in bytes into a string. If the value is negative, it is kept as such. If it is a float, it is
+ rounded.
+
+**Arguments**
+
+| Name    | Type     | Description        |
+|---------|----------|--------------------|
+| value   | `number` | Value in bytes     |
+| options | `Object` | Conversion options |
+
+**Options**
+
+| Property          | Type   | Description                                                                             |
+|-------------------|--------|-----------------------------------------------------------------------------------------|
+| decimalPlaces | `number`｜`null` | Maximum number of decimal places to include in output. Default value to `2`. |
+| fixedDecimals | `boolean`｜`null` | Whether to always display the maximum number of decimal places. Default value to `false` |
+| thousandsSeparator | `string`｜`null` | Example of values: `' '`, `','` and `.`... Default value to `''`. |
+| unit | `string`｜`null` | The unit in which the result will be returned (B/KB/MB/GB/TB). Default value to `''` (which means auto detect). |
+| unitSeparator | `string`｜`null` | Separator to use between number and unit. Default value to `''`. |
+
+**Returns**
+
+| Name    | Type             | Description                                     |
+|---------|------------------|-------------------------------------------------|
+| results | `string`｜`null` | Return null upon error. String value otherwise. |
+
+**Example**
+
+```js
+bytes(1024);
+// output: '1KB'
+
+bytes(1000);
+// output: '1000B'
+
+bytes(1000, {thousandsSeparator: ' '});
+// output: '1 000B'
+
+bytes(1024 * 1.7, {decimalPlaces: 0});
+// output: '2KB'
+
+bytes(1024, {unitSeparator: ' '});
+// output: '1 KB'
+
+```
+
+#### bytes.parse(string｜number value): number｜null
+
+Parse the string value into an integer in bytes. If no unit is given, or `value`
+is a number, it is assumed the value is in bytes.
+
+Supported units and abbreviations are as follows and are case-insensitive:
+
+  * `b` for bytes
+  * `kb` for kilobytes
+  * `mb` for megabytes
+  * `gb` for gigabytes
+  * `tb` for terabytes
+
+The units are in powers of two, not ten. This means 1kb = 1024b according to this parser.
+
+**Arguments**
+
+| Name          | Type   | Description        |
+|---------------|--------|--------------------|
+| value   | `string`｜`number` | String to parse, or number in bytes.   |
+
+**Returns**
+
+| Name    | Type        | Description             |
+|---------|-------------|-------------------------|
+| results | `number`｜`null` | Return null upon error. Value in bytes otherwise. |
+
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/cookie-signature/Readme.md <==
+
+# cookie-signature
+
+  Sign and unsign cookies.
+
+## Example
+
+```js
+var cookie = require('cookie-signature');
+
+var val = cookie.sign('hello', 'tobiiscool');
+val.should.equal('hello.DGDUkGlIkCzPz+C0B064FNgHdEjox7ch8tOBGslZ5QI');
+
+var val = cookie.sign('hello', 'tobiiscool');
+cookie.unsign(val, 'tobiiscool').should.equal('hello');
+cookie.unsign(val, 'luna').should.be.false;
+```
+
+## License 
+
+(The MIT License)
+
+Copyright (c) 2012 LearnBoost &lt;tj@learnboost.com&gt;
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/delayed-stream/Readme.md <==
+# delayed-stream
+
+Buffers events from a stream until you are ready to handle them.
+
+## Installation
+
+``` bash
+npm install delayed-stream
+```
+
+## Usage
+
+The following example shows how to write a http echo server that delays its
+response by 1000 ms.
+
+``` javascript
+var DelayedStream = require('delayed-stream');
+var http = require('http');
+
+http.createServer(function(req, res) {
+  var delayed = DelayedStream.create(req);
+
+  setTimeout(function() {
+    res.writeHead(200);
+    delayed.pipe(res);
+  }, 1000);
+});
+```
+
+If you are not using `Stream#pipe`, you can also manually release the buffered
+events by calling `delayedStream.resume()`:
+
+``` javascript
+var delayed = DelayedStream.create(req);
+
+setTimeout(function() {
+  // Emit all buffered events and resume underlaying source
+  delayed.resume();
+}, 1000);
+```
+
+## Implementation
+
+In order to use this meta stream properly, here are a few things you should
+know about the implementation.
+
+### Event Buffering / Proxying
+
+All events of the `source` stream are hijacked by overwriting the `source.emit`
+method. Until node implements a catch-all event listener, this is the only way.
+
+However, delayed-stream still continues to emit all events it captures on the
+`source`, regardless of whether you have released the delayed stream yet or
+not.
+
+Upon creation, delayed-stream captures all `source` events and stores them in
+an internal event buffer. Once `delayedStream.release()` is called, all
+buffered events are emitted on the `delayedStream`, and the event buffer is
+cleared. After that, delayed-stream merely acts as a proxy for the underlaying
+source.
+
+### Error handling
+
+Error events on `source` are buffered / proxied just like any other events.
+However, `delayedStream.create` attaches a no-op `'error'` listener to the
+`source`. This way you only have to handle errors on the `delayedStream`
+object, rather than in two places.
+
+### Buffer limits
+
+delayed-stream provides a `maxDataSize` property that can be used to limit
+the amount of data being buffered. In order to protect you from bad `source`
+streams that don't react to `source.pause()`, this feature is enabled by
+default.
+
+## API
+
+### DelayedStream.create(source, [options])
+
+Returns a new `delayedStream`. Available options are:
+
+* `pauseStream`
+* `maxDataSize`
+
+The description for those properties can be found below.
+
+### delayedStream.source
+
+The `source` stream managed by this object. This is useful if you are
+passing your `delayedStream` around, and you still want to access properties
+on the `source` object.
+
+### delayedStream.pauseStream = true
+
+Whether to pause the underlaying `source` when calling
+`DelayedStream.create()`. Modifying this property afterwards has no effect.
+
+### delayedStream.maxDataSize = 1024 * 1024
+
+The amount of data to buffer before emitting an `error`.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/depd/Readme.md <==
+# depd
+
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Downloads][npm-downloads-image]][npm-url]
+[![Node.js Version][node-image]][node-url]
+[![Linux Build][travis-image]][travis-url]
+[![Windows Build][appveyor-image]][appveyor-url]
+[![Coverage Status][coveralls-image]][coveralls-url]
+
+Deprecate all the things
+
+> With great modules comes great responsibility; mark things deprecated!
+
+## Install
+
+This module is installed directly using `npm`:
+
+```sh
+$ npm install depd
+```
+
+This module can also be bundled with systems like
+[Browserify](http://browserify.org/) or [webpack](https://webpack.github.io/),
+though by default this module will alter it's API to no longer display or
+track deprecations.
+
+## API
+
+<!-- eslint-disable no-unused-vars -->
+
+```js
+var deprecate = require('depd')('my-module')
+```
+
+This library allows you to display deprecation messages to your users.
+This library goes above and beyond with deprecation warnings by
+introspection of the call stack (but only the bits that it is interested
+in).
+
+Instead of just warning on the first invocation of a deprecated
+function and never again, this module will warn on the first invocation
+of a deprecated function per unique call site, making it ideal to alert
+users of all deprecated uses across the code base, rather than just
+whatever happens to execute first.
+
+The deprecation warnings from this module also include the file and line
+information for the call into the module that the deprecated function was
+in.
+
+**NOTE** this library has a similar interface to the `debug` module, and
+this module uses the calling file to get the boundary for the call stacks,
+so you should always create a new `deprecate` object in each file and not
+within some central file.
+
+### depd(namespace)
+
+Create a new deprecate function that uses the given namespace name in the
+messages and will display the call site prior to the stack entering the
+file this function was called from. It is highly suggested you use the
+name of your module as the namespace.
+
+### deprecate(message)
+
+Call this function from deprecated code to display a deprecation message.
+This message will appear once per unique caller site. Caller site is the
+first call site in the stack in a different file from the caller of this
+function.
+
+If the message is omitted, a message is generated for you based on the site
+of the `deprecate()` call and will display the name of the function called,
+similar to the name displayed in a stack trace.
+
+### deprecate.function(fn, message)
+
+Call this function to wrap a given function in a deprecation message on any
+call to the function. An optional message can be supplied to provide a custom
+message.
+
+### deprecate.property(obj, prop, message)
+
+Call this function to wrap a given property on object in a deprecation message
+on any accessing or setting of the property. An optional message can be supplied
+to provide a custom message.
+
+The method must be called on the object where the property belongs (not
+inherited from the prototype).
+
+If the property is a data descriptor, it will be converted to an accessor
+descriptor in order to display the deprecation message.
+
+### process.on('deprecation', fn)
+
+This module will allow easy capturing of deprecation errors by emitting the
+errors as the type "deprecation" on the global `process`. If there are no
+listeners for this type, the errors are written to STDERR as normal, but if
+there are any listeners, nothing will be written to STDERR and instead only
+emitted. From there, you can write the errors in a different format or to a
+logging source.
+
+The error represents the deprecation and is emitted only once with the same
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/detect-node/Readme.md <==
+### Install
+
+```shell
+npm install --save detect-node
+```
+
+### Usage:
+
+```js
+var isNode = require('detect-node');
+
+if (isNode) {
+  console.log("Running under Node.JS");
+} else {
+  alert("Hello from browser (or whatever not-a-node env)");
+}
+```
+
+The check is performed as:
+```js
+module.exports = false;
+
+// Only Node.JS has a process variable that is of [[Class]] process
+try {
+ module.exports = Object.prototype.toString.call(global.process) === '[object process]' 
+} catch(e) {}
+
+```
+
+Thanks to Ingvar Stepanyan for the initial idea. This check is both **the most reliable I could find** and it does not use `process` env directly, which would cause browserify to include it into the build.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/escape-html/Readme.md <==
+
+# escape-html
+
+  Escape string for use in HTML
+
+## Example
+
+```js
+var escape = require('escape-html');
+var html = escape('foo & bar');
+// -> foo &amp; bar
+```
+
+## Benchmark
+
+```
+$ npm run-script bench
+
+> escape-html@1.0.3 bench nodejs-escape-html
+> node benchmark/index.js
+
+
+  http_parser@1.0
+  node@0.10.33
+  v8@3.14.5.9
+  ares@1.9.0-DEV
+  uv@0.10.29
+  zlib@1.2.3
+  modules@11
+  openssl@1.0.1j
+
+  1 test completed.
+  2 tests completed.
+  3 tests completed.
+
+  no special characters    x 19,435,271 ops/sec ±0.85% (187 runs sampled)
+  single special character x  6,132,421 ops/sec ±0.67% (194 runs sampled)
+  many special characters  x  3,175,826 ops/sec ±0.65% (193 runs sampled)
+```
+
+## License
+
+  MIT
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/events/Readme.md <==
+# events [![Build Status](https://travis-ci.org/Gozala/events.png?branch=master)](https://travis-ci.org/Gozala/events)
+
+> Node's event emitter for all engines.
+
+This implements the Node.js [`events`][node.js docs] module for environments that do not have it, like browsers.
+
+> `events` currently matches the **Node.js 11.13.0** API.
+
+Note that the `events` module uses ES5 features. If you need to support very old browsers like IE8, use a shim like [`es5-shim`](https://www.npmjs.com/package/es5-shim). You need both the shim and the sham versions of `es5-shim`.
+
+This module is maintained, but only by very few people. If you'd like to help, let us know in the [Maintainer Needed](https://github.com/Gozala/events/issues/43) issue!
+
+## Install
+
+You usually do not have to install `events` yourself! If your code runs in Node.js, `events` is built in. If your code runs in the browser, bundlers like [browserify](https://github.com/browserify/browserify) or [webpack](https://github.com/webpack/webpack) also include the `events` module.
+
+But if none of those apply, with npm do:
+
+```
+npm install events
+```
+
+## Usage
+
+```javascript
+var EventEmitter = require('events')
+
+var ee = new EventEmitter()
+ee.on('message', function (text) {
+  console.log(text)
+})
+ee.emit('message', 'hello world')
+```
+
+## API
+
+See the [Node.js EventEmitter docs][node.js docs]. `events` currently matches the Node.js 11.13.0 API.
+
+## Contributing
+
+PRs are very welcome! The main way to contribute to `events` is by porting features, bugfixes and tests from Node.js. Ideally, code contributions to this module are copy-pasted from Node.js and transpiled to ES5, rather than reimplemented from scratch. Matching the Node.js code as closely as possible makes maintenance simpler when new changes land in Node.js.
+This module intends to provide exactly the same API as Node.js, so features that are not available in the core `events` module will not be accepted. Feature requests should instead be directed at [nodejs/node](https://github.com/nodejs/node) and will be added to this module once they are implemented in Node.js.
+
+If there is a difference in behaviour between Node.js's `events` module and this module, please open an issue!
+
+## License
+
+[MIT](./LICENSE)
+
+[node.js docs]: https://nodejs.org/dist/v11.13.0/docs/api/events.html
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/express/Readme.md <==
+[![Express Logo](https://i.cloudup.com/zfY6lL7eFa-3000x3000.png)](http://expressjs.com/)
+
+  Fast, unopinionated, minimalist web framework for [Node.js](http://nodejs.org).
+
+  [![NPM Version][npm-version-image]][npm-url]
+  [![NPM Install Size][npm-install-size-image]][npm-install-size-url]
+  [![NPM Downloads][npm-downloads-image]][npm-downloads-url]
+
+```js
+const express = require('express')
+const app = express()
+
+app.get('/', function (req, res) {
+  res.send('Hello World')
+})
+
+app.listen(3000)
+```
+
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/).
+
+Before installing, [download and install Node.js](https://nodejs.org/en/download/).
+Node.js 0.10 or higher is required.
+
+If this is a brand new project, make sure to create a `package.json` first with
+the [`npm init` command](https://docs.npmjs.com/creating-a-package-json-file).
+
+Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```console
+$ npm install express
+```
+
+Follow [our installing guide](http://expressjs.com/en/starter/installing.html)
+for more information.
+
+## Features
+
+  * Robust routing
+  * Focus on high performance
+  * Super-high test coverage
+  * HTTP helpers (redirection, caching, etc)
+  * View system supporting 14+ template engines
+  * Content negotiation
+  * Executable for generating applications quickly
+
+## Docs & Community
+
+  * [Website and Documentation](http://expressjs.com/) - [[website repo](https://github.com/expressjs/expressjs.com)]
+  * [#express](https://web.libera.chat/#express) on [Libera Chat](https://libera.chat) IRC
+  * [GitHub Organization](https://github.com/expressjs) for Official Middleware & Modules
+  * Visit the [Wiki](https://github.com/expressjs/express/wiki)
+  * [Google Group](https://groups.google.com/group/express-js) for discussion
+  * [Gitter](https://gitter.im/expressjs/express) for support and discussion
+
+**PROTIP** Be sure to read [Migrating from 3.x to 4.x](https://github.com/expressjs/express/wiki/Migrating-from-3.x-to-4.x) as well as [New features in 4.x](https://github.com/expressjs/express/wiki/New-features-in-4.x).
+
+## Quick Start
+
+  The quickest way to get started with express is to utilize the executable [`express(1)`](https://github.com/expressjs/generator) to generate an application as shown below:
+
+  Install the executable. The executable's major version will match Express's:
+
+```console
+$ npm install -g express-generator@4
+```
+
+  Create the app:
+
+```console
+$ express /tmp/foo && cd /tmp/foo
+```
+
+  Install dependencies:
+
+```console
+$ npm install
+```
+
+  Start the server:
+
+```console
+$ npm start
+```
+
+  View the website at: http://localhost:3000
+
+## Philosophy
+
+  The Express philosophy is to provide small, robust tooling for HTTP servers, making
+  it a great solution for single page applications, websites, hybrids, or public
+  HTTP APIs.
+
+  Express does not force you to use any specific ORM or template engine. With support for over
+  14 template engines via [Consolidate.js](https://github.com/tj/consolidate.js),
+  you can quickly craft your perfect framework.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/form-data/Readme.md <==
+# Form-Data [![NPM Module](https://img.shields.io/npm/v/form-data.svg)](https://www.npmjs.com/package/form-data) [![Join the chat at https://gitter.im/form-data/form-data](http://form-data.github.io/images/gitterbadge.svg)](https://gitter.im/form-data/form-data)
+
+A library to create readable ```"multipart/form-data"``` streams. Can be used to submit forms and file uploads to other web applications.
+
+The API of this library is inspired by the [XMLHttpRequest-2 FormData Interface][xhr2-fd].
+
+[xhr2-fd]: http://dev.w3.org/2006/webapi/XMLHttpRequest-2/Overview.html#the-formdata-interface
+
+[![Linux Build](https://img.shields.io/travis/form-data/form-data/master.svg?label=linux:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![MacOS Build](https://img.shields.io/travis/form-data/form-data/master.svg?label=macos:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![Windows Build](https://img.shields.io/travis/form-data/form-data/master.svg?label=windows:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+
+[![Coverage Status](https://img.shields.io/coveralls/form-data/form-data/master.svg?label=code+coverage)](https://coveralls.io/github/form-data/form-data?branch=master)
+[![Dependency Status](https://img.shields.io/david/form-data/form-data.svg)](https://david-dm.org/form-data/form-data)
+
+## Install
+
+```
+npm install --save form-data
+```
+
+## Usage
+
+In this example we are constructing a form with 3 fields that contain a string,
+a buffer and a file stream.
+
+``` javascript
+var FormData = require('form-data');
+var fs = require('fs');
+
+var form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+```
+
+Also you can use http-response stream:
+
+``` javascript
+var FormData = require('form-data');
+var http = require('http');
+
+var form = new FormData();
+
+http.request('http://nodejs.org/images/logo.png', function(response) {
+  form.append('my_field', 'my value');
+  form.append('my_buffer', new Buffer(10));
+  form.append('my_logo', response);
+});
+```
+
+Or @mikeal's [request](https://github.com/request/request) stream:
+
+``` javascript
+var FormData = require('form-data');
+var request = require('request');
+
+var form = new FormData();
+
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_logo', request('http://nodejs.org/images/logo.png'));
+```
+
+In order to submit this form to a web application, call ```submit(url, [callback])``` method:
+
+``` javascript
+form.submit('http://example.org/', function(err, res) {
+  // res – response object (http.IncomingMessage)  //
+  res.resume();
+});
+
+```
+
+For more advanced request manipulations ```submit()``` method returns ```http.ClientRequest``` object, or you can choose from one of the alternative submission methods.
+
+### Custom options
+
+You can provide custom options, such as `maxDataSize`:
+
+``` javascript
+var FormData = require('form-data');
+
+var form = new FormData({ maxDataSize: 20971520 });
+form.append('my_field', 'my value');
+form.append('my_buffer', /* something big */);
+```
+
+List of available options could be found in [combined-stream](https://github.com/felixge/node-combined-stream/blob/master/lib/combined_stream.js#L7-L15)
+
+### Alternative submission methods
+
+You can use node's http client interface:
+
+``` javascript
+var http = require('http');
+
+var request = http.request({
+  method: 'post',
+  host: 'example.org',
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/html-minifier-terser/node_modules/commander/Readme.md <==
+# Commander.js
+
+[![Build Status](https://github.com/tj/commander.js/workflows/build/badge.svg)](https://github.com/tj/commander.js/actions?query=workflow%3A%22build%22)
+[![NPM Version](http://img.shields.io/npm/v/commander.svg?style=flat)](https://www.npmjs.org/package/commander)
+[![NPM Downloads](https://img.shields.io/npm/dm/commander.svg?style=flat)](https://npmcharts.com/compare/commander?minimal=true)
+[![Install Size](https://packagephobia.now.sh/badge?p=commander)](https://packagephobia.now.sh/result?p=commander)
+
+The complete solution for [node.js](http://nodejs.org) command-line interfaces.
+
+Read this in other languages: English | [简体中文](./Readme_zh-CN.md)
+
+- [Commander.js](#commanderjs)
+  - [Installation](#installation)
+  - [Declaring _program_ variable](#declaring-program-variable)
+  - [Options](#options)
+    - [Common option types, boolean and value](#common-option-types-boolean-and-value)
+    - [Default option value](#default-option-value)
+    - [Other option types, negatable boolean and boolean|value](#other-option-types-negatable-boolean-and-booleanvalue)
+    - [Required option](#required-option)
+    - [Variadic option](#variadic-option)
+    - [Version option](#version-option)
+    - [More configuration](#more-configuration)
+    - [Custom option processing](#custom-option-processing)
+  - [Commands](#commands)
+    - [Command-arguments](#command-arguments)
+      - [More configuration](#more-configuration-1)
+      - [Custom argument processing](#custom-argument-processing)
+    - [Action handler](#action-handler)
+    - [Stand-alone executable (sub)commands](#stand-alone-executable-subcommands)
+    - [Life cycle hooks](#life-cycle-hooks)
+  - [Automated help](#automated-help)
+    - [Custom help](#custom-help)
+    - [Display help after errors](#display-help-after-errors)
+    - [Display help from code](#display-help-from-code)
+    - [.usage and .name](#usage-and-name)
+    - [.helpOption(flags, description)](#helpoptionflags-description)
+    - [.addHelpCommand()](#addhelpcommand)
+    - [More configuration](#more-configuration-2)
+  - [Custom event listeners](#custom-event-listeners)
+  - [Bits and pieces](#bits-and-pieces)
+    - [.parse() and .parseAsync()](#parse-and-parseasync)
+    - [Parsing Configuration](#parsing-configuration)
+    - [Legacy options as properties](#legacy-options-as-properties)
+    - [TypeScript](#typescript)
+    - [createCommand()](#createcommand)
+    - [Node options such as `--harmony`](#node-options-such-as---harmony)
+    - [Debugging stand-alone executable subcommands](#debugging-stand-alone-executable-subcommands)
+    - [Override exit and output handling](#override-exit-and-output-handling)
+    - [Additional documentation](#additional-documentation)
+  - [Examples](#examples)
+  - [Support](#support)
+    - [Commander for enterprise](#commander-for-enterprise)
+
+For information about terms used in this document see: [terminology](./docs/terminology.md)
+
+## Installation
+
+```bash
+npm install commander
+```
+
+## Declaring _program_ variable
+
+Commander exports a global object which is convenient for quick programs.
+This is used in the examples in this README for brevity.
+
+```js
+const { program } = require('commander');
+program.version('0.0.1');
+```
+
+For larger programs which may use commander in multiple ways, including unit testing, it is better to create a local Command object to use.
+
+```js
+const { Command } = require('commander');
+const program = new Command();
+program.version('0.0.1');
+```
+
+For named imports in ECMAScript modules, import from `commander/esm.mjs`.
+
+```js
+// index.mjs
+import { Command } from 'commander/esm.mjs';
+const program = new Command();
+```
+
+And in TypeScript:
+
+```ts
+// index.ts
+import { Command } from 'commander';
+const program = new Command();
+```
+
+## Options
+
+Options are defined with the `.option()` method, also serving as documentation for the options. Each option can have a short flag (single character) and a long name, separated by a comma or space or vertical bar ('|').
+
+The parsed options can be accessed by calling `.opts()` on a `Command` object, and are passed to the action handler.
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/jest-config/node_modules/form-data/Readme.md <==
+# Form-Data [![NPM Module](https://img.shields.io/npm/v/form-data.svg)](https://www.npmjs.com/package/form-data) [![Join the chat at https://gitter.im/form-data/form-data](http://form-data.github.io/images/gitterbadge.svg)](https://gitter.im/form-data/form-data)
+
+A library to create readable ```"multipart/form-data"``` streams. Can be used to submit forms and file uploads to other web applications.
+
+The API of this library is inspired by the [XMLHttpRequest-2 FormData Interface][xhr2-fd].
+
+[xhr2-fd]: http://dev.w3.org/2006/webapi/XMLHttpRequest-2/Overview.html#the-formdata-interface
+
+[![Linux Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=linux:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![MacOS Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=macos:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![Windows Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=windows:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+
+[![Coverage Status](https://img.shields.io/coveralls/form-data/form-data/v3.0.1.svg?label=code+coverage)](https://coveralls.io/github/form-data/form-data?branch=master)
+[![Dependency Status](https://img.shields.io/david/form-data/form-data.svg)](https://david-dm.org/form-data/form-data)
+
+## Install
+
+```
+npm install --save form-data
+```
+
+## Usage
+
+In this example we are constructing a form with 3 fields that contain a string,
+a buffer and a file stream.
+
+``` javascript
+var FormData = require('form-data');
+var fs = require('fs');
+
+var form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+```
+
+Also you can use http-response stream:
+
+``` javascript
+var FormData = require('form-data');
+var http = require('http');
+
+var form = new FormData();
+
+http.request('http://nodejs.org/images/logo.png', function(response) {
+  form.append('my_field', 'my value');
+  form.append('my_buffer', new Buffer(10));
+  form.append('my_logo', response);
+});
+```
+
+Or @mikeal's [request](https://github.com/request/request) stream:
+
+``` javascript
+var FormData = require('form-data');
+var request = require('request');
+
+var form = new FormData();
+
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_logo', request('http://nodejs.org/images/logo.png'));
+```
+
+In order to submit this form to a web application, call ```submit(url, [callback])``` method:
+
+``` javascript
+form.submit('http://example.org/', function(err, res) {
+  // res – response object (http.IncomingMessage)  //
+  res.resume();
+});
+
+```
+
+For more advanced request manipulations ```submit()``` method returns ```http.ClientRequest``` object, or you can choose from one of the alternative submission methods.
+
+### Custom options
+
+You can provide custom options, such as `maxDataSize`:
+
+``` javascript
+var FormData = require('form-data');
+
+var form = new FormData({ maxDataSize: 20971520 });
+form.append('my_field', 'my value');
+form.append('my_buffer', /* something big */);
+```
+
+List of available options could be found in [combined-stream](https://github.com/felixge/node-combined-stream/blob/master/lib/combined_stream.js#L7-L15)
+
+### Alternative submission methods
+
+You can use node's http client interface:
+
+``` javascript
+var http = require('http');
+
+var request = http.request({
+  method: 'post',
+  host: 'example.org',
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/jest-runner/node_modules/form-data/Readme.md <==
+# Form-Data [![NPM Module](https://img.shields.io/npm/v/form-data.svg)](https://www.npmjs.com/package/form-data) [![Join the chat at https://gitter.im/form-data/form-data](http://form-data.github.io/images/gitterbadge.svg)](https://gitter.im/form-data/form-data)
+
+A library to create readable ```"multipart/form-data"``` streams. Can be used to submit forms and file uploads to other web applications.
+
+The API of this library is inspired by the [XMLHttpRequest-2 FormData Interface][xhr2-fd].
+
+[xhr2-fd]: http://dev.w3.org/2006/webapi/XMLHttpRequest-2/Overview.html#the-formdata-interface
+
+[![Linux Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=linux:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![MacOS Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=macos:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+[![Windows Build](https://img.shields.io/travis/form-data/form-data/v3.0.1.svg?label=windows:6.x-12.x)](https://travis-ci.org/form-data/form-data)
+
+[![Coverage Status](https://img.shields.io/coveralls/form-data/form-data/v3.0.1.svg?label=code+coverage)](https://coveralls.io/github/form-data/form-data?branch=master)
+[![Dependency Status](https://img.shields.io/david/form-data/form-data.svg)](https://david-dm.org/form-data/form-data)
+
+## Install
+
+```
+npm install --save form-data
+```
+
+## Usage
+
+In this example we are constructing a form with 3 fields that contain a string,
+a buffer and a file stream.
+
+``` javascript
+var FormData = require('form-data');
+var fs = require('fs');
+
+var form = new FormData();
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_file', fs.createReadStream('/foo/bar.jpg'));
+```
+
+Also you can use http-response stream:
+
+``` javascript
+var FormData = require('form-data');
+var http = require('http');
+
+var form = new FormData();
+
+http.request('http://nodejs.org/images/logo.png', function(response) {
+  form.append('my_field', 'my value');
+  form.append('my_buffer', new Buffer(10));
+  form.append('my_logo', response);
+});
+```
+
+Or @mikeal's [request](https://github.com/request/request) stream:
+
+``` javascript
+var FormData = require('form-data');
+var request = require('request');
+
+var form = new FormData();
+
+form.append('my_field', 'my value');
+form.append('my_buffer', new Buffer(10));
+form.append('my_logo', request('http://nodejs.org/images/logo.png'));
+```
+
+In order to submit this form to a web application, call ```submit(url, [callback])``` method:
+
+``` javascript
+form.submit('http://example.org/', function(err, res) {
+  // res – response object (http.IncomingMessage)  //
+  res.resume();
+});
+
+```
+
+For more advanced request manipulations ```submit()``` method returns ```http.ClientRequest``` object, or you can choose from one of the alternative submission methods.
+
+### Custom options
+
+You can provide custom options, such as `maxDataSize`:
+
+``` javascript
+var FormData = require('form-data');
+
+var form = new FormData({ maxDataSize: 20971520 });
+form.append('my_field', 'my value');
+form.append('my_buffer', /* something big */);
+```
+
+List of available options could be found in [combined-stream](https://github.com/felixge/node-combined-stream/blob/master/lib/combined_stream.js#L7-L15)
+
+### Alternative submission methods
+
+You can use node's http client interface:
+
+``` javascript
+var http = require('http');
+
+var request = http.request({
+  method: 'post',
+  host: 'example.org',
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/path-to-regexp/Readme.md <==
+# Path-to-RegExp
+
+Turn an Express-style path string such as `/user/:name` into a regular expression.
+
+**Note:** This is a legacy branch. You should upgrade to `1.x`.
+
+## Usage
+
+```javascript
+var pathToRegexp = require('path-to-regexp');
+```
+
+### pathToRegexp(path, keys, options)
+
+ - **path** A string in the express format, an array of such strings, or a regular expression
+ - **keys** An array to be populated with the keys present in the url.  Once the function completes, this will be an array of strings.
+ - **options**
+   - **options.sensitive** Defaults to false, set this to true to make routes case sensitive
+   - **options.strict** Defaults to false, set this to true to make the trailing slash matter.
+   - **options.end** Defaults to true, set this to false to only match the prefix of the URL.
+
+```javascript
+var keys = [];
+var exp = pathToRegexp('/foo/:bar', keys);
+//keys = ['bar']
+//exp = /^\/foo\/(?:([^\/]+?))\/?$/i
+```
+
+## Live Demo
+
+You can see a live demo of this library in use at [express-route-tester](http://forbeslindesay.github.com/express-route-tester/).
+
+## License
+
+  MIT
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/progress/Readme.md <==
+Flexible ascii progress bar.
+
+## Installation
+
+```bash
+$ npm install progress
+```
+
+## Usage
+
+First we create a `ProgressBar`, giving it a format string
+as well as the `total`, telling the progress bar when it will
+be considered complete. After that all we need to do is `tick()` appropriately.
+
+```javascript
+var ProgressBar = require('progress');
+
+var bar = new ProgressBar(':bar', { total: 10 });
+var timer = setInterval(function () {
+  bar.tick();
+  if (bar.complete) {
+    console.log('\ncomplete\n');
+    clearInterval(timer);
+  }
+}, 100);
+```
+
+### Options
+
+These are keys in the options object you can pass to the progress bar along with
+`total` as seen in the example above.
+
+- `curr` current completed index
+- `total` total number of ticks to complete
+- `width` the displayed width of the progress bar defaulting to total
+- `stream` the output stream defaulting to stderr
+- `head` head character defaulting to complete character
+- `complete` completion character defaulting to "="
+- `incomplete` incomplete character defaulting to "-"
+- `renderThrottle` minimum time between updates in milliseconds defaulting to 16
+- `clear` option to clear the bar on completion defaulting to false
+- `callback` optional function to call when the progress bar completes
+
+### Tokens
+
+These are tokens you can use in the format of your progress bar.
+
+- `:bar` the progress bar itself
+- `:current` current tick number
+- `:total` total ticks
+- `:elapsed` time elapsed in seconds
+- `:percent` completion percentage
+- `:eta` estimated completion time in seconds
+- `:rate` rate of ticks per second
+
+### Custom Tokens
+
+You can define custom tokens by adding a `{'name': value}` object parameter to your method (`tick()`, `update()`, etc.) calls.
+
+```javascript
+var bar = new ProgressBar(':current: :token1 :token2', { total: 3 })
+bar.tick({
+  'token1': "Hello",
+  'token2': "World!\n"
+})
+bar.tick(2, {
+  'token1': "Goodbye",
+  'token2': "World!"
+})
+```
+The above example would result in the output below.
+
+```
+1: Hello World!
+3: Goodbye World!
+```
+
+## Examples
+
+### Download
+
+In our download example each tick has a variable influence, so we pass the chunk
+length which adjusts the progress bar appropriately relative to the total
+length.
+
+```javascript
+var ProgressBar = require('progress');
+var https = require('https');
+
+var req = https.request({
+  host: 'download.github.com',
+  port: 443,
+  path: '/visionmedia-node-jscoverage-0d4608a.zip'
+});
+
+req.on('response', function(res){
+  var len = parseInt(res.headers['content-length'], 10);
+
+  console.log();
+  var bar = new ProgressBar('  downloading [:bar] :rate/bps :percent :etas', {
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/promise/Readme.md <==
+<a href="https://promisesaplus.com/"><img src="https://promisesaplus.com/assets/logo-small.png" align="right" /></a>
+# promise
+
+This is a simple implementation of Promises.  It is a super set of ES6 Promises designed to have readable, performant code and to provide just the extensions that are absolutely necessary for using promises today.
+
+For detailed tutorials on its use, see www.promisejs.org
+
+**N.B.** This promise exposes internals via underscore (`_`) prefixed properties.  If you use these, your code will break with each new release.
+
+[![Build Status](https://img.shields.io/github/workflow/status/then/promise/Publish%20Canary/master?style=for-the-badge)](https://github.com/then/promise/actions?query=workflow%3APublish%20Canary+branch%3Amaster)
+[![Rolling Versions](https://img.shields.io/badge/Rolling%20Versions-Enabled-brightgreen?style=for-the-badge)](https://rollingversions.com/then/promise)
+[![NPM version](https://img.shields.io/npm/v/promise?style=for-the-badge)](https://www.npmjs.com/package/promise)
+[![Downloads](https://img.shields.io/npm/dm/promise.svg?style=for-the-badge)](https://www.npmjs.org/package/promise)
+
+## Installation
+
+**Server:**
+
+    $ npm install promise
+
+**Client:**
+
+You can use browserify on the client, or use the pre-compiled script that acts as a polyfill.
+
+```html
+<script src="https://www.promisejs.org/polyfills/promise-6.1.0.js"></script>
+```
+
+Note that the [es5-shim](https://github.com/es-shims/es5-shim) must be loaded before this library to support browsers pre IE9.
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/3.4.0/es5-shim.min.js"></script>
+```
+
+## Usage
+
+The example below shows how you can load the promise library (in a way that works on both client and server using node or browserify).  It then demonstrates creating a promise from scratch.  You simply call `new Promise(fn)`.  There is a complete specification for what is returned by this method in [Promises/A+](http://promises-aplus.github.com/promises-spec/).
+
+```javascript
+var Promise = require('promise');
+
+var promise = new Promise(function (resolve, reject) {
+  get('http://www.google.com', function (err, res) {
+    if (err) reject(err);
+    else resolve(res);
+  });
+});
+```
+
+If you need [domains](https://nodejs.org/api/domain.html) support, you should instead use:
+
+```js
+var Promise = require('promise/domains');
+```
+
+If you are in an environment that implements `setImmediate` and don't want the optimisations provided by asap, you can use:
+
+```js
+var Promise = require('promise/setimmediate');
+```
+
+If you only want part of the features, e.g. just a pure ES6 polyfill:
+
+```js
+var Promise = require('promise/lib/es6-extensions');
+// or require('promise/domains/es6-extensions');
+// or require('promise/setimmediate/es6-extensions');
+```
+
+## Unhandled Rejections
+
+By default, promises silence any unhandled rejections.
+
+You can enable logging of unhandled ReferenceErrors and TypeErrors via:
+
+```js
+require('promise/lib/rejection-tracking').enable();
+```
+
+Due to the performance cost, you should only do this during development.
+
+You can enable logging of all unhandled rejections if you need to debug an exception you think is being swallowed by promises:
+
+```js
+require('promise/lib/rejection-tracking').enable(
+  {allRejections: true}
+);
+```
+
+Due to the high probability of false positives, I only recommend using this when debugging specific issues that you think may be being swallowed.  For the preferred debugging method, see `Promise#done(onFulfilled, onRejected)`.
+
+`rejection-tracking.enable(options)` takes the following options:
+
+ - allRejections (`boolean`) - track all exceptions, not just reference errors and type errors.  Note that this has a high probability of resulting in false positives if your code loads data optimistically
+ - whitelist (`Array<ErrorConstructor>`) - this defaults to `[ReferenceError, TypeError]` but you can override it with your own list of error constructors to track.
+ - `onUnhandled(id, error)` and `onHandled(id, error)` - you can use these to provide your own customised display for errors.  Note that if possible you should indicate that the error was a false positive if `onHandled` is called.  `onHandled` is only called if `onUnhandled` has already been called.
+
+To reduce the chance of false-positives there is a delay of up to 2 seconds before errors are logged.  This means that if you attach an error handler within 2 seconds, it won't be logged as a false positive.  ReferenceErrors and TypeErrors are only subject to a 100ms delay due to the higher likelihood that the error is due to programmer error.
+
+## API
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/safer-buffer/Readme.md <==
+# safer-buffer [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![javascript style guide][standard-image]][standard-url] [![Security Responsible Disclosure][secuirty-image]][secuirty-url]
+
+[travis-image]: https://travis-ci.org/ChALkeR/safer-buffer.svg?branch=master
+[travis-url]: https://travis-ci.org/ChALkeR/safer-buffer
+[npm-image]: https://img.shields.io/npm/v/safer-buffer.svg
+[npm-url]: https://npmjs.org/package/safer-buffer
+[standard-image]: https://img.shields.io/badge/code_style-standard-brightgreen.svg
+[standard-url]: https://standardjs.com
+[secuirty-image]: https://img.shields.io/badge/Security-Responsible%20Disclosure-green.svg
+[secuirty-url]: https://github.com/nodejs/security-wg/blob/master/processes/responsible_disclosure_template.md
+
+Modern Buffer API polyfill without footguns, working on Node.js from 0.8 to current.
+
+## How to use?
+
+First, port all `Buffer()` and `new Buffer()` calls to `Buffer.alloc()` and `Buffer.from()` API.
+
+Then, to achieve compatibility with outdated Node.js versions (`<4.5.0` and 5.x `<5.9.0`), use
+`const Buffer = require('safer-buffer').Buffer` in all files where you make calls to the new
+Buffer API. _Use `var` instead of `const` if you need that for your Node.js version range support._
+
+Also, see the
+[porting Buffer](https://github.com/ChALkeR/safer-buffer/blob/master/Porting-Buffer.md) guide.
+
+## Do I need it?
+
+Hopefully, not — dropping support for outdated Node.js versions should be fine nowdays, and that
+is the recommended path forward. You _do_ need to port to the `Buffer.alloc()` and `Buffer.from()`
+though.
+
+See the [porting guide](https://github.com/ChALkeR/safer-buffer/blob/master/Porting-Buffer.md)
+for a better description.
+
+## Why not [safe-buffer](https://npmjs.com/safe-buffer)?
+
+_In short: while `safe-buffer` serves as a polyfill for the new API, it allows old API usage and
+itself contains footguns._
+
+`safe-buffer` could be used safely to get the new API while still keeping support for older
+Node.js versions (like this module), but while analyzing ecosystem usage of the old Buffer API
+I found out that `safe-buffer` is itself causing problems in some cases.
+
+For example, consider the following snippet:
+
+```console
+$ cat example.unsafe.js
+console.log(Buffer(20))
+$ ./node-v6.13.0-linux-x64/bin/node example.unsafe.js
+<Buffer 0a 00 00 00 00 00 00 00 28 13 de 02 00 00 00 00 05 00 00 00>
+$ standard example.unsafe.js
+standard: Use JavaScript Standard Style (https://standardjs.com)
+  /home/chalker/repo/safer-buffer/example.unsafe.js:2:13: 'Buffer()' was deprecated since v6. Use 'Buffer.alloc()' or 'Buffer.from()' (use 'https://www.npmjs.com/package/safe-buffer' for '<4.5.0') instead.
+```
+
+This is allocates and writes to console an uninitialized chunk of memory.
+[standard](https://www.npmjs.com/package/standard) linter (among others) catch that and warn people
+to avoid using unsafe API.
+
+Let's now throw in `safe-buffer`!
+
+```console
+$ cat example.safe-buffer.js
+const Buffer = require('safe-buffer').Buffer
+console.log(Buffer(20))
+$ standard example.safe-buffer.js
+$ ./node-v6.13.0-linux-x64/bin/node example.safe-buffer.js
+<Buffer 08 00 00 00 00 00 00 00 28 58 01 82 fe 7f 00 00 00 00 00 00>
+```
+
+See the problem? Adding in `safe-buffer` _magically removes the lint warning_, but the behavior
+remains identiсal to what we had before, and when launched on Node.js 6.x LTS — this dumps out
+chunks of uninitialized memory.
+_And this code will still emit runtime warnings on Node.js 10.x and above._
+
+That was done by design. I first considered changing `safe-buffer`, prohibiting old API usage or
+emitting warnings on it, but that significantly diverges from `safe-buffer` design. After some
+discussion, it was decided to move my approach into a separate package, and _this is that separate
+package_.
+
+This footgun is not imaginary — I observed top-downloaded packages doing that kind of thing,
+«fixing» the lint warning by blindly including `safe-buffer` without any actual changes.
+
+Also in some cases, even if the API _was_ migrated to use of safe Buffer API — a random pull request
+can bring unsafe Buffer API usage back to the codebase by adding new calls — and that could go
+unnoticed even if you have a linter prohibiting that (becase of the reason stated above), and even
+pass CI. _I also observed that being done in popular packages._
+
+Some examples:
+ * [webdriverio](https://github.com/webdriverio/webdriverio/commit/05cbd3167c12e4930f09ef7cf93b127ba4effae4#diff-124380949022817b90b622871837d56cR31)
+   (a module with 548 759 downloads/month),
+ * [websocket-stream](https://github.com/maxogden/websocket-stream/commit/c9312bd24d08271687d76da0fe3c83493871cf61)
+   (218 288 d/m, fix in [maxogden/websocket-stream#142](https://github.com/maxogden/websocket-stream/pull/142)),
+ * [node-serialport](https://github.com/node-serialport/node-serialport/commit/e8d9d2b16c664224920ce1c895199b1ce2def48c)
+   (113 138 d/m, fix in [node-serialport/node-serialport#1510](https://github.com/node-serialport/node-serialport/pull/1510)),
+ * [karma](https://github.com/karma-runner/karma/commit/3d94b8cf18c695104ca195334dc75ff054c74eec)
+   (3 973 193 d/m, fix in [karma-runner/karma#2947](https://github.com/karma-runner/karma/pull/2947)),
+ * [spdy-transport](https://github.com/spdy-http2/spdy-transport/commit/5375ac33f4a62a4f65bcfc2827447d42a5dbe8b1)
+   (5 970 727 d/m, fix in [spdy-http2/spdy-transport#53](https://github.com/spdy-http2/spdy-transport/pull/53)).
+ * And there are a lot more over the ecosystem.
+
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/serve-index/node_modules/depd/Readme.md <==
+# depd
+
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Downloads][npm-downloads-image]][npm-url]
+[![Node.js Version][node-image]][node-url]
+[![Linux Build][travis-image]][travis-url]
+[![Windows Build][appveyor-image]][appveyor-url]
+[![Coverage Status][coveralls-image]][coveralls-url]
+
+Deprecate all the things
+
+> With great modules comes great responsibility; mark things deprecated!
+
+## Install
+
+This module is installed directly using `npm`:
+
+```sh
+$ npm install depd
+```
+
+This module can also be bundled with systems like
+[Browserify](http://browserify.org/) or [webpack](https://webpack.github.io/),
+though by default this module will alter it's API to no longer display or
+track deprecations.
+
+## API
+
+<!-- eslint-disable no-unused-vars -->
+
+```js
+var deprecate = require('depd')('my-module')
+```
+
+This library allows you to display deprecation messages to your users.
+This library goes above and beyond with deprecation warnings by
+introspection of the call stack (but only the bits that it is interested
+in).
+
+Instead of just warning on the first invocation of a deprecated
+function and never again, this module will warn on the first invocation
+of a deprecated function per unique call site, making it ideal to alert
+users of all deprecated uses across the code base, rather than just
+whatever happens to execute first.
+
+The deprecation warnings from this module also include the file and line
+information for the call into the module that the deprecated function was
+in.
+
+**NOTE** this library has a similar interface to the `debug` module, and
+this module uses the calling file to get the boundary for the call stacks,
+so you should always create a new `deprecate` object in each file and not
+within some central file.
+
+### depd(namespace)
+
+Create a new deprecate function that uses the given namespace name in the
+messages and will display the call site prior to the stack entering the
+file this function was called from. It is highly suggested you use the
+name of your module as the namespace.
+
+### deprecate(message)
+
+Call this function from deprecated code to display a deprecation message.
+This message will appear once per unique caller site. Caller site is the
+first call site in the stack in a different file from the caller of this
+function.
+
+If the message is omitted, a message is generated for you based on the site
+of the `deprecate()` call and will display the name of the function called,
+similar to the name displayed in a stack trace.
+
+### deprecate.function(fn, message)
+
+Call this function to wrap a given function in a deprecation message on any
+call to the function. An optional message can be supplied to provide a custom
+message.
+
+### deprecate.property(obj, prop, message)
+
+Call this function to wrap a given property on object in a deprecation message
+on any accessing or setting of the property. An optional message can be supplied
+to provide a custom message.
+
+The method must be called on the object where the property belongs (not
+inherited from the prototype).
+
+If the property is a data descriptor, it will be converted to an accessor
+descriptor in order to display the deprecation message.
+
+### process.on('deprecation', fn)
+
+This module will allow easy capturing of deprecation errors by emitting the
+errors as the type "deprecation" on the global `process`. If there are no
+listeners for this type, the errors are written to STDERR as normal, but if
+there are any listeners, nothing will be written to STDERR and instead only
+emitted. From there, you can write the errors in a different format or to a
+logging source.
+
+The error represents the deprecation and is emitted only once with the same
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/sucrase/node_modules/commander/Readme.md <==
+# Commander.js
+
+[![Build Status](https://api.travis-ci.org/tj/commander.js.svg?branch=master)](http://travis-ci.org/tj/commander.js)
+[![NPM Version](http://img.shields.io/npm/v/commander.svg?style=flat)](https://www.npmjs.org/package/commander)
+[![NPM Downloads](https://img.shields.io/npm/dm/commander.svg?style=flat)](https://npmcharts.com/compare/commander?minimal=true)
+[![Install Size](https://packagephobia.now.sh/badge?p=commander)](https://packagephobia.now.sh/result?p=commander)
+
+The complete solution for [node.js](http://nodejs.org) command-line interfaces, inspired by Ruby's [commander](https://github.com/commander-rb/commander).
+
+Read this in other languages: English | [简体中文](./Readme_zh-CN.md)
+
+- [Commander.js](#commanderjs)
+  - [Installation](#installation)
+  - [Declaring program variable](#declaring-program-variable)
+  - [Options](#options)
+    - [Common option types, boolean and value](#common-option-types-boolean-and-value)
+    - [Default option value](#default-option-value)
+    - [Other option types, negatable boolean and flag|value](#other-option-types-negatable-boolean-and-flagvalue)
+    - [Custom option processing](#custom-option-processing)
+    - [Required option](#required-option)
+    - [Version option](#version-option)
+  - [Commands](#commands)
+    - [Specify the argument syntax](#specify-the-argument-syntax)
+    - [Action handler (sub)commands](#action-handler-subcommands)
+    - [Git-style executable (sub)commands](#git-style-executable-subcommands)
+  - [Automated --help](#automated---help)
+    - [Custom help](#custom-help)
+    - [.usage and .name](#usage-and-name)
+    - [.outputHelp(cb)](#outputhelpcb)
+    - [.helpOption(flags, description)](#helpoptionflags-description)
+    - [.help(cb)](#helpcb)
+  - [Custom event listeners](#custom-event-listeners)
+  - [Bits and pieces](#bits-and-pieces)
+    - [Avoiding option name clashes](#avoiding-option-name-clashes)
+    - [TypeScript](#typescript)
+    - [Node options such as --harmony](#node-options-such-as---harmony)
+    - [Node debugging](#node-debugging)
+    - [Override exit handling](#override-exit-handling)
+  - [Examples](#examples)
+  - [License](#license)
+  - [Support](#support)
+    - [Commander for enterprise](#commander-for-enterprise)
+
+## Installation
+
+```bash
+npm install commander
+```
+
+## Declaring _program_ variable
+
+Commander exports a global object which is convenient for quick programs.
+This is used in the examples in this README for brevity.
+
+```js
+const program = require('commander');
+program.version('0.0.1');
+```
+
+For larger programs which may use commander in multiple ways, including unit testing, it is better to create a local Command object to use.
+
+ ```js
+ const commander = require('commander');
+ const program = new commander.Command();
+ program.version('0.0.1');
+ ```
+
+## Options
+
+Options are defined with the `.option()` method, also serving as documentation for the options. Each option can have a short flag (single character) and a long name, separated by a comma or space.
+
+The options can be accessed as properties on the Command object. Multi-word options such as "--template-engine" are camel-cased, becoming `program.templateEngine` etc. Multiple short flags may be combined as a single arg, for example `-abc` is equivalent to `-a -b -c`.
+
+See also optional new behaviour to [avoid name clashes](#avoiding-option-name-clashes).
+
+### Common option types, boolean and value
+
+The two most used option types are a boolean flag, and an option which takes a value (declared using angle brackets). Both are `undefined` unless specified on command line.
+
+```js
+const program = require('commander');
+
+program
+  .option('-d, --debug', 'output extra debugging')
+  .option('-s, --small', 'small pizza size')
+  .option('-p, --pizza-type <type>', 'flavour of pizza');
+
+program.parse(process.argv);
+
+if (program.debug) console.log(program.opts());
+console.log('pizza details:');
+if (program.small) console.log('- small pizza size');
+if (program.pizzaType) console.log(`- ${program.pizzaType}`);
+```
+
+```bash
+$ pizza-options -d
+{ debug: true, small: undefined, pizzaType: undefined }
+pizza details:
+$ pizza-options -p
+
+==> ./fleetServices/CodexSite/src/Service/ClientApp/node_modules/terser/node_modules/commander/Readme.md <==
+# Commander.js
+
+
+[![Build Status](https://api.travis-ci.org/tj/commander.js.svg?branch=master)](http://travis-ci.org/tj/commander.js)
+[![NPM Version](http://img.shields.io/npm/v/commander.svg?style=flat)](https://www.npmjs.org/package/commander)
+[![NPM Downloads](https://img.shields.io/npm/dm/commander.svg?style=flat)](https://npmcharts.com/compare/commander?minimal=true)
+[![Install Size](https://packagephobia.now.sh/badge?p=commander)](https://packagephobia.now.sh/result?p=commander)
+[![Join the chat at https://gitter.im/tj/commander.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tj/commander.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+  The complete solution for [node.js](http://nodejs.org) command-line interfaces, inspired by Ruby's [commander](https://github.com/commander-rb/commander).  
+  [API documentation](http://tj.github.com/commander.js/)
+
+
+## Installation
+
+    $ npm install commander
+
+## Option parsing
+
+Options with commander are defined with the `.option()` method, also serving as documentation for the options. The example below parses args and options from `process.argv`, leaving remaining args as the `program.args` array which were not consumed by options.
+
+```js
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var program = require('commander');
+
+program
+  .version('0.1.0')
+  .option('-p, --peppers', 'Add peppers')
+  .option('-P, --pineapple', 'Add pineapple')
+  .option('-b, --bbq-sauce', 'Add bbq sauce')
+  .option('-c, --cheese [type]', 'Add the specified type of cheese [marble]', 'marble')
+  .parse(process.argv);
+
+console.log('you ordered a pizza with:');
+if (program.peppers) console.log('  - peppers');
+if (program.pineapple) console.log('  - pineapple');
+if (program.bbqSauce) console.log('  - bbq');
+console.log('  - %s cheese', program.cheese);
+```
+
+Short flags may be passed as a single arg, for example `-abc` is equivalent to `-a -b -c`. Multi-word options such as "--template-engine" are camel-cased, becoming `program.templateEngine` etc.
+
+Note that multi-word options starting with `--no` prefix negate the boolean value of the following word. For example, `--no-sauce` sets the value of `program.sauce` to false.
+
+```js
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var program = require('commander');
+
+program
+  .option('--no-sauce', 'Remove sauce')
+  .parse(process.argv);
+
+console.log('you ordered a pizza');
+if (program.sauce) console.log('  with sauce');
+else console.log(' without sauce');
+```
+
+To get string arguments from options you will need to use angle brackets <> for required inputs or square brackets [] for optional inputs. 
+
+e.g. ```.option('-m --myarg [myVar]', 'my super cool description')```
+
+Then to access the input if it was passed in.
+
+e.g. ```var myInput = program.myarg```
+
+**NOTE**: If you pass a argument without using brackets the example above will return true and not the value passed in.
+
+
+## Version option
+
+Calling the `version` implicitly adds the `-V` and `--version` options to the command.
+When either of these options is present, the command prints the version number and exits.
+
+    $ ./examples/pizza -V
+    0.0.1
+
+If you want your program to respond to the `-v` option instead of the `-V` option, simply pass custom flags to the `version` method using the same syntax as the `option` method.
+
+```js
+program
+  .version('0.0.1', '-v, --version')
+```
+
+The version flags can be named anything, but the long option is required.
+
+## Command-specific options
+
+You can attach options to a command.
+
+```js

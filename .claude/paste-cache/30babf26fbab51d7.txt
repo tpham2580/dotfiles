@@ -1,0 +1,20 @@
+2026-03-18 18:02:41.502 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=(node:44884) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Error, EventId=0
+2026-03-18 18:02:42.104 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=(Use `node --trace-deprecation ...` to show where the warning was created)
+Browserslist: caniuse-lite is outdated. Please run:
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Error, EventId=0
+2026-03-18 18:02:42.525 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=> oneportal@0.0.1 start
+> rimraf ./build && set GENERATE_SOURCEMAP=false&& react-app-rewired start
+
+[HPM] Proxy created: /weatherforecast  -> http://localhost:86
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Information, EventId=0
+2026-03-18 18:02:42.559 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+(node:44884) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Error, EventId=0
+2026-03-18 18:02:42.560 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=(node:44884) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Error, EventId=0
+2026-03-18 18:02:43.445 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=Starting the development server...
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Information, EventId=0
+2026-03-18 18:02:47.787 Z, Diagnostics, ServiceId=CodexSite, Environment=Development, Message=One of your dependencies, babel-preset-react-app, is importing the
+, Category=Microsoft.AspNetCore.SpaServices, LogLevel=Error, EventId=0

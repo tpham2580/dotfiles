@@ -1,0 +1,706 @@
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
+index 7274bf2b..a97bfbaf 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
+@@ -5,86 +5,24 @@
+ namespace CodeXCore.ServiceTree
+ {
+     using System;
+-    using System.Security.Cryptography.X509Certificates;
+ 
+     /// <summary>
+     /// Options for Service Tree client configuration.
+     /// </summary>
+     public sealed class ServiceTreeClientOptions
+     {
+-        private const string DefaultCertificateEndpoint = "https://servicetree.msftcloudes.com/cert/api";
+-        private const string DefaultAadEndpoint = "https://servicetree.msftcloudes.com/api";
++        private const string DefaultEndpoint = "https://servicetree.msftcloudes.com/api";
+         private const string DefaultManagedIdentityClientId = "c49a32cb-df08-439a-be5a-56e2b0fe5afe";
+ 
+         /// <summary>
+         /// Gets or sets the Service Tree API endpoint.
+         /// </summary>
+-        public string Endpoint { get; set; } = DefaultAadEndpoint;
++        public string Endpoint { get; set; } = DefaultEndpoint;
+ 
+         /// <summary>
+-        /// Gets or sets the authentication mode for Service Tree.
++        /// Gets or sets the managed identity client ID used for DefaultAzureCredential.
+         /// </summary>
+-        public ServiceTreeAuthenticationMode AuthenticationMode { get; set; } = ServiceTreeAuthenticationMode.DefaultAzureCredential;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate thumbprint.
+-        /// </summary>
+-        public string CertificateThumbprint { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate store name.
+-        /// </summary>
+-        public StoreName CertificateStoreName { get; set; } = StoreName.My;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate store location.
+-        /// </summary>
+-        public StoreLocation CertificateStoreLocation { get; set; } = StoreLocation.LocalMachine;
+-
+-        /// <summary>
+-        /// Gets or sets the Base64-encoded certificate (PFX).
+-        /// </summary>
+-        public string CertificateBase64 { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the password for the Base64-encoded certificate.
+-        /// </summary>
+-        public string CertificatePassword { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD tenant ID (or domain) used for token acquisition.
+-        /// </summary>
+-        public string AadTenantId { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD client ID used for app auth or managed identity.
+-        /// </summary>
+-        public string AadClientId { get; set; } = DefaultManagedIdentityClientId;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD client secret for app auth.
+-        /// </summary>
+-        public string AadClientSecret { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the Base64-encoded AAD client certificate (PFX).
+-        /// </summary>
+-        public string AadClientCertificateBase64 { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the password for the Base64-encoded AAD client certificate.
+-        /// </summary>
+-        public string AadClientCertificatePassword { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD audience (resource) used to build the scope.
+-        /// </summary>
+-        public string AadAudience { get; set; } = "https://microsoft.onmicrosoft.com/ServiceTree";
+-
+-        /// <summary>
+-        /// Gets or sets the AAD scope. If empty, the scope is derived from the audience.
+-        /// </summary>
+-        public string AadScope { get; set; } = string.Empty;
++        public string ManagedIdentityClientId { get; set; } = DefaultManagedIdentityClientId;
+ 
+         /// <summary>
+         /// Builds options from environment variables.
+@@ -94,97 +32,16 @@ namespace CodeXCore.ServiceTree
+         {
+             var options = new ServiceTreeClientOptions();
+ 
+-            bool endpointSet = false;
+             string? endpoint = Environment.GetEnvironmentVariable("SERVICETREE_ENDPOINT");
+             if (!string.IsNullOrWhiteSpace(endpoint))
+             {
+                 options.Endpoint = endpoint.Trim();
+-                endpointSet = true;
+-            }
+-
+-            string? authMode = Environment.GetEnvironmentVariable("SERVICETREE_AUTH_MODE");
+-            if (!string.IsNullOrWhiteSpace(authMode)
+-                && Enum.TryParse(authMode, true, out ServiceTreeAuthenticationMode parsedMode))
+-            {
+-                options.AuthenticationMode = parsedMode;
+-            }
+-
+-            string? thumbprint = Environment.GetEnvironmentVariable("SERVICETREE_CERT_THUMBPRINT");
+-            if (!string.IsNullOrWhiteSpace(thumbprint))
+-            {
+-                options.CertificateThumbprint = thumbprint.Trim();
+-            }
+-
+-            string? storeName = Environment.GetEnvironmentVariable("SERVICETREE_CERT_STORE_NAME");
+-            if (!string.IsNullOrWhiteSpace(storeName) && Enum.TryParse(storeName, true, out StoreName parsedStoreName))
+-            {
+-                options.CertificateStoreName = parsedStoreName;
+-            }
+-
+-            string? storeLocation = Environment.GetEnvironmentVariable("SERVICETREE_CERT_STORE_LOCATION");
+-            if (!string.IsNullOrWhiteSpace(storeLocation) && Enum.TryParse(storeLocation, true, out StoreLocation parsedStoreLocation))
+-            {
+-                options.CertificateStoreLocation = parsedStoreLocation;
+-            }
+-
+-            string? certBase64 = Environment.GetEnvironmentVariable("SERVICETREE_CERT_BASE64");
+-            if (!string.IsNullOrWhiteSpace(certBase64))
+-            {
+-                options.CertificateBase64 = certBase64.Trim();
+-            }
+-
+-            string? certPassword = Environment.GetEnvironmentVariable("SERVICETREE_CERT_PASSWORD");
+-            if (!string.IsNullOrWhiteSpace(certPassword))
+-            {
+-                options.CertificatePassword = certPassword;
+-            }
+-
+-            string? aadTenantId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_TENANT_ID");
+-            if (!string.IsNullOrWhiteSpace(aadTenantId))
+-            {
+-                options.AadTenantId = aadTenantId.Trim();
+-            }
+-
+-            string? aadClientId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_ID");
+-            if (!string.IsNullOrWhiteSpace(aadClientId))
+-            {
+-                options.AadClientId = aadClientId.Trim();
+-            }
+-
+-            string? aadClientSecret = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_SECRET");
+-            if (!string.IsNullOrWhiteSpace(aadClientSecret))
+-            {
+-                options.AadClientSecret = aadClientSecret;
+-            }
+-
+-            string? aadCertBase64 = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CERT_BASE64");
+-            if (!string.IsNullOrWhiteSpace(aadCertBase64))
+-            {
+-                options.AadClientCertificateBase64 = aadCertBase64.Trim();
+-            }
+-
+-            string? aadCertPassword = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CERT_PASSWORD");
+-            if (!string.IsNullOrWhiteSpace(aadCertPassword))
+-            {
+-                options.AadClientCertificatePassword = aadCertPassword;
+-            }
+-
+-            string? aadAudience = Environment.GetEnvironmentVariable("SERVICETREE_AAD_AUDIENCE");
+-            if (!string.IsNullOrWhiteSpace(aadAudience))
+-            {
+-                options.AadAudience = aadAudience.Trim();
+-            }
+-
+-            string? aadScope = Environment.GetEnvironmentVariable("SERVICETREE_AAD_SCOPE");
+-            if (!string.IsNullOrWhiteSpace(aadScope))
+-            {
+-                options.AadScope = aadScope.Trim();
+             }
+ 
+-            if (!endpointSet && (options.AuthenticationMode == ServiceTreeAuthenticationMode.Aad
+-                || options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential))
++            string? clientId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_ID");
++            if (!string.IsNullOrWhiteSpace(clientId))
+             {
+-                options.Endpoint = DefaultAadEndpoint;
++                options.ManagedIdentityClientId = clientId.Trim();
+             }
+ 
+             return options;
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
+index a14a430d..fa0b742c 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
+@@ -9,8 +9,6 @@ namespace CodeXCore.ServiceTree
+     using System.Collections.Generic;
+     using System.Data;
+     using System.Linq;
+-    using System.Security.Cryptography;
+-    using System.Security.Cryptography.X509Certificates;
+     using System.Text;
+     using System.Threading;
+     using System.Threading.Tasks;
+@@ -82,95 +80,14 @@ namespace CodeXCore.ServiceTree
+ 
+             this.maxBatchSize = this.kustoOptions.MaxBatchSize <= 0 ? 200 : this.kustoOptions.MaxBatchSize;
+             this.isConfigured = true;
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<IReadOnlyDictionary<string, ServiceTreeNode>> GetNodesByIdsAsync(
+-            IEnumerable<string> ids,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new ConcurrentDictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+-            if (!this.isConfigured)
+-            {
+-                return results;
+-            }
+-
+-            var uniqueIds = (ids ?? Enumerable.Empty<string>())
+-                .Where(id => !string.IsNullOrWhiteSpace(id))
+-                .Select(id => id.Trim())
+-                .Distinct(StringComparer.OrdinalIgnoreCase)
+-                .ToList();
+-
+-            if (uniqueIds.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var batches = this.SplitStringBatches(uniqueIds, this.maxBatchSize);
+-            using var semaphore = new SemaphoreSlim(this.maxConcurrency);
+-            var tasks = batches.Select(async batch =>
+-            {
+-                await semaphore.WaitAsync(cancellationToken);
+-                try
+-                {
+-                    var batchResults = await this.QueryBatchByIdsAsync(batch, cancellationToken);
+-                    foreach (var pair in batchResults)
+-                    {
+-                        results[pair.Key] = pair.Value;
+-                    }
+-                }
+-                finally
+-                {
+-                    semaphore.Release();
+-                }
+-            }).ToList();
+ 
+-            await Task.WhenAll(tasks);
+-            return results;
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<IReadOnlyDictionary<int, ServiceTreeNode>> GetNodesByInternalIdsAsync(
+-            IEnumerable<int> internalIds,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new ConcurrentDictionary<int, ServiceTreeNode>();
+-            if (!this.isConfigured)
+-            {
+-                return results;
+-            }
+-
+-            var uniqueIds = (internalIds ?? Enumerable.Empty<int>())
+-                .Where(id => id > 0)
+-                .Distinct()
+-                .ToList();
+-
+-            if (uniqueIds.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var batches = this.SplitIntBatches(uniqueIds, this.maxBatchSize);
+-            using var semaphore = new SemaphoreSlim(this.maxConcurrency);
+-            var tasks = batches.Select(async batch =>
+-            {
+-                await semaphore.WaitAsync(cancellationToken);
+-                try
+-                {
+-                    var batchResults = await this.QueryBatchByInternalIdsAsync(batch, cancellationToken);
+-                    foreach (var pair in batchResults)
+-                    {
+-                        results[pair.Key] = pair.Value;
+-                    }
+-                }
+-                finally
+-                {
+-                    semaphore.Release();
+-                }
+-            }).ToList();
+-
+-            await Task.WhenAll(tasks);
+-            return results;
++            this.logger.LogInformation(
++                "ServiceTreeKustoClient: Configured. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, TokenScope={TokenScope}.",
++                this.kustoOptions.ClusterUri,
++                this.kustoOptions.Database,
++                this.kustoOptions.HierarchyTableName,
++                this.tokenCredential.GetType().Name,
++                this.tokenScope);
+         }
+ 
+         /// <inheritdoc/>
+@@ -208,6 +125,17 @@ namespace CodeXCore.ServiceTree
+                         results[pair.Key] = pair.Value;
+                     }
+                 }
++                catch (OperationCanceledException)
++                {
++                    throw;
++                }
++                catch (Exception ex)
++                {
++                    this.logger.LogWarning(
++                        ex,
++                        "ServiceTreeKustoClient: Batch of {BatchCount} IDs failed; continuing with remaining batches.",
++                        batch.Count);
++                }
+                 finally
+                 {
+                     semaphore.Release();
+@@ -223,146 +151,6 @@ namespace CodeXCore.ServiceTree
+             return value.Replace("'", "''", StringComparison.Ordinal);
+         }
+ 
+-        private async Task<IReadOnlyDictionary<string, ServiceTreeNode>> QueryBatchByIdsAsync(
+-            IReadOnlyList<string> batch,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new Dictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+-            if (batch.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var query = this.BuildQueryByIds(batch);
+-            var requestProperties = new ClientRequestProperties();
+-            requestProperties.ClientRequestId = $"CodexSite.ServiceTreeKusto.{Guid.NewGuid():N}";
+-
+-            try
+-            {
+-                using var provider = this.CreateQueryProvider();
+-                using var reader = await provider.ExecuteQueryAsync(this.kustoOptions.Database, query, requestProperties);
+-
+-                // Kusto V2 responses may return metadata frames before the data.
+-                // Advance past result sets that have no rows.
+-                do
+-                {
+-                    var idOrdinal = this.TryGetOrdinal(reader, "Id");
+-                    if (idOrdinal < 0)
+-                    {
+-                        continue;
+-                    }
+-
+-                    var internalIdOrdinal = this.TryGetOrdinal(reader, "InternalId");
+-                    var levelOrdinal = this.TryGetOrdinal(reader, "Level");
+-                    var nameOrdinal = this.TryGetOrdinal(reader, "Name");
+-                    var organizationOrdinal = this.TryGetOrdinal(reader, "Organization");
+-                    var parentOrganizationOrdinal = this.TryGetOrdinal(reader, "ParentOrganizationId");
+-
+-                    while (reader.Read())
+-                    {
+-                        var id = this.ReadString(reader, idOrdinal);
+-                        if (string.IsNullOrWhiteSpace(id))
+-                        {
+-                            continue;
+-                        }
+-
+-                        results[id] = new ServiceTreeNode
+-                        {
+-                            InternalId = this.ReadInt(reader, internalIdOrdinal),
+-                            Id = id,
+-                            Level = this.ReadString(reader, levelOrdinal),
+-                            Name = this.ReadString(reader, nameOrdinal),
+-                            OrganizationPath = this.ReadString(reader, organizationOrdinal),
+-                            Path = string.Empty,
+-                            ParentInternalId = this.ReadInt(reader, parentOrganizationOrdinal),
+-                            ParentId = this.ReadString(reader, parentOrganizationOrdinal),
+-                        };
+-                    }
+-                }
+-                while (results.Count == 0 && reader.NextResult());
+-            }
+-            catch (OperationCanceledException)
+-            {
+-                throw;
+-            }
+-            catch (Exception ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: query failed.");
+-            }
+-
+-            return results;
+-        }
+-
+-        private async Task<IReadOnlyDictionary<int, ServiceTreeNode>> QueryBatchByInternalIdsAsync(
+-            IReadOnlyList<int> batch,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new Dictionary<int, ServiceTreeNode>();
+-            if (batch.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var query = this.BuildQueryByInternalIds(batch);
+-            var requestProperties = new ClientRequestProperties();
+-            requestProperties.ClientRequestId = $"CodexSite.ServiceTreeKusto.{Guid.NewGuid():N}";
+-
+-            try
+-            {
+-                using var provider = this.CreateQueryProvider();
+-                using var reader = await provider.ExecuteQueryAsync(this.kustoOptions.Database, query, requestProperties);
+-
+-                // Kusto V2 responses may return metadata frames before the data.
+-                // Advance past result sets that have no rows.
+-                do
+-                {
+-                    var internalIdOrdinal = this.TryGetOrdinal(reader, "InternalId");
+-                    if (internalIdOrdinal < 0)
+-                    {
+-                        continue;
+-                    }
+-
+-                    var idOrdinal = this.TryGetOrdinal(reader, "Id");
+-                    var levelOrdinal = this.TryGetOrdinal(reader, "Level");
+-                    var nameOrdinal = this.TryGetOrdinal(reader, "Name");
+-                    var organizationOrdinal = this.TryGetOrdinal(reader, "Organization");
+-                    var parentOrganizationOrdinal = this.TryGetOrdinal(reader, "ParentOrganizationId");
+-
+-                    while (reader.Read())
+-                    {
+-                        var internalId = this.ReadInt(reader, internalIdOrdinal);
+-                        if (internalId <= 0)
+-                        {
+-                            continue;
+-                        }
+-
+-                        results[internalId] = new ServiceTreeNode
+-                        {
+-                            InternalId = internalId,
+-                            Id = this.ReadString(reader, idOrdinal),
+-                            Level = this.ReadString(reader, levelOrdinal),
+-                            Name = this.ReadString(reader, nameOrdinal),
+-                            OrganizationPath = this.ReadString(reader, organizationOrdinal),
+-                            Path = string.Empty,
+-                            ParentInternalId = this.ReadInt(reader, parentOrganizationOrdinal),
+-                            ParentId = this.ReadString(reader, parentOrganizationOrdinal),
+-                        };
+-                    }
+-                }
+-                while (results.Count == 0 && reader.NextResult());
+-            }
+-            catch (OperationCanceledException)
+-            {
+-                throw;
+-            }
+-            catch (Exception ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: query failed.");
+-            }
+-
+-            return results;
+-        }
+-
+         private async Task<IReadOnlyDictionary<string, ServiceTreeNode>> QueryHierarchyBatchAsync(
+             IReadOnlyList<string> batch,
+             CancellationToken cancellationToken)
+@@ -494,7 +282,15 @@ namespace CodeXCore.ServiceTree
+             }
+             catch (Exception ex)
+             {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: hierarchy query failed.");
++                this.logger.LogError(
++                    ex,
++                    "ServiceTreeKustoClient: hierarchy query failed. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, BatchCount={BatchCount}.",
++                    this.kustoOptions.ClusterUri,
++                    this.kustoOptions.Database,
++                    this.kustoOptions.HierarchyTableName,
++                    this.tokenCredential?.GetType().Name ?? "null",
++                    batch.Count);
++                throw;
+             }
+ 
+             return results;
+@@ -522,82 +318,6 @@ namespace CodeXCore.ServiceTree
+             }
+         }
+ 
+-        private IEnumerable<IReadOnlyList<int>> SplitIntBatches(IReadOnlyList<int> ids, int batchSize)
+-        {
+-            for (int i = 0; i < ids.Count; i += batchSize)
+-            {
+-                var count = Math.Min(batchSize, ids.Count - i);
+-                var batch = new List<int>(count);
+-                for (int j = 0; j < count; j++)
+-                {
+-                    batch.Add(ids[i + j]);
+-                }
+-
+-                yield return batch;
+-            }
+-        }
+-
+-        private string BuildQueryByIds(IReadOnlyList<string> ids)
+-        {
+-            var builder = new StringBuilder();
+-
+-            if (this.kustoOptions.UseOrganizationFunction
+-                && !string.IsNullOrWhiteSpace(this.kustoOptions.OrganizationFunctionName))
+-            {
+-                var functionName = this.NormalizeIdentifier(this.kustoOptions.OrganizationFunctionName);
+-                builder.AppendLine("let Organizations = datatable(OrganizationId:string)[");
+-                builder.Append(string.Join(", ", ids.Select(id => $"'{EscapeKustoString(id)}'")));
+-                builder.AppendLine("];");
+-                builder.AppendLine($"{functionName}(Organizations)");
+-                builder.AppendLine("| project");
+-                builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-                builder.AppendLine("    Id = tostring(column_ifexists(\"OrganizationId\", \"\")),");
+-                builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-                builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-                builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-                builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            }
+-            else
+-            {
+-                var tableName = this.NormalizeIdentifier(this.kustoOptions.TableName);
+-                var idColumn = this.NormalizeIdentifier(this.kustoOptions.IdColumnName);
+-                builder.AppendLine("let ids = datatable(TargetId:string)[");
+-                builder.Append(string.Join(", ", ids.Select(id => $"'{EscapeKustoString(id.ToLowerInvariant())}'")));
+-                builder.AppendLine("];");
+-                builder.AppendLine($"{tableName}");
+-                builder.AppendLine($"| where tolower({idColumn}) in (ids)");
+-                builder.AppendLine("| project");
+-                builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-                builder.AppendLine($"    Id = tostring({idColumn}),");
+-                builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-                builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-                builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-                builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            }
+-
+-            return builder.ToString();
+-        }
+-
+-        private string BuildQueryByInternalIds(IReadOnlyList<int> ids)
+-        {
+-            var tableName = this.NormalizeIdentifier(this.kustoOptions.TableName);
+-            var idColumn = this.NormalizeIdentifier(this.kustoOptions.IdColumnName);
+-            var builder = new StringBuilder();
+-            builder.AppendLine("let ids = datatable(InternalId:int)[");
+-            builder.Append(string.Join(", ", ids.Select(id => id.ToString())));
+-            builder.AppendLine("];");
+-            builder.AppendLine($"{tableName}");
+-            builder.AppendLine("| where InternalId in (ids)");
+-            builder.AppendLine("| project");
+-            builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-            builder.AppendLine($"    Id = tostring({idColumn}),");
+-            builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-            builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-            builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-            builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            return builder.ToString();
+-        }
+-
+         private string ResolveTokenScope(ServiceTreeKustoOptions options)
+         {
+             if (!string.IsNullOrWhiteSpace(options.TokenScope))
+@@ -613,14 +333,13 @@ namespace CodeXCore.ServiceTree
+             return string.Empty;
+         }
+ 
+-        private TokenCredential? ResolveTokenCredential(
++        private TokenCredential ResolveTokenCredential(
+             ICredentialFactory? credentialFactory,
+             ServiceTreeClientOptions options)
+         {
+-            // When ICredentialFactory is available AND auth mode is DefaultAzureCredential,
+-            // use the factory for cross-tenant support (PME MSI → MSFT tenant token).
+-            if (credentialFactory != null
+-                && options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
++            // When ICredentialFactory is available, use it for cross-tenant support
++            // (PME MSI → MSFT tenant token).
++            if (credentialFactory != null)
+             {
+                 try
+                 {
+@@ -639,56 +358,10 @@ namespace CodeXCore.ServiceTree
+                 }
+             }
+ 
+-            return this.CreateTokenCredential(options);
+-        }
+-
+-        private TokenCredential? CreateTokenCredential(ServiceTreeClientOptions options)
+-        {
+-            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+-            {
+-                return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+-                {
+-                    ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.AadClientId) ? null : options.AadClientId,
+-                });
+-            }
+-
+-            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.Aad)
++            return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+             {
+-                if (!string.IsNullOrWhiteSpace(options.AadClientSecret)
+-                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+-                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    return new ClientSecretCredential(options.AadTenantId, options.AadClientId, options.AadClientSecret);
+-                }
+-
+-                if (!string.IsNullOrWhiteSpace(options.AadClientCertificateBase64)
+-                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+-                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-#pragma warning disable CA2000 // Certificate lifetime is tied to the credential.
+-                    var cert = this.TryLoadAadCertificate(options);
+-#pragma warning restore CA2000
+-                    if (cert == null)
+-                    {
+-                        return null;
+-                    }
+-
+-                    return new ClientCertificateCredential(
+-                        options.AadTenantId,
+-                        options.AadClientId,
+-                        cert,
+-                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
+-                }
+-
+-                if (!string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    return new ManagedIdentityCredential(options.AadClientId);
+-                }
+-
+-                return new ManagedIdentityCredential();
+-            }
+-
+-            return null;
++                ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.ManagedIdentityClientId) ? null : options.ManagedIdentityClientId,
++            });
+         }
+ 
+         private string NormalizeIdentifier(string value)
+@@ -716,23 +389,6 @@ namespace CodeXCore.ServiceTree
+             }
+         }
+ 
+-        private int ReadInt(IDataReader reader, int ordinal)
+-        {
+-            if (ordinal < 0 || reader.IsDBNull(ordinal))
+-            {
+-                return 0;
+-            }
+-
+-            var value = reader.GetValue(ordinal);
+-            return value switch
+-            {
+-                int number => number,
+-                long number => (int)number,
+-                string text when int.TryParse(text, out var parsed) => parsed,
+-                _ => 0,
+-            };
+-        }
+-
+         private string ReadString(IDataReader reader, int ordinal)
+         {
+             if (ordinal < 0 || reader.IsDBNull(ordinal))
+@@ -743,25 +399,6 @@ namespace CodeXCore.ServiceTree
+             var value = reader.GetValue(ordinal);
+             return value?.ToString() ?? string.Empty;
+         }
+-
+-        private X509Certificate2? TryLoadAadCertificate(ServiceTreeClientOptions options)
+-        {
+-            try
+-            {
+-                var raw = Convert.FromBase64String(options.AadClientCertificateBase64);
+-                return new X509Certificate2(raw, options.AadClientCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
+-            }
+-            catch (FormatException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+-            }
+-            catch (CryptographicException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+-            }
+-
+-            return null;
+-        }
+     }
+ 
+ #pragma warning restore CA1303

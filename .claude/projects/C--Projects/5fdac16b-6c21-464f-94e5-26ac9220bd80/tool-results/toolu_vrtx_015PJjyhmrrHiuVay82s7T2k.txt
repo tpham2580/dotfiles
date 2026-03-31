@@ -1,0 +1,226 @@
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-43-| **Transmit Secret** | TLS 1.2+ secured channel only | URL params, query strings, HTTP, email, chat |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-44-| **Secret Scope** | Least privilege, service-specific, per-environment | Shared across services/environments |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-45-| **Rotate Secret** | Auto-rotate every 30-90 days, version/timestamp metadata | Manual rotation, static unchanging values, no expiration |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md:46:| **Connection Strings** | Stored in Key Vault, credentials accessed via managed identity at runtime; never embed credentials | Config files, appsettings.json, hardcoded |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-47-| **API Keys (Generation)** | 32+ bytes entropy, cryptographically random, unique per consumer | Short keys, predictable, reused across services |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-48-| **API Keys (Deployment)** | Rate-limited, revocable, rotated quarterly, scoped to specific endpoints | Non-revocable, shared across environments, no expiration |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-49-| **CI/CD Secrets** | Pipeline secrets/variables, masked in logs | Plain text in scripts, printed to console |
+--
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-58-|------------------|---------------|
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-59-| **Hardcoded Secrets** | `"password123"`, `"api_key_xyz"`, connection strings in code |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-60-| **Weak Generation** | `Math.random()`, `new Random()`, `time()`, UUIDs for secrets |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md:61:| **Insecure Storage** | Config files, `.env` in prod, `appsettings.json`, git repos |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-62-| **Insecure Transmission** | URL parameters, query strings, HTTP, logs, email |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-63-| **Missing Validation** | Skip certificate checks, accept self-signed in prod |
+C:\Projects\Oneportal\.github\instructions\mai.engsys.security.instructions.md-64-| **Default Fallbacks** | Use empty string if env missing, continue with default |
+--
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-32-- ❓ **Why ejected?** Very Hard to extend
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-33-- ⏳ **Long Build times**  
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-34-- ⚙️ **Manual Webpack config headaches** 
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md:35:✅ Reduces manual effort – Automates setup & dependencies.
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-36-✅ Ensures consistency – Standardizes environments across developers & CI/CD.
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-37-✅ Improves maintainability – Keeps configuration scalable & flexible.
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-38-- 🛠️ **Harder maintenance** 
+--
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-116-
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-117-#### ✅ Why is Config Management Important?
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-118-
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md:119:- ✅ **Reduces manual effort** – Automates setup & dependencies.  
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-120-- ✅ **Ensures consistency** – Standardizes environments across developers & CI/CD.  
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-121-- ✅ **Improves maintainability** – Keeps configuration scalable & flexible.  
+C:\Projects\Oneportal\fleetServices\Frontend First Tech Talk.md-122-
+--
+C:\Projects\papyrus\AGENTS.md-53-  - `src/Papyrus/PapyrusService/Configuration/ConfigsWrapper.cs` - loads `Config.ini` and `data/PapyrusServiceConfig/ModelClientConfig.ini`.
+C:\Projects\papyrus\AGENTS.md-54-- **Docs & tooling.** Use `docs/serviceusage/serviceusage.md` for supported headers/paths, `docs/batch.md` for offline flow, and `docs/monitoringanddri/kustologs.md` for logging schema.
+C:\Projects\papyrus\AGENTS.md-55-- **Config.**
+C:\Projects\papyrus\AGENTS.md:56:  - Service runtime: `src/Papyrus/PapyrusService/Config.ini`, `appsettings.json*`.
+C:\Projects\papyrus\AGENTS.md-57-  - Customer-facing endpoints, load balancers, quotas: `data/PapyrusServiceConfig/ModelClientConfig.ini` and `ServiceRegistry.json`.
+C:\Projects\papyrus\AGENTS.md-58-- **Testing.** `Papyrus.sln` includes `PapyrusServiceTest`; run relevant suites after modifying proxy logic or schema serialization.
+C:\Projects\papyrus\AGENTS.md-59-
+--
+C:\Projects\papyrus\AGENTS.md-74-  - `src/StressTest/StressTestSuiteV2` - job/service abstraction for long-running scenarios.
+C:\Projects\papyrus\AGENTS.md-75-  - `src/StressTest/PapyrusPromptCache` - optional prompt cache integrations.
+C:\Projects\papyrus\AGENTS.md-76-- **Docs & tooling.** Follow `docs/stresstest/quickstart.md`, `docs/stresstest/pytest.md`, and `docs/stresstest/methodology.md` for setup, quotas, and result analysis.
+C:\Projects\papyrus\AGENTS.md:77:- **Setup.** Run `setup\setup.bat` once per machine, ensure Azure CLI login, and configure `settings.json` when pointing at custom load balancers.
+C:\Projects\papyrus\AGENTS.md-78-- **Validation.** Use provided sample commands (`python stress_test.py --model gpt4o ...`) and update SharePoint trackers per the quickstart guidance.
+C:\Projects\papyrus\AGENTS.md-79-
+C:\Projects\papyrus\AGENTS.md-80-## Data & Configuration Recipes
+--
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-44-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-45-### 2. Configure VS Code Settings
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-46-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md:47:Add these settings to your VS Code `settings.json` (Ctrl+Shift+P → "Preferences: Open User Settings (JSON)"):
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-48-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-49-```json
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\README.md-50-{
+--
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-240-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-241-```bash
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-242-# Copy your config
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md:243:cp my_test_config.json routine_stress_test_input/papyrus_stress_test_settings.json
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-244-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-245-# Run the test
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\prompts_upload_api.md-246-/opt/homebrew/bin/python3.12 stress_test_job.py
+--
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-128-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-129-The uploaded blob contains:
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-130-- A directory named `Job_{timestamp}_{job_id}/`
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md:131:- A settings file: `papyrus_stress_test_settings.json` (or `picasso_stress_test_settings.json`)
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-132-
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-133-## Implementation Details
+C:\Projects\papyrus\src\StressTest\StressTestSuiteV2\docs\job_input_upload_api.md-134-
+--
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-54-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-55-## 1. Quota ID and Model Setup
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-56-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:57:[Omitted long matching line]
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-58-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-59-**For PapyrusCustomer Users**
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-60-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:61:- **Quota ID:** If you do not specify `"papyrus-quota-id"` in your `settings.json`, the system will use `"PapyrusCustomer"` by default.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:62:- **Model Name Requirement:** You must specify a valid `"papyrus-model-name"` in your `settings.json`. This should correspond to a custom weighted load balancer you have set up.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-63-- **Custom Load Balancer:** To create a custom weighted load balancer, submit a PR with a section like the following in `ModelClientConfig.ini`:
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-64-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-65-    ```
+--
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-74-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-75-- **Endpoint:** The endpoint you specify in `EndpointsAndWeights` should be the one you want your load balancer to use.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-76-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:77:If you need to use a different quota, add `"papyrus-quota-id": "PapyrusDev"` to your `settings.json`.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-78-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-79-## 2. Configure Settings and Model Data
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-80-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:81:[Omitted long matching line]
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-82-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-83-**Important Note: Please test for both online/picasso/bing and offline/batch/eval traffic groups.**
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-84-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:85:Sample **settings.json** for initial test. 
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-86-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-87-```json
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-88-{
+--
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-160-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-161-The `gpt4o` model now supports fetching prompts directly from our memory storage service. This allows the stress test to use prompts from real online traffic, making your tests more realistic and representative of production scenarios. Additionally, `gpt4o` also supports using your own custom prompts from a specified directory.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-162-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:163:You can find the different `settings.json` files for each model under `\src\StressTest\StressTestPackage\data\single_model_test`.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-164-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:165:### Sample `settings.json` for Memory Prompts
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-166-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-167-```json
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-168-{
+--
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-206-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-207-This configuration will fork 1% of traffic from `gpt4omini-copilotsearch` to the `PapyrusPromptCache` model. Adjust `TrafficPercent` as needed for your use case. Increasing the value of TrafficPercent will direct a larger portion of traffic to `PapyrusPromptCache`, allowing you to collect samples more quickly.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-208-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:209:### Sample `settings.json` for Using Prompts from a Directory
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-210-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-211-```json
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-212-{
+--
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-232-> - For memory-based prompts, set `"prompt_sampling_method": "memory"` and configure the `"memory_prompt_sampling_settings"` section.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-233-> - For custom prompt files, set `"prompt_sampling_method": "file"` and specify the `"prompts_dir"`.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-234-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md:235:You can find and modify the appropriate `settings.json` for your model in the `src/StressTest/data/single_model_test` directory.
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-236-
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-237-# Troubleshooting Guide
+C:\Projects\papyrus\docs\stress-testing\quickstart.md-238-
+--
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-15-  - `format`: Audio format (mp3)
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-16-  - `sentiment`: Neutral
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-17-
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md:18:### 2. Updated `settings.json`
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-19-- Added `GPTVoices` dictionary with locale-specific voice options:
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-20-  - `en-us`: ["dan", "amuche", "elan", "marilyn", "aster", "brook", "jazz", "rio"]
+C:\Projects\papyrus\src\StressTest\StressTestSuite\data\single_model_test\mai_voice\mai_voice_file_sampling_input\README_CHANGES.md-21-  - `en-gb`: ["dan", "amuche", "elan", "marilyn", "aster", "brook", "jazz", "rio"]
+--
+C:\Projects\papyrus\docs\stress-testing\methodology.md-16-3. **Test duration:** 5 minutes per QPS level to ensure stable measurements
+C:\Projects\papyrus\docs\stress-testing\methodology.md-17-4. **Goal:** Identify the maximum sustainable QPS before performance degrades 
+C:\Projects\papyrus\docs\stress-testing\methodology.md-18-
+C:\Projects\papyrus\docs\stress-testing\methodology.md:19:Sample **settings.json** for initial scan. 
+C:\Projects\papyrus\docs\stress-testing\methodology.md-20-
+C:\Projects\papyrus\docs\stress-testing\methodology.md-21-```json
+C:\Projects\papyrus\docs\stress-testing\methodology.md-22-{
+--
+C:\Projects\papyrus\docs\stress-testing\methodology.md-46-- When you need precise threshold values for capacity planning
+C:\Projects\papyrus\docs\stress-testing\methodology.md-47-- To validate specific performance requirements within a narrow QPS range
+C:\Projects\papyrus\docs\stress-testing\methodology.md-48-
+C:\Projects\papyrus\docs\stress-testing\methodology.md:49:Sample **settings.json** for fine scan. 
+C:\Projects\papyrus\docs\stress-testing\methodology.md-50-
+C:\Projects\papyrus\docs\stress-testing\methodology.md-51-```json
+C:\Projects\papyrus\docs\stress-testing\methodology.md-52-{
+--
+C:\Projects\papyrus\docs\stress-testing\methodology.md-71-
+C:\Projects\papyrus\docs\stress-testing\methodology.md-72-**When to use:** Bake tests are essential for batch and eval workloads because these workloads require 100% availability as their primary performance threshold. Extended testing ensures the system can maintain this requirement over time.Bake tests are not necessary for online/production workloads since latency is usually the critical performance metric. Availability degradation occurs well after latency thresholds are exceeded, so shorter scan tests are sufficient.
+C:\Projects\papyrus\docs\stress-testing\methodology.md-73-
+C:\Projects\papyrus\docs\stress-testing\methodology.md:74:Sample **settings.json** for bake test. 
+C:\Projects\papyrus\docs\stress-testing\methodology.md-75-```json
+C:\Projects\papyrus\docs\stress-testing\methodology.md-76-{
+C:\Projects\papyrus\docs\stress-testing\methodology.md-77-    "papyrus-endpoint":"https://WestUS2.papyrus.binginternal.com",
+--
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-141-### Settings File Structure 
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-142-
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-143-In `src\StressTest\StressTestSuiteV2\routine_stress_test_input\` there are two task list files:
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md:144:- [papyrus_stress_test_settings.json](../../src/StressTest/StressTestSuiteV2/routine_stress_test_input/papyrus_stress_test_settings.json): For Papyrus team stress tests
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md:145:- [picasso_stress_test_settings.json](../../src/StressTest/StressTestSuiteV2/routine_stress_test_input/picasso_stress_test_settings.json): For Picasso (Copilot) team stress tests
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-146-
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-147-Please note that any changes to folder `src\StressTest\StressTestSuiteV2\routine_stress_test_input\` will automatically trigger a config deployment.
+C:\Projects\papyrus\docs\stress-testing\auto-stress-test.md-148-
+--
+C:\Projects\papyrus\docs\stress-testing\analysis.md-8-
+C:\Projects\papyrus\docs\stress-testing\analysis.md-9-Inside this directory, you’ll find:
+C:\Projects\papyrus\docs\stress-testing\analysis.md-10-
+C:\Projects\papyrus\docs\stress-testing\analysis.md:11:1. Concurrency or QPS Folder (based on the scan type specified in settings.json):
+C:\Projects\papyrus\docs\stress-testing\analysis.md-12-    - Contains a summary.json file for each tested concurrency/QPS level.
+C:\Projects\papyrus\docs\stress-testing\analysis.md-13-    - Key metrics include:
+C:\Projects\papyrus\docs\stress-testing\analysis.md-14-        - Availability
+--
+C:\Projects\papyrus\docs\quota\requesting.md-69-4. **Use a meaningful title and description**. Describe the feature in a way that can be clearly understood by others, including executive leadership.
+C:\Projects\papyrus\docs\quota\requesting.md-70-5. **Include existing capacity footprint**. If your feature has existing quota, quantify it and demonstrate high utilization.
+C:\Projects\papyrus\docs\quota\requesting.md-71-6. **Assume global load balancing**. Region-specific requests need exceptional justification.
+C:\Projects\papyrus\docs\quota\requesting.md:72:7. **Demonstrate reasonable effort to optimize**. Could a distilled model or SLM achieve comparable results.
+--
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-26-| `TimeoutToLastTokenMs` | int64 | Full request timeout |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-27-| `PreferredEndpoint` | string | Soft affinity to a specific endpoint URL |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-28-| `TreatPreferredEndpointMandatory` | bool | Hard affinity — fail if preferred is unavailable |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md:29:| `DislikedEndpoints` | vector\<string\> | Best-effort avoidance list |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-30-| `Tags` | int64 | Endpoint eligibility filter bitflags (e.g., Enterprise) |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-31-| `Flags` | GetEndpointFlags | `InternalAllowQueueing`, `InternalQueueDelayEstimationRequest` |
+C:\Projects\papyrus\docs\designs\glb\get-endpoint.md-32-| `TrackingToken` | blob | Opaque state blob from prior attempt (for retries) |
+--
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-489-  5. Update summary record with correct counts
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-490-```
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-491-
+C:\Projects\papyrus\docs\designs\glb\queue-system.md:492:This cleanup is **best-effort** — if the write fails due to ETag contention, it skips and relies on a future request to retry. Cleanup is throttled:
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-493-- `MaxNumberOfExpiredBucketsToCleanup` limits how many buckets are cleaned per call (randomly sampled).
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-494-- `EnablePeriodicalBucketCleanup` enables rate-limited cleanup tied to `BucketCleanupInfo`.
+C:\Projects\papyrus\docs\designs\glb\queue-system.md-495-
+--
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-86-
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-87-There are some benefits using responses api compared with chat completions api:
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-88-
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md:89:1. For reasoning models like o-series and GPT5-Reasoning series, you can control reasoning effort to different levels, and you can get the reasoning summary:
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-90-
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-91-```python
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-92-import requests
+--
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-113-        }
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-114-    ],
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-115-    "reasoning": {
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md:116:        "effort": "medium",
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-117-        "summary": "auto"
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-118-    }
+C:\Projects\papyrus\docs\model-inference-usage\responses-api.md-119-}
+--
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md-1-# Papyrus Configuration Files Documentation
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md-2-
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md:3:This documentation is a work in progress and is a best effort. Currently, many fields outlined here are not needed and will be removed.
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md-4-
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md-5-## ModelConfig.json
+C:\Projects\papyrus\docs\dri-guide\service-configuration.md-6-
+--
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md-1-# Papyrus Configuration Files Documentation
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md-2-
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md:3:This documentation is a work in progress and is a best effort. Currently, many fields outlined here are not needed and will be removed.
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md-4-
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md-5-## ModelConfig.json
+C:\Projects\papyrus\docs\deprecateddocs\oldmonitoringanddri\configdocs.md-6-

@@ -1,0 +1,1917 @@
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/FallbackAppIdToProductResolver.cs b/fleetServices/CodexSite/src/Core/ServiceTree/FallbackAppIdToProductResolver.cs
+deleted file mode 100644
+index 478a02c8..00000000
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/FallbackAppIdToProductResolver.cs
++++ /dev/null
+@@ -1,269 +0,0 @@
+-// --------------------------------------------------------------------
+-// <copyright file="FallbackAppIdToProductResolver.cs" company="Microsoft">
+-//   Copyright (c) Microsoft. All rights reserved.
+-// </copyright>
+-// --------------------------------------------------------------------
+-
+-namespace CodeXCore.ServiceTree
+-{
+-    using System;
+-    using System.Collections.Generic;
+-    using System.Threading;
+-    using System.Threading.Tasks;
+-    using CodeXCore.Services;
+-    using Microsoft.Extensions.Logging;
+-
+-    /// <summary>
+-    /// Decorator that wraps an <see cref="IAppIdToProductResolver"/> and backfills
+-    /// any missing mappings from a hardcoded snapshot.
+-    /// </summary>
+-    /// <remarks>
+-    /// TODO: Remove this entire class once Kusto Reader permissions are confirmed
+-    /// working for the multi-tenant app (3696e88e-d200-4d2c-9503-c503b9c4547f) on the
+-    /// ServiceTree Kusto cluster. Update DI registration in CodexSite.cs to use
+-    /// AppIdToProductResolver directly instead.
+-    /// </remarks>
+-    public sealed class FallbackAppIdToProductResolver : IAppIdToProductResolver
+-    {
+-        /// <summary>
+-        /// Hardcoded fallback mapping from QuotaAppId to Product/ServiceGroupName.
+-        /// Snapshot taken from staging on 2026-03-11.
+-        /// </summary>
+-        private static readonly IReadOnlyDictionary<string, string> FallbackMappings =
+-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+-            {
+-                // Ads (20 entries)
+-                { "ads", "Ads" },
+-                { "AdsAIAgents-NonProd", "Ads" },
+-                { "AdsAIAgents-Prod", "Ads" },
+-                { "AdsCopilot", "Ads" },
+-                { "AdsCopilotProd", "Ads" },
+-                { "AdsPromptDev", "Ads" },
+-                { "AdsSponsoredCollectionsLLMAAD", "Ads" },
+-                { "adssummary", "Ads" },
+-                { "ats-flowagent-papyrus", "Ads" },
+-                { "AutosCopilot", "Ads" },
+-                { "cashbackai", "Ads" },
+-                { "clarity-science-quota", "Ads" },
+-                { "ClarityCoPilot", "Ads" },
+-                { "DeepSeekAMDCNSearchAds", "Ads" },
+-                { "gen-shopping", "Ads" },
+-                { "msansar", "Ads" },
+-                { "recommendation", "Ads" },
+-                { "retailsearch", "Ads" },
+-                { "shopping", "Ads" },
+-                { "ShoppingCopilot", "Ads" },
+-                { "ShoppingInference", "Ads" },
+-
+-                // Bing (134 entries)
+-                { "1p-uhrs", "Bing" },
+-                { "ADOCopilot", "Bing" },
+-                { "AlgoblockBatch", "Bing" },
+-                { "AnswersRanker", "Bing" },
+-                { "ask", "Bing" },
+-                { "BICSERP", "Bing" },
+-                { "bing-adb-defense", "Bing" },
+-                { "bing-ai-tools-id", "Bing" },
+-                { "bing-translate-jahi", "Bing" },
+-                { "bing-travel-trip-planner", "Bing" },
+-                { "BingFeedbackAutoTriage", "Bing" },
+-                { "BingGC", "Bing" },
+-                { "BingImageCreator", "Bing" },
+-                { "bingmetrics", "Bing" },
+-                { "bingtrivia", "Bing" },
+-                { "BingWebmaster", "Bing" },
+-                { "CallistoLLMPlayground", "Bing" },
+-                { "CDEXWeb", "Bing" },
+-                { "chinaaiinfra", "Bing" },
+-                { "CIP", "Bing" },
+-                { "CodexPlayground", "Bing" },
+-                { "codexQnA", "Bing" },
+-                { "common", "Bing" },
+-                { "companionplatform", "Bing" },
+-                { "content-understanding-internal-tools", "Bing" },
+-                { "CopilotFeedbackTriage", "Bing" },
+-                { "coresearch", "Bing" },
+-                { "crowdintelligenceplatform", "Bing" },
+-                { "defensive", "Bing" },
+-                { "Designer", "Bing" },
+-                { "devhelpseg", "Bing" },
+-                { "dummy", "Bing" },
+-                { "dummyclient", "Bing" },
+-                { "edge-sidepanel-ai", "Bing" },
+-                { "EdgeAvatar", "Bing" },
+-                { "edgebrowser", "Bing" },
+-                { "edgecompose", "Bing" },
+-                { "edgedevtoolsai", "Bing" },
+-                { "EdgeMLCodex", "Bing" },
+-                { "EdgeMLFavorites", "Bing" },
+-                { "edgemltabs", "Bing" },
+-                { "EdgeThemes", "Bing" },
+-                { "Entity Extraction Validation App", "Bing" },
+-                { "eureka", "Bing" },
+-                { "EurekaStressTest", "Bing" },
+-                { "FoodSegment", "Bing" },
+-                { "genserp", "Bing" },
+-                { "GenSerpLocal", "Bing" },
+-                { "genserppfp", "Bing" },
+-                { "GenUI", "Bing" },
+-                { "ImageExperiences", "Bing" },
+-                { "imagegeneratortrial", "Bing" },
+-                { "LangTools", "Bing" },
+-                { "local", "Bing" },
+-                { "maps", "Bing" },
+-                { "MMBIC", "Bing" },
+-                { "multimedia", "Bing" },
+-                { "multimedia/metrics", "Bing" },
+-                { "newsandfeeds", "Bing" },
+-                { "Oaas", "Bing" },
+-                { "officeplus-ai", "Bing" },
+-                { "PAACodexOnlineApp", "Bing" },
+-                { "papyrus-app", "Bing" },
+-                { "PapyrusCustomer", "Bing" },
+-                { "PapyrusDev", "Bing" },
+-                { "papyrusplus-app", "Bing" },
+-                { "PapyrusTrafficSimulator", "Bing" },
+-                { "PapyrusTrafficSimulatorChat", "Bing" },
+-                { "personalization", "Bing" },
+-                { "prism", "Bing" },
+-                { "qnactxads", "Bing" },
+-                { "QueryProbe", "Bing" },
+-                { "querysuggestions", "Bing" },
+-                { "realestatedescriptions", "Bing" },
+-                { "SearchHarder", "Bing" },
+-                { "SMILEwithPromptFlow", "Bing" },
+-                { "Spam Interactive", "Bing" },
+-                { "SpamAndNII", "Bing" },
+-                { "speedbird", "Bing" },
+-                { "sportsai", "Bing" },
+-                { "sportsnrt", "Bing" },
+-                { "SportsStats", "Bing" },
+-                { "stci", "Bing" },
+-                { "SwftKey", "Bing" },
+-                { "SwiftKey", "Bing" },
+-                { "SwiftkeyAI|Assistants|Prod", "Bing" },
+-                { "SwiftkeyAI|Assistants|Testing", "Bing" },
+-                { "TitanAutoInsights", "Bing" },
+-                { "ToneTranslations", "Bing" },
+-                { "UFDevQuota", "Bing" },
+-                { "UHRS", "Bing" },
+-                { "uhrsclientapplication_cip", "Bing" },
+-                { "VideoChat", "Bing" },
+-                { "videochatproduction", "Bing" },
+-                { "videocreator", "Bing" },
+-                { "VirtualCreator", "Bing" },
+-                { "VisualSearch", "Bing" },
+-                { "WDPLLMPlatform", "Bing" },
+-                { "WDPLLMPlatformInt", "Bing" },
+-                { "webdata", "Bing" },
+-                { "webxtiris", "Bing" },
+-                { "wholepage", "Bing" },
+-                { "wholepage/adr", "Bing" },
+-                { "wholepage/answers", "Bing" },
+-                { "wholepage/askstca", "Bing" },
+-                { "wholepage/companion", "Bing" },
+-                { "wholepage/csbmetrics", "Bing" },
+-                { "wholepage/dldefectsup", "Bing" },
+-                { "WholePage/FoodQnASegment", "Bing" },
+-                { "wholepage/navclass", "Bing" },
+-                { "wholepage/qgdr", "Bing" },
+-                { "wholepage/sirdata", "Bing" },
+-                { "wholepage/sirquality", "Bing" },
+-                { "wholepage/TopicContentExtraction", "Bing" },
+-                { "wholepage/uxlabs", "Bing" },
+-                { "wholepage/wpsbs", "Bing" },
+-                { "WPOQABot", "Bing" },
+-                { "XapAiService", "Bing" },
+-
+-                // MSN (18 entries)
+-                { "BingNews", "MSN" },
+-                { "CasualGames", "MSN" },
+-                { "ContentGems", "MSN" },
+-                { "contentgems/webgems", "MSN" },
+-                { "contentverticals", "MSN" },
+-                { "dailybrief", "MSN" },
+-                { "DeepSeekAMDNews", "MSN" },
+-                { "feedsandverticals", "MSN" },
+-                { "HiveKA", "MSN" },
+-                { "mmsads", "MSN" },
+-                { "MSANBrandSafety", "MSN" },
+-                { "MSANCopilot", "MSN" },
+-                { "msnlivesite", "MSN" },
+-                { "msnvideo", "MSN" },
+-                { "NewsIngestion", "MSN" },
+-                { "NewsModeration", "MSN" },
+-                { "recoplatform", "MSN" },
+-                { "WeatherCommentary", "MSN" },
+-
+-                // Non-catalog ServiceGroupName fallbacks (22 entries)
+-                { "adskeywordplanner", "Advertising Supply Platform" },
+-                { "RAI", "CoreAI - Responsible AI - RAI (SLBird)" },
+-                { "cp-metrics-insight", "MAI Apps" },
+-                { "cp-metrics-insight-adhoc", "MAI Apps" },
+-                { "mai-agent-framework", "MAI Apps" },
+-                { "mapi", "MAI Apps" },
+-                { "monet", "MAI Apps" },
+-                { "msftaicopilot/aipa-tmp-analytics", "MAI Apps" },
+-                { "picasso", "MAI Apps" },
+-                { "PhiDev", "Phi Service Group" },
+-                { "Sydney", "Relevance & Sciences" },
+-                { "turing", "Relevance & Sciences" },
+-                { "turing-cdex", "Relevance & Sciences" },
+-                { "TuringBot", "Relevance & Sciences" },
+-                { "TuringBot|SearchHarder", "Relevance & Sciences" },
+-                { "msftaicopilot", "Research and Dev" },
+-                { "msftaicopilot-datagen", "Research and Dev" },
+-                { "msftaicopilot-mega", "Research and Dev" },
+-                { "msftaicopilot/mega", "Research and Dev" },
+-                { "msftaicopilot/pii_removal", "Research and Dev" },
+-                { "msftaicopilot/umami", "Research and Dev" },
+-                { "MonetizeImaqSupplyPolicyEnforcement", "Xandr" },
+-            };
+-
+-        private readonly AppIdToProductResolver inner;
+-        private readonly ILogger<FallbackAppIdToProductResolver> logger;
+-
+-        /// <summary>
+-        /// Initializes a new instance of the <see cref="FallbackAppIdToProductResolver"/> class.
+-        /// </summary>
+-        /// <param name="inner">The real resolver to delegate to first.</param>
+-        /// <param name="logger">Logger.</param>
+-        public FallbackAppIdToProductResolver(
+-            AppIdToProductResolver inner,
+-            ILogger<FallbackAppIdToProductResolver> logger)
+-        {
+-            this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
+-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<IReadOnlyDictionary<string, string>> ResolveAsync(CancellationToken cancellationToken)
+-        {
+-            // Delegate to the real resolver first.
+-            var liveResult = await this.inner.ResolveAsync(cancellationToken);
+-
+-            // Copy into a mutable dictionary so we can backfill.
+-            var result = new Dictionary<string, string>(liveResult, StringComparer.OrdinalIgnoreCase);
+-
+-            // Backfill any missing entries from the hardcoded fallback snapshot.
+-            var backfillCount = 0;
+-            foreach (var kvp in FallbackMappings)
+-            {
+-                if (result.TryAdd(kvp.Key, kvp.Value))
+-                {
+-                    backfillCount++;
+-                }
+-            }
+-
+-            if (backfillCount > 0)
+-            {
+-                this.logger.LogInformation(
+-                    "FallbackAppIdToProductResolver backfilled {BackfillCount} AppId→Product mappings from fallback snapshot. Total: {TotalCount}.",
+-                    backfillCount,
+-                    result.Count);
+-            }
+-
+-            return result;
+-        }
+-    }
+-}
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeClient.cs b/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeClient.cs
+deleted file mode 100644
+index 06709016..00000000
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeClient.cs
++++ /dev/null
+@@ -1,24 +0,0 @@
+-// <copyright file="IServiceTreeClient.cs" company="Microsoft">
+-// Copyright (c) Microsoft. All rights reserved.
+-// </copyright>
+-
+-namespace CodeXCore.ServiceTree
+-{
+-    using System;
+-    using System.Threading;
+-    using System.Threading.Tasks;
+-
+-    /// <summary>
+-    /// Service Tree client abstraction.
+-    /// </summary>
+-    public interface IServiceTreeClient
+-    {
+-        /// <summary>
+-        /// Gets the service hierarchy for a node id.
+-        /// </summary>
+-        /// <param name="id">Service tree node id.</param>
+-        /// <param name="cancellationToken">Cancellation token.</param>
+-        /// <returns>The Service Tree node, or null if not found.</returns>
+-        Task<ServiceTreeNode?> GetServiceHierarchyAsync(Guid id, CancellationToken cancellationToken);
+-    }
+-}
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeNodeLookup.cs b/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeNodeLookup.cs
+index 7e02da6a..79bcaa80 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeNodeLookup.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/IServiceTreeNodeLookup.cs
+@@ -13,26 +13,6 @@ namespace CodeXCore.ServiceTree
+     /// </summary>
+     public interface IServiceTreeNodeLookup
+     {
+-        /// <summary>
+-        /// Gets Service Tree nodes for the provided ids.
+-        /// </summary>
+-        /// <param name="ids">Service Tree ids.</param>
+-        /// <param name="cancellationToken">Cancellation token.</param>
+-        /// <returns>Lookup of id to Service Tree node.</returns>
+-        Task<IReadOnlyDictionary<string, ServiceTreeNode>> GetNodesByIdsAsync(
+-            IEnumerable<string> ids,
+-            CancellationToken cancellationToken);
+-
+-        /// <summary>
+-        /// Gets Service Tree nodes for the provided internal ids.
+-        /// </summary>
+-        /// <param name="internalIds">Internal ids.</param>
+-        /// <param name="cancellationToken">Cancellation token.</param>
+-        /// <returns>Lookup of internal id to Service Tree node.</returns>
+-        Task<IReadOnlyDictionary<int, ServiceTreeNode>> GetNodesByInternalIdsAsync(
+-            IEnumerable<int> internalIds,
+-            CancellationToken cancellationToken);
+-
+         /// <summary>
+         /// Gets Service Tree nodes with full hierarchy data from the hierarchy snapshot table.
+         /// </summary>
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeAuthenticationMode.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeAuthenticationMode.cs
+deleted file mode 100644
+index f69dffaf..00000000
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeAuthenticationMode.cs
++++ /dev/null
+@@ -1,27 +0,0 @@
+-// <copyright file="ServiceTreeAuthenticationMode.cs" company="Microsoft">
+-// Copyright (c) Microsoft. All rights reserved.
+-// </copyright>
+-
+-namespace CodeXCore.ServiceTree
+-{
+-    /// <summary>
+-    /// Authentication modes supported by Service Tree client.
+-    /// </summary>
+-    public enum ServiceTreeAuthenticationMode
+-    {
+-        /// <summary>
+-        /// Authenticate using client certificates against the /cert/api endpoint.
+-        /// </summary>
+-        Certificate = 0,
+-
+-        /// <summary>
+-        /// Authenticate using AAD tokens against the /api endpoint.
+-        /// </summary>
+-        Aad = 1,
+-
+-        /// <summary>
+-        /// Authenticate using DefaultAzureCredential against the /api endpoint.
+-        /// </summary>
+-        DefaultAzureCredential = 2,
+-    }
+-}
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClient.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClient.cs
+deleted file mode 100644
+index 5d842704..00000000
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClient.cs
++++ /dev/null
+@@ -1,392 +0,0 @@
+-// <copyright file="ServiceTreeClient.cs" company="Microsoft">
+-// Copyright (c) Microsoft. All rights reserved.
+-// </copyright>
+-
+-namespace CodeXCore.ServiceTree
+-{
+-    using System;
+-    using System.Net.Http;
+-    using System.Net.Http.Headers;
+-    using System.Security;
+-    using System.Security.Cryptography;
+-    using System.Security.Cryptography.X509Certificates;
+-    using System.Text.Json;
+-    using System.Threading;
+-    using System.Threading.Tasks;
+-    using global::Azure.Core;
+-    using global::Azure.Identity;
+-    using Microsoft.Extensions.Logging;
+-
+-#pragma warning disable CA1303 // Log messages are not localized.
+-
+-    /// <summary>
+-    /// Lightweight Service Tree client that retrieves node details via REST.
+-    /// </summary>
+-    public sealed class ServiceTreeClient : IServiceTreeClient, IDisposable
+-    {
+-        private readonly HttpClient httpClient;
+-        private readonly Uri baseUri;
+-        private readonly ILogger<ServiceTreeClient> logger;
+-        private readonly bool isConfigured;
+-        private readonly ServiceTreeAuthenticationMode authenticationMode;
+-        private readonly TokenCredential? tokenCredential;
+-        private readonly string? tokenScope;
+-
+-        /// <summary>
+-        /// Initializes a new instance of the <see cref="ServiceTreeClient"/> class.
+-        /// </summary>
+-        /// <param name="options">Client options.</param>
+-        /// <param name="logger">Logger instance.</param>
+-        public ServiceTreeClient(ServiceTreeClientOptions options, ILogger<ServiceTreeClient> logger)
+-        {
+-            if (options == null)
+-            {
+-                throw new ArgumentNullException(nameof(options));
+-            }
+-
+-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+-            this.baseUri = new Uri(this.AppendTrailingSlash(options.Endpoint));
+-            this.authenticationMode = options.AuthenticationMode;
+-
+-#pragma warning disable CA2000 // HttpClient owns handler when disposeHandler is true.
+-            HttpClientHandler handler = new HttpClientHandler();
+-#pragma warning restore CA2000
+-            try
+-            {
+-                if (this.authenticationMode == ServiceTreeAuthenticationMode.Aad)
+-                {
+-                    this.tokenCredential = this.TryCreateAadCredential(options, out var scope);
+-                    if (this.tokenCredential != null && !string.IsNullOrWhiteSpace(scope))
+-                    {
+-                        this.tokenScope = scope;
+-                        this.isConfigured = true;
+-                    }
+-                    else
+-                    {
+-                        this.logger.LogWarning("ServiceTreeClient: AAD authentication is enabled, but credentials are not configured.");
+-                        this.isConfigured = false;
+-                    }
+-                }
+-                else if (this.authenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+-                {
+-                    this.tokenCredential = this.CreateDefaultAzureCredential(options, out var scope);
+-                    if (this.tokenCredential != null && !string.IsNullOrWhiteSpace(scope))
+-                    {
+-                        this.tokenScope = scope;
+-                        this.isConfigured = true;
+-                    }
+-                    else
+-                    {
+-                        this.logger.LogWarning("ServiceTreeClient: DefaultAzureCredential auth is enabled, but no token scope is configured.");
+-                        this.isConfigured = false;
+-                    }
+-                }
+-                else
+-                {
+-                    var cert = this.TryLoadCertificate(options);
+-                    if (cert != null)
+-                    {
+-                        handler.ClientCertificates.Add(cert);
+-                        this.isConfigured = true;
+-                    }
+-                    else
+-                    {
+-                        this.logger.LogWarning("ServiceTreeClient: no client certificate found. Requests may fail without cert-based auth.");
+-                        this.isConfigured = false;
+-                    }
+-                }
+-
+-                this.httpClient = new HttpClient(handler, disposeHandler: true);
+-                handler = null;
+-                this.httpClient.Timeout = TimeSpan.FromSeconds(30);
+-            }
+-            finally
+-            {
+-                handler?.Dispose();
+-            }
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<ServiceTreeNode?> GetServiceHierarchyAsync(Guid id, CancellationToken cancellationToken)
+-        {
+-            if (!this.isConfigured)
+-            {
+-                return null;
+-            }
+-
+-            var requestUri = new Uri(this.baseUri, $"ServiceHierarchy({id})?$select=Id,Name,OrganizationPath,Path,NodeType,ParentNodeType");
+-            try
+-            {
+-                using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+-                if (this.authenticationMode == ServiceTreeAuthenticationMode.Aad
+-                    || this.authenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+-                {
+-                    var token = await this.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+-                    if (string.IsNullOrWhiteSpace(token))
+-                    {
+-                        return null;
+-                    }
+-
+-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+-                }
+-
+-                using var response = await this.httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+-                if (!response.IsSuccessStatusCode)
+-                {
+-                    var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+-                    this.logger.LogWarning("ServiceTreeClient: request failed ({Status}) for {Id}. Body: {Body}", response.StatusCode, id, body);
+-                    return null;
+-                }
+-
+-                var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+-                if (string.IsNullOrWhiteSpace(content))
+-                {
+-                    return null;
+-                }
+-
+-                using var doc = JsonDocument.Parse(content);
+-                var root = doc.RootElement;
+-
+-                if (root.ValueKind != JsonValueKind.Object)
+-                {
+-                    return null;
+-                }
+-
+-                return new ServiceTreeNode
+-                {
+-                    InternalId = 0,
+-                    Id = this.TryGetString(root, "Id"),
+-                    Level = string.Empty,
+-                    ParentInternalId = 0,
+-                    Name = this.TryGetString(root, "Name"),
+-                    OrganizationPath = this.TryGetString(root, "OrganizationPath"),
+-                    Path = this.TryGetString(root, "Path"),
+-                    NodeType = this.TryGetString(root, "NodeType"),
+-                    ParentNodeType = this.TryGetString(root, "ParentNodeType"),
+-                };
+-            }
+-            catch (OperationCanceledException)
+-            {
+-                throw;
+-            }
+-            catch (CredentialUnavailableException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: AAD credentials unavailable for {Id}.", id);
+-                return null;
+-            }
+-            catch (AuthenticationFailedException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: AAD authentication failed for {Id}.", id);
+-                return null;
+-            }
+-            catch (HttpRequestException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: request failed for {Id}.", id);
+-                return null;
+-            }
+-            catch (JsonException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: invalid response for {Id}.", id);
+-                return null;
+-            }
+-            catch (InvalidOperationException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: failed to process response for {Id}.", id);
+-                return null;
+-            }
+-            catch (FormatException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: malformed response for {Id}.", id);
+-                return null;
+-            }
+-        }
+-
+-        /// <summary>
+-        /// Disposes managed resources.
+-        /// </summary>
+-        public void Dispose()
+-        {
+-            this.httpClient.Dispose();
+-        }
+-
+-        private string AppendTrailingSlash(string endpoint)
+-        {
+-            if (string.IsNullOrWhiteSpace(endpoint))
+-            {
+-                return string.Empty;
+-            }
+-
+-            return endpoint.EndsWith("/", StringComparison.Ordinal) ? endpoint : $"{endpoint}/";
+-        }
+-
+-        private async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken)
+-        {
+-            if (this.tokenCredential == null || string.IsNullOrWhiteSpace(this.tokenScope))
+-            {
+-                return string.Empty;
+-            }
+-
+-            var tokenRequest = new TokenRequestContext(new[] { this.tokenScope });
+-            var token = await this.tokenCredential.GetTokenAsync(tokenRequest, cancellationToken).ConfigureAwait(false);
+-            return token.Token;
+-        }
+-
+-        private TokenCredential? TryCreateAadCredential(ServiceTreeClientOptions options, out string scope)
+-        {
+-            scope = this.ResolveAadScope(options);
+-            if (string.IsNullOrWhiteSpace(scope))
+-            {
+-                this.logger.LogWarning("ServiceTreeClient: AAD scope is not configured.");
+-                return null;
+-            }
+-
+-            if (!string.IsNullOrWhiteSpace(options.AadClientSecret))
+-            {
+-                if (string.IsNullOrWhiteSpace(options.AadTenantId) || string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    this.logger.LogWarning("ServiceTreeClient: AAD client secret set but tenant/client id missing.");
+-                    return null;
+-                }
+-
+-                return new ClientSecretCredential(options.AadTenantId, options.AadClientId, options.AadClientSecret);
+-            }
+-
+-            if (!string.IsNullOrWhiteSpace(options.AadClientCertificateBase64))
+-            {
+-                if (string.IsNullOrWhiteSpace(options.AadTenantId) || string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    this.logger.LogWarning("ServiceTreeClient: AAD client certificate set but tenant/client id missing.");
+-                    return null;
+-                }
+-
+-#pragma warning disable CA2000 // Certificate lifetime is tied to the client.
+-                var certificate = this.TryLoadAadCertificate(options);
+-#pragma warning restore CA2000
+-                if (certificate == null)
+-                {
+-                    return null;
+-                }
+-
+-                var credentialOptions = new ClientCertificateCredentialOptions
+-                {
+-                    SendCertificateChain = true,
+-                };
+-
+-                return new ClientCertificateCredential(options.AadTenantId, options.AadClientId, certificate, credentialOptions);
+-            }
+-
+-            if (!string.IsNullOrWhiteSpace(options.AadClientId))
+-            {
+-                return new ManagedIdentityCredential(options.AadClientId);
+-            }
+-
+-            return new ManagedIdentityCredential();
+-        }
+-
+-        private TokenCredential? CreateDefaultAzureCredential(ServiceTreeClientOptions options, out string scope)
+-        {
+-            scope = this.ResolveAadScope(options);
+-            if (string.IsNullOrWhiteSpace(scope))
+-            {
+-                return null;
+-            }
+-
+-            var credentialOptions = new DefaultAzureCredentialOptions
+-            {
+-                ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.AadClientId) ? null : options.AadClientId,
+-            };
+-
+-            return new DefaultAzureCredential(credentialOptions);
+-        }
+-
+-        private string ResolveAadScope(ServiceTreeClientOptions options)
+-        {
+-            if (!string.IsNullOrWhiteSpace(options.AadScope))
+-            {
+-                return options.AadScope;
+-            }
+-
+-            if (string.IsNullOrWhiteSpace(options.AadAudience))
+-            {
+-                return string.Empty;
+-            }
+-
+-            var trimmed = options.AadAudience.TrimEnd('/');
+-            return $"{trimmed}/.default";
+-        }
+-
+-        private string TryGetString(JsonElement element, string propertyName)
+-        {
+-            if (element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
+-            {
+-                return value.GetString() ?? string.Empty;
+-            }
+-
+-            return string.Empty;
+-        }
+-
+-        private X509Certificate2? TryLoadCertificate(ServiceTreeClientOptions options)
+-        {
+-            if (!string.IsNullOrWhiteSpace(options.CertificateBase64))
+-            {
+-                try
+-                {
+-                    var raw = Convert.FromBase64String(options.CertificateBase64);
+-                    return new X509Certificate2(raw, options.CertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
+-                }
+-                catch (FormatException ex)
+-                {
+-                    this.logger.LogWarning(ex, "ServiceTreeClient: failed to load certificate from base64.");
+-                }
+-                catch (CryptographicException ex)
+-                {
+-                    this.logger.LogWarning(ex, "ServiceTreeClient: failed to load certificate from base64.");
+-                }
+-            }
+-
+-            if (string.IsNullOrWhiteSpace(options.CertificateThumbprint))
+-            {
+-                return null;
+-            }
+-
+-            try
+-            {
+-                using var store = new X509Store(options.CertificateStoreName, options.CertificateStoreLocation);
+-                store.Open(OpenFlags.ReadOnly);
+-                var found = store.Certificates.Find(X509FindType.FindByThumbprint, options.CertificateThumbprint, validOnly: false);
+-                return found.Count > 0 ? found[0] : null;
+-            }
+-            catch (CryptographicException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: failed to load certificate from store.");
+-                return null;
+-            }
+-            catch (SecurityException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: failed to load certificate from store.");
+-                return null;
+-            }
+-        }
+-
+-        private X509Certificate2? TryLoadAadCertificate(ServiceTreeClientOptions options)
+-        {
+-            try
+-            {
+-                var raw = Convert.FromBase64String(options.AadClientCertificateBase64);
+-                return new X509Certificate2(raw, options.AadClientCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
+-            }
+-            catch (FormatException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: failed to load AAD certificate from base64.");
+-            }
+-            catch (CryptographicException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeClient: failed to load AAD certificate from base64.");
+-            }
+-
+-            return null;
+-        }
+-    }
+-
+-#pragma warning restore CA1303
+-}
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
+index 7274bf2b..a97bfbaf 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeClientOptions.cs
+@@ -5,86 +5,24 @@
+ namespace CodeXCore.ServiceTree
+ {
+     using System;
+-    using System.Security.Cryptography.X509Certificates;
+ 
+     /// <summary>
+     /// Options for Service Tree client configuration.
+     /// </summary>
+     public sealed class ServiceTreeClientOptions
+     {
+-        private const string DefaultCertificateEndpoint = "https://servicetree.msftcloudes.com/cert/api";
+-        private const string DefaultAadEndpoint = "https://servicetree.msftcloudes.com/api";
++        private const string DefaultEndpoint = "https://servicetree.msftcloudes.com/api";
+         private const string DefaultManagedIdentityClientId = "c49a32cb-df08-439a-be5a-56e2b0fe5afe";
+ 
+         /// <summary>
+         /// Gets or sets the Service Tree API endpoint.
+         /// </summary>
+-        public string Endpoint { get; set; } = DefaultAadEndpoint;
++        public string Endpoint { get; set; } = DefaultEndpoint;
+ 
+         /// <summary>
+-        /// Gets or sets the authentication mode for Service Tree.
++        /// Gets or sets the managed identity client ID used for DefaultAzureCredential.
+         /// </summary>
+-        public ServiceTreeAuthenticationMode AuthenticationMode { get; set; } = ServiceTreeAuthenticationMode.DefaultAzureCredential;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate thumbprint.
+-        /// </summary>
+-        public string CertificateThumbprint { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate store name.
+-        /// </summary>
+-        public StoreName CertificateStoreName { get; set; } = StoreName.My;
+-
+-        /// <summary>
+-        /// Gets or sets the certificate store location.
+-        /// </summary>
+-        public StoreLocation CertificateStoreLocation { get; set; } = StoreLocation.LocalMachine;
+-
+-        /// <summary>
+-        /// Gets or sets the Base64-encoded certificate (PFX).
+-        /// </summary>
+-        public string CertificateBase64 { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the password for the Base64-encoded certificate.
+-        /// </summary>
+-        public string CertificatePassword { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD tenant ID (or domain) used for token acquisition.
+-        /// </summary>
+-        public string AadTenantId { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD client ID used for app auth or managed identity.
+-        /// </summary>
+-        public string AadClientId { get; set; } = DefaultManagedIdentityClientId;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD client secret for app auth.
+-        /// </summary>
+-        public string AadClientSecret { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the Base64-encoded AAD client certificate (PFX).
+-        /// </summary>
+-        public string AadClientCertificateBase64 { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the password for the Base64-encoded AAD client certificate.
+-        /// </summary>
+-        public string AadClientCertificatePassword { get; set; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets or sets the AAD audience (resource) used to build the scope.
+-        /// </summary>
+-        public string AadAudience { get; set; } = "https://microsoft.onmicrosoft.com/ServiceTree";
+-
+-        /// <summary>
+-        /// Gets or sets the AAD scope. If empty, the scope is derived from the audience.
+-        /// </summary>
+-        public string AadScope { get; set; } = string.Empty;
++        public string ManagedIdentityClientId { get; set; } = DefaultManagedIdentityClientId;
+ 
+         /// <summary>
+         /// Builds options from environment variables.
+@@ -94,97 +32,16 @@ namespace CodeXCore.ServiceTree
+         {
+             var options = new ServiceTreeClientOptions();
+ 
+-            bool endpointSet = false;
+             string? endpoint = Environment.GetEnvironmentVariable("SERVICETREE_ENDPOINT");
+             if (!string.IsNullOrWhiteSpace(endpoint))
+             {
+                 options.Endpoint = endpoint.Trim();
+-                endpointSet = true;
+-            }
+-
+-            string? authMode = Environment.GetEnvironmentVariable("SERVICETREE_AUTH_MODE");
+-            if (!string.IsNullOrWhiteSpace(authMode)
+-                && Enum.TryParse(authMode, true, out ServiceTreeAuthenticationMode parsedMode))
+-            {
+-                options.AuthenticationMode = parsedMode;
+-            }
+-
+-            string? thumbprint = Environment.GetEnvironmentVariable("SERVICETREE_CERT_THUMBPRINT");
+-            if (!string.IsNullOrWhiteSpace(thumbprint))
+-            {
+-                options.CertificateThumbprint = thumbprint.Trim();
+-            }
+-
+-            string? storeName = Environment.GetEnvironmentVariable("SERVICETREE_CERT_STORE_NAME");
+-            if (!string.IsNullOrWhiteSpace(storeName) && Enum.TryParse(storeName, true, out StoreName parsedStoreName))
+-            {
+-                options.CertificateStoreName = parsedStoreName;
+-            }
+-
+-            string? storeLocation = Environment.GetEnvironmentVariable("SERVICETREE_CERT_STORE_LOCATION");
+-            if (!string.IsNullOrWhiteSpace(storeLocation) && Enum.TryParse(storeLocation, true, out StoreLocation parsedStoreLocation))
+-            {
+-                options.CertificateStoreLocation = parsedStoreLocation;
+-            }
+-
+-            string? certBase64 = Environment.GetEnvironmentVariable("SERVICETREE_CERT_BASE64");
+-            if (!string.IsNullOrWhiteSpace(certBase64))
+-            {
+-                options.CertificateBase64 = certBase64.Trim();
+-            }
+-
+-            string? certPassword = Environment.GetEnvironmentVariable("SERVICETREE_CERT_PASSWORD");
+-            if (!string.IsNullOrWhiteSpace(certPassword))
+-            {
+-                options.CertificatePassword = certPassword;
+-            }
+-
+-            string? aadTenantId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_TENANT_ID");
+-            if (!string.IsNullOrWhiteSpace(aadTenantId))
+-            {
+-                options.AadTenantId = aadTenantId.Trim();
+-            }
+-
+-            string? aadClientId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_ID");
+-            if (!string.IsNullOrWhiteSpace(aadClientId))
+-            {
+-                options.AadClientId = aadClientId.Trim();
+-            }
+-
+-            string? aadClientSecret = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_SECRET");
+-            if (!string.IsNullOrWhiteSpace(aadClientSecret))
+-            {
+-                options.AadClientSecret = aadClientSecret;
+-            }
+-
+-            string? aadCertBase64 = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CERT_BASE64");
+-            if (!string.IsNullOrWhiteSpace(aadCertBase64))
+-            {
+-                options.AadClientCertificateBase64 = aadCertBase64.Trim();
+-            }
+-
+-            string? aadCertPassword = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CERT_PASSWORD");
+-            if (!string.IsNullOrWhiteSpace(aadCertPassword))
+-            {
+-                options.AadClientCertificatePassword = aadCertPassword;
+-            }
+-
+-            string? aadAudience = Environment.GetEnvironmentVariable("SERVICETREE_AAD_AUDIENCE");
+-            if (!string.IsNullOrWhiteSpace(aadAudience))
+-            {
+-                options.AadAudience = aadAudience.Trim();
+-            }
+-
+-            string? aadScope = Environment.GetEnvironmentVariable("SERVICETREE_AAD_SCOPE");
+-            if (!string.IsNullOrWhiteSpace(aadScope))
+-            {
+-                options.AadScope = aadScope.Trim();
+             }
+ 
+-            if (!endpointSet && (options.AuthenticationMode == ServiceTreeAuthenticationMode.Aad
+-                || options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential))
++            string? clientId = Environment.GetEnvironmentVariable("SERVICETREE_AAD_CLIENT_ID");
++            if (!string.IsNullOrWhiteSpace(clientId))
+             {
+-                options.Endpoint = DefaultAadEndpoint;
++                options.ManagedIdentityClientId = clientId.Trim();
+             }
+ 
+             return options;
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
+index a14a430d..fa0b742c 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoClient.cs
+@@ -9,8 +9,6 @@ namespace CodeXCore.ServiceTree
+     using System.Collections.Generic;
+     using System.Data;
+     using System.Linq;
+-    using System.Security.Cryptography;
+-    using System.Security.Cryptography.X509Certificates;
+     using System.Text;
+     using System.Threading;
+     using System.Threading.Tasks;
+@@ -82,95 +80,14 @@ namespace CodeXCore.ServiceTree
+ 
+             this.maxBatchSize = this.kustoOptions.MaxBatchSize <= 0 ? 200 : this.kustoOptions.MaxBatchSize;
+             this.isConfigured = true;
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<IReadOnlyDictionary<string, ServiceTreeNode>> GetNodesByIdsAsync(
+-            IEnumerable<string> ids,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new ConcurrentDictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+-            if (!this.isConfigured)
+-            {
+-                return results;
+-            }
+-
+-            var uniqueIds = (ids ?? Enumerable.Empty<string>())
+-                .Where(id => !string.IsNullOrWhiteSpace(id))
+-                .Select(id => id.Trim())
+-                .Distinct(StringComparer.OrdinalIgnoreCase)
+-                .ToList();
+-
+-            if (uniqueIds.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var batches = this.SplitStringBatches(uniqueIds, this.maxBatchSize);
+-            using var semaphore = new SemaphoreSlim(this.maxConcurrency);
+-            var tasks = batches.Select(async batch =>
+-            {
+-                await semaphore.WaitAsync(cancellationToken);
+-                try
+-                {
+-                    var batchResults = await this.QueryBatchByIdsAsync(batch, cancellationToken);
+-                    foreach (var pair in batchResults)
+-                    {
+-                        results[pair.Key] = pair.Value;
+-                    }
+-                }
+-                finally
+-                {
+-                    semaphore.Release();
+-                }
+-            }).ToList();
+ 
+-            await Task.WhenAll(tasks);
+-            return results;
+-        }
+-
+-        /// <inheritdoc/>
+-        public async Task<IReadOnlyDictionary<int, ServiceTreeNode>> GetNodesByInternalIdsAsync(
+-            IEnumerable<int> internalIds,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new ConcurrentDictionary<int, ServiceTreeNode>();
+-            if (!this.isConfigured)
+-            {
+-                return results;
+-            }
+-
+-            var uniqueIds = (internalIds ?? Enumerable.Empty<int>())
+-                .Where(id => id > 0)
+-                .Distinct()
+-                .ToList();
+-
+-            if (uniqueIds.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var batches = this.SplitIntBatches(uniqueIds, this.maxBatchSize);
+-            using var semaphore = new SemaphoreSlim(this.maxConcurrency);
+-            var tasks = batches.Select(async batch =>
+-            {
+-                await semaphore.WaitAsync(cancellationToken);
+-                try
+-                {
+-                    var batchResults = await this.QueryBatchByInternalIdsAsync(batch, cancellationToken);
+-                    foreach (var pair in batchResults)
+-                    {
+-                        results[pair.Key] = pair.Value;
+-                    }
+-                }
+-                finally
+-                {
+-                    semaphore.Release();
+-                }
+-            }).ToList();
+-
+-            await Task.WhenAll(tasks);
+-            return results;
++            this.logger.LogInformation(
++                "ServiceTreeKustoClient: Configured. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, TokenScope={TokenScope}.",
++                this.kustoOptions.ClusterUri,
++                this.kustoOptions.Database,
++                this.kustoOptions.HierarchyTableName,
++                this.tokenCredential.GetType().Name,
++                this.tokenScope);
+         }
+ 
+         /// <inheritdoc/>
+@@ -208,6 +125,17 @@ namespace CodeXCore.ServiceTree
+                         results[pair.Key] = pair.Value;
+                     }
+                 }
++                catch (OperationCanceledException)
++                {
++                    throw;
++                }
++                catch (Exception ex)
++                {
++                    this.logger.LogWarning(
++                        ex,
++                        "ServiceTreeKustoClient: Batch of {BatchCount} IDs failed; continuing with remaining batches.",
++                        batch.Count);
++                }
+                 finally
+                 {
+                     semaphore.Release();
+@@ -223,146 +151,6 @@ namespace CodeXCore.ServiceTree
+             return value.Replace("'", "''", StringComparison.Ordinal);
+         }
+ 
+-        private async Task<IReadOnlyDictionary<string, ServiceTreeNode>> QueryBatchByIdsAsync(
+-            IReadOnlyList<string> batch,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new Dictionary<string, ServiceTreeNode>(StringComparer.OrdinalIgnoreCase);
+-            if (batch.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var query = this.BuildQueryByIds(batch);
+-            var requestProperties = new ClientRequestProperties();
+-            requestProperties.ClientRequestId = $"CodexSite.ServiceTreeKusto.{Guid.NewGuid():N}";
+-
+-            try
+-            {
+-                using var provider = this.CreateQueryProvider();
+-                using var reader = await provider.ExecuteQueryAsync(this.kustoOptions.Database, query, requestProperties);
+-
+-                // Kusto V2 responses may return metadata frames before the data.
+-                // Advance past result sets that have no rows.
+-                do
+-                {
+-                    var idOrdinal = this.TryGetOrdinal(reader, "Id");
+-                    if (idOrdinal < 0)
+-                    {
+-                        continue;
+-                    }
+-
+-                    var internalIdOrdinal = this.TryGetOrdinal(reader, "InternalId");
+-                    var levelOrdinal = this.TryGetOrdinal(reader, "Level");
+-                    var nameOrdinal = this.TryGetOrdinal(reader, "Name");
+-                    var organizationOrdinal = this.TryGetOrdinal(reader, "Organization");
+-                    var parentOrganizationOrdinal = this.TryGetOrdinal(reader, "ParentOrganizationId");
+-
+-                    while (reader.Read())
+-                    {
+-                        var id = this.ReadString(reader, idOrdinal);
+-                        if (string.IsNullOrWhiteSpace(id))
+-                        {
+-                            continue;
+-                        }
+-
+-                        results[id] = new ServiceTreeNode
+-                        {
+-                            InternalId = this.ReadInt(reader, internalIdOrdinal),
+-                            Id = id,
+-                            Level = this.ReadString(reader, levelOrdinal),
+-                            Name = this.ReadString(reader, nameOrdinal),
+-                            OrganizationPath = this.ReadString(reader, organizationOrdinal),
+-                            Path = string.Empty,
+-                            ParentInternalId = this.ReadInt(reader, parentOrganizationOrdinal),
+-                            ParentId = this.ReadString(reader, parentOrganizationOrdinal),
+-                        };
+-                    }
+-                }
+-                while (results.Count == 0 && reader.NextResult());
+-            }
+-            catch (OperationCanceledException)
+-            {
+-                throw;
+-            }
+-            catch (Exception ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: query failed.");
+-            }
+-
+-            return results;
+-        }
+-
+-        private async Task<IReadOnlyDictionary<int, ServiceTreeNode>> QueryBatchByInternalIdsAsync(
+-            IReadOnlyList<int> batch,
+-            CancellationToken cancellationToken)
+-        {
+-            var results = new Dictionary<int, ServiceTreeNode>();
+-            if (batch.Count == 0)
+-            {
+-                return results;
+-            }
+-
+-            var query = this.BuildQueryByInternalIds(batch);
+-            var requestProperties = new ClientRequestProperties();
+-            requestProperties.ClientRequestId = $"CodexSite.ServiceTreeKusto.{Guid.NewGuid():N}";
+-
+-            try
+-            {
+-                using var provider = this.CreateQueryProvider();
+-                using var reader = await provider.ExecuteQueryAsync(this.kustoOptions.Database, query, requestProperties);
+-
+-                // Kusto V2 responses may return metadata frames before the data.
+-                // Advance past result sets that have no rows.
+-                do
+-                {
+-                    var internalIdOrdinal = this.TryGetOrdinal(reader, "InternalId");
+-                    if (internalIdOrdinal < 0)
+-                    {
+-                        continue;
+-                    }
+-
+-                    var idOrdinal = this.TryGetOrdinal(reader, "Id");
+-                    var levelOrdinal = this.TryGetOrdinal(reader, "Level");
+-                    var nameOrdinal = this.TryGetOrdinal(reader, "Name");
+-                    var organizationOrdinal = this.TryGetOrdinal(reader, "Organization");
+-                    var parentOrganizationOrdinal = this.TryGetOrdinal(reader, "ParentOrganizationId");
+-
+-                    while (reader.Read())
+-                    {
+-                        var internalId = this.ReadInt(reader, internalIdOrdinal);
+-                        if (internalId <= 0)
+-                        {
+-                            continue;
+-                        }
+-
+-                        results[internalId] = new ServiceTreeNode
+-                        {
+-                            InternalId = internalId,
+-                            Id = this.ReadString(reader, idOrdinal),
+-                            Level = this.ReadString(reader, levelOrdinal),
+-                            Name = this.ReadString(reader, nameOrdinal),
+-                            OrganizationPath = this.ReadString(reader, organizationOrdinal),
+-                            Path = string.Empty,
+-                            ParentInternalId = this.ReadInt(reader, parentOrganizationOrdinal),
+-                            ParentId = this.ReadString(reader, parentOrganizationOrdinal),
+-                        };
+-                    }
+-                }
+-                while (results.Count == 0 && reader.NextResult());
+-            }
+-            catch (OperationCanceledException)
+-            {
+-                throw;
+-            }
+-            catch (Exception ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: query failed.");
+-            }
+-
+-            return results;
+-        }
+-
+         private async Task<IReadOnlyDictionary<string, ServiceTreeNode>> QueryHierarchyBatchAsync(
+             IReadOnlyList<string> batch,
+             CancellationToken cancellationToken)
+@@ -494,7 +282,15 @@ namespace CodeXCore.ServiceTree
+             }
+             catch (Exception ex)
+             {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: hierarchy query failed.");
++                this.logger.LogError(
++                    ex,
++                    "ServiceTreeKustoClient: hierarchy query failed. Cluster={Cluster}, Database={Database}, Table={Table}, CredentialType={CredentialType}, BatchCount={BatchCount}.",
++                    this.kustoOptions.ClusterUri,
++                    this.kustoOptions.Database,
++                    this.kustoOptions.HierarchyTableName,
++                    this.tokenCredential?.GetType().Name ?? "null",
++                    batch.Count);
++                throw;
+             }
+ 
+             return results;
+@@ -522,82 +318,6 @@ namespace CodeXCore.ServiceTree
+             }
+         }
+ 
+-        private IEnumerable<IReadOnlyList<int>> SplitIntBatches(IReadOnlyList<int> ids, int batchSize)
+-        {
+-            for (int i = 0; i < ids.Count; i += batchSize)
+-            {
+-                var count = Math.Min(batchSize, ids.Count - i);
+-                var batch = new List<int>(count);
+-                for (int j = 0; j < count; j++)
+-                {
+-                    batch.Add(ids[i + j]);
+-                }
+-
+-                yield return batch;
+-            }
+-        }
+-
+-        private string BuildQueryByIds(IReadOnlyList<string> ids)
+-        {
+-            var builder = new StringBuilder();
+-
+-            if (this.kustoOptions.UseOrganizationFunction
+-                && !string.IsNullOrWhiteSpace(this.kustoOptions.OrganizationFunctionName))
+-            {
+-                var functionName = this.NormalizeIdentifier(this.kustoOptions.OrganizationFunctionName);
+-                builder.AppendLine("let Organizations = datatable(OrganizationId:string)[");
+-                builder.Append(string.Join(", ", ids.Select(id => $"'{EscapeKustoString(id)}'")));
+-                builder.AppendLine("];");
+-                builder.AppendLine($"{functionName}(Organizations)");
+-                builder.AppendLine("| project");
+-                builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-                builder.AppendLine("    Id = tostring(column_ifexists(\"OrganizationId\", \"\")),");
+-                builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-                builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-                builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-                builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            }
+-            else
+-            {
+-                var tableName = this.NormalizeIdentifier(this.kustoOptions.TableName);
+-                var idColumn = this.NormalizeIdentifier(this.kustoOptions.IdColumnName);
+-                builder.AppendLine("let ids = datatable(TargetId:string)[");
+-                builder.Append(string.Join(", ", ids.Select(id => $"'{EscapeKustoString(id.ToLowerInvariant())}'")));
+-                builder.AppendLine("];");
+-                builder.AppendLine($"{tableName}");
+-                builder.AppendLine($"| where tolower({idColumn}) in (ids)");
+-                builder.AppendLine("| project");
+-                builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-                builder.AppendLine($"    Id = tostring({idColumn}),");
+-                builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-                builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-                builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-                builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            }
+-
+-            return builder.ToString();
+-        }
+-
+-        private string BuildQueryByInternalIds(IReadOnlyList<int> ids)
+-        {
+-            var tableName = this.NormalizeIdentifier(this.kustoOptions.TableName);
+-            var idColumn = this.NormalizeIdentifier(this.kustoOptions.IdColumnName);
+-            var builder = new StringBuilder();
+-            builder.AppendLine("let ids = datatable(InternalId:int)[");
+-            builder.Append(string.Join(", ", ids.Select(id => id.ToString())));
+-            builder.AppendLine("];");
+-            builder.AppendLine($"{tableName}");
+-            builder.AppendLine("| where InternalId in (ids)");
+-            builder.AppendLine("| project");
+-            builder.AppendLine("    InternalId = toint(column_ifexists(\"InternalId\", column_ifexists(\"OrganizationInternalId\", 0))),");
+-            builder.AppendLine($"    Id = tostring({idColumn}),");
+-            builder.AppendLine("    Level = tostring(column_ifexists(\"Level\", \"\")),");
+-            builder.AppendLine("    Name = tostring(column_ifexists(\"OrganizationName\", column_ifexists(\"Name\", \"\"))),");
+-            builder.AppendLine("    Organization = tostring(column_ifexists(\"Organization\", \"\")),");
+-            builder.AppendLine("    ParentOrganizationId = tostring(column_ifexists(\"ParentOrganizationId\", \"\"))");
+-            return builder.ToString();
+-        }
+-
+         private string ResolveTokenScope(ServiceTreeKustoOptions options)
+         {
+             if (!string.IsNullOrWhiteSpace(options.TokenScope))
+@@ -613,14 +333,13 @@ namespace CodeXCore.ServiceTree
+             return string.Empty;
+         }
+ 
+-        private TokenCredential? ResolveTokenCredential(
++        private TokenCredential ResolveTokenCredential(
+             ICredentialFactory? credentialFactory,
+             ServiceTreeClientOptions options)
+         {
+-            // When ICredentialFactory is available AND auth mode is DefaultAzureCredential,
+-            // use the factory for cross-tenant support (PME MSI → MSFT tenant token).
+-            if (credentialFactory != null
+-                && options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
++            // When ICredentialFactory is available, use it for cross-tenant support
++            // (PME MSI → MSFT tenant token).
++            if (credentialFactory != null)
+             {
+                 try
+                 {
+@@ -639,56 +358,10 @@ namespace CodeXCore.ServiceTree
+                 }
+             }
+ 
+-            return this.CreateTokenCredential(options);
+-        }
+-
+-        private TokenCredential? CreateTokenCredential(ServiceTreeClientOptions options)
+-        {
+-            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.DefaultAzureCredential)
+-            {
+-                return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+-                {
+-                    ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.AadClientId) ? null : options.AadClientId,
+-                });
+-            }
+-
+-            if (options.AuthenticationMode == ServiceTreeAuthenticationMode.Aad)
++            return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+             {
+-                if (!string.IsNullOrWhiteSpace(options.AadClientSecret)
+-                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+-                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    return new ClientSecretCredential(options.AadTenantId, options.AadClientId, options.AadClientSecret);
+-                }
+-
+-                if (!string.IsNullOrWhiteSpace(options.AadClientCertificateBase64)
+-                    && !string.IsNullOrWhiteSpace(options.AadTenantId)
+-                    && !string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-#pragma warning disable CA2000 // Certificate lifetime is tied to the credential.
+-                    var cert = this.TryLoadAadCertificate(options);
+-#pragma warning restore CA2000
+-                    if (cert == null)
+-                    {
+-                        return null;
+-                    }
+-
+-                    return new ClientCertificateCredential(
+-                        options.AadTenantId,
+-                        options.AadClientId,
+-                        cert,
+-                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
+-                }
+-
+-                if (!string.IsNullOrWhiteSpace(options.AadClientId))
+-                {
+-                    return new ManagedIdentityCredential(options.AadClientId);
+-                }
+-
+-                return new ManagedIdentityCredential();
+-            }
+-
+-            return null;
++                ManagedIdentityClientId = string.IsNullOrWhiteSpace(options.ManagedIdentityClientId) ? null : options.ManagedIdentityClientId,
++            });
+         }
+ 
+         private string NormalizeIdentifier(string value)
+@@ -716,23 +389,6 @@ namespace CodeXCore.ServiceTree
+             }
+         }
+ 
+-        private int ReadInt(IDataReader reader, int ordinal)
+-        {
+-            if (ordinal < 0 || reader.IsDBNull(ordinal))
+-            {
+-                return 0;
+-            }
+-
+-            var value = reader.GetValue(ordinal);
+-            return value switch
+-            {
+-                int number => number,
+-                long number => (int)number,
+-                string text when int.TryParse(text, out var parsed) => parsed,
+-                _ => 0,
+-            };
+-        }
+-
+         private string ReadString(IDataReader reader, int ordinal)
+         {
+             if (ordinal < 0 || reader.IsDBNull(ordinal))
+@@ -743,25 +399,6 @@ namespace CodeXCore.ServiceTree
+             var value = reader.GetValue(ordinal);
+             return value?.ToString() ?? string.Empty;
+         }
+-
+-        private X509Certificate2? TryLoadAadCertificate(ServiceTreeClientOptions options)
+-        {
+-            try
+-            {
+-                var raw = Convert.FromBase64String(options.AadClientCertificateBase64);
+-                return new X509Certificate2(raw, options.AadClientCertificatePassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
+-            }
+-            catch (FormatException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+-            }
+-            catch (CryptographicException ex)
+-            {
+-                this.logger.LogWarning(ex, "ServiceTreeKustoClient: failed to load AAD certificate from base64.");
+-            }
+-
+-            return null;
+-        }
+     }
+ 
+ #pragma warning restore CA1303
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoOptions.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoOptions.cs
+index 24a03a09..3d034534 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoOptions.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeKustoOptions.cs
+@@ -21,26 +21,6 @@ namespace CodeXCore.ServiceTree
+         /// </summary>
+         public string Database { get; set; } = "Shared";
+ 
+-        /// <summary>
+-        /// Gets or sets the Service Tree table name.
+-        /// </summary>
+-        public string TableName { get; set; } = "ServiceTree_OrganizationHierarchy_Snapshot";
+-
+-        /// <summary>
+-        /// Gets or sets the name of the organization lookup function.
+-        /// </summary>
+-        public string OrganizationFunctionName { get; set; } = "GetOrganizations";
+-
+-        /// <summary>
+-        /// Gets or sets a value indicating whether to use the organization lookup function.
+-        /// </summary>
+-        public bool UseOrganizationFunction { get; set; } = true;
+-
+-        /// <summary>
+-        /// Gets or sets the column name that stores the Service Tree id.
+-        /// </summary>
+-        public string IdColumnName { get; set; } = "OrganizationId";
+-
+         /// <summary>
+         /// Gets or sets the token scope override for Kusto.
+         /// </summary>
+@@ -76,30 +56,6 @@ namespace CodeXCore.ServiceTree
+                 options.Database = database.Trim();
+             }
+ 
+-            string? tableName = Environment.GetEnvironmentVariable("SERVICETREE_KUSTO_TABLE");
+-            if (!string.IsNullOrWhiteSpace(tableName))
+-            {
+-                options.TableName = tableName.Trim();
+-            }
+-
+-            string? functionName = Environment.GetEnvironmentVariable("SERVICETREE_KUSTO_FUNCTION_NAME");
+-            if (!string.IsNullOrWhiteSpace(functionName))
+-            {
+-                options.OrganizationFunctionName = functionName.Trim();
+-            }
+-
+-            string? useFunction = Environment.GetEnvironmentVariable("SERVICETREE_KUSTO_USE_FUNCTION");
+-            if (!string.IsNullOrWhiteSpace(useFunction) && bool.TryParse(useFunction, out var parsedBool))
+-            {
+-                options.UseOrganizationFunction = parsedBool;
+-            }
+-
+-            string? idColumn = Environment.GetEnvironmentVariable("SERVICETREE_KUSTO_ID_COLUMN");
+-            if (!string.IsNullOrWhiteSpace(idColumn))
+-            {
+-                options.IdColumnName = idColumn.Trim();
+-            }
+-
+             string? tokenScope = Environment.GetEnvironmentVariable("SERVICETREE_KUSTO_TOKEN_SCOPE");
+             if (!string.IsNullOrWhiteSpace(tokenScope))
+             {
+diff --git a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeNode.cs b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeNode.cs
+index ca0a3713..894ec466 100644
+--- a/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeNode.cs
++++ b/fleetServices/CodexSite/src/Core/ServiceTree/ServiceTreeNode.cs
+@@ -9,11 +9,6 @@ namespace CodeXCore.ServiceTree
+     /// </summary>
+     public sealed class ServiceTreeNode
+     {
+-        /// <summary>
+-        /// Gets the internal id.
+-        /// </summary>
+-        public int InternalId { get; init; }
+-
+         /// <summary>
+         /// Gets the node id.
+         /// </summary>
+@@ -24,41 +19,11 @@ namespace CodeXCore.ServiceTree
+         /// </summary>
+         public string Level { get; init; } = string.Empty;
+ 
+-        /// <summary>
+-        /// Gets the parent internal id.
+-        /// </summary>
+-        public int ParentInternalId { get; init; }
+-
+-        /// <summary>
+-        /// Gets the parent organization id (string).
+-        /// </summary>
+-        public string ParentId { get; init; } = string.Empty;
+-
+         /// <summary>
+         /// Gets the node name.
+         /// </summary>
+         public string Name { get; init; } = string.Empty;
+ 
+-        /// <summary>
+-        /// Gets the organization path.
+-        /// </summary>
+-        public string OrganizationPath { get; init; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets the service tree path.
+-        /// </summary>
+-        public string Path { get; init; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets the node type.
+-        /// </summary>
+-        public string NodeType { get; init; } = string.Empty;
+-
+-        /// <summary>
+-        /// Gets the parent node type.
+-        /// </summary>
+-        public string ParentNodeType { get; init; } = string.Empty;
+-
+         /// <summary>
+         /// Gets the service group id from the hierarchy.
+         /// </summary>
+diff --git a/fleetServices/CodexSite/src/Service/CodexSite.cs b/fleetServices/CodexSite/src/Service/CodexSite.cs
+index 938431ac..0f9ae85f 100644
+--- a/fleetServices/CodexSite/src/Service/CodexSite.cs
++++ b/fleetServices/CodexSite/src/Service/CodexSite.cs
+@@ -109,10 +109,7 @@ namespace Microsoft.Falcon.CodexSite
+             services.AddSingleton(ServiceTreeKustoOptions.FromEnvironment());
+             services.AddSingleton<IServiceTreeNodeLookup, ServiceTreeKustoClient>();
+             services.AddSingleton<IServiceTreeParentResolver, ServiceTreeParentResolver>();
+-            services.AddSingleton<AppIdToProductResolver>();
+-
+-            // TODO: Replace with just AppIdToProductResolver once Kusto Reader permissions are confirmed working.
+-            services.AddSingleton<IAppIdToProductResolver, FallbackAppIdToProductResolver>();
++            services.AddSingleton<IAppIdToProductResolver, AppIdToProductResolver>();
+ 
+             var isTestMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IS_TEST"));
+             if (isTestMode)
+diff --git a/fleetServices/CodexSite/tests/UnitTests/Core/AppIdToProductResolverTests.cs b/fleetServices/CodexSite/tests/UnitTests/Core/AppIdToProductResolverTests.cs
+new file mode 100644
+index 00000000..ddbe403d
+--- /dev/null
++++ b/fleetServices/CodexSite/tests/UnitTests/Core/AppIdToProductResolverTests.cs
+@@ -0,0 +1,286 @@
++// ----------------------------------------------------------------------------
++// <copyright file="AppIdToProductResolverTests.cs" company="Microsoft">
++//     Copyright (c) Microsoft. All rights reserved.
++// </copyright>
++// ----------------------------------------------------------------------------
++
++namespace Microsoft.Falcon.CodexSite.UnitTests.Core
++{
++    using System.Collections.Generic;
++    using System.Linq;
++    using System.Threading;
++    using System.Threading.Tasks;
++    using CodeXCore.ServiceTree;
++    using CodeXCore.Services;
++    using CodeXCore.ViewModel;
++    using Microsoft.Extensions.Logging;
++    using Microsoft.VisualStudio.TestTools.UnitTesting;
++    using Moq;
++
++    /// <summary>
++    /// Unit tests for <see cref="AppIdToProductResolver"/>.
++    /// </summary>
++    [TestClass]
++    public sealed class AppIdToProductResolverTests
++    {
++        private Mock<IPapyrusConfigService> mockConfigService;
++        private Mock<IServiceTreeParentResolver> mockParentResolver;
++        private Mock<ILogger<AppIdToProductResolver>> mockLogger;
++        private AppIdToProductResolver resolver;
++
++        /// <summary>
++        /// Initializes test dependencies before each test.
++        /// </summary>
++        [TestInitialize]
++        public void Setup()
++        {
++            this.mockConfigService = new Mock<IPapyrusConfigService>();
++            this.mockParentResolver = new Mock<IServiceTreeParentResolver>();
++            this.mockLogger = new Mock<ILogger<AppIdToProductResolver>>();
++            this.resolver = new AppIdToProductResolver(
++                this.mockConfigService.Object,
++                this.mockParentResolver.Object,
++                this.mockLogger.Object);
++        }
++
++        /// <summary>
++        /// Verifies that quotas with resolved parents produce correct AppId→Product mappings.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_WithResolvedParents_MapsAppIdToProduct()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = "ads", ServiceName = "Ads", ServiceTreeId = "st-ads" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "edgebrowser", ServiceName = "Edge", ServiceTreeId = "st-bing" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "BingNews", ServiceName = "BingNews", ServiceTreeId = "st-msn" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-ads"] = new ParentServiceGroupInfo("sg-ads", "Microsoft Ads", "Ads"),
++                ["st-bing"] = new ParentServiceGroupInfo("sg-bing", "Bing Experiences", "Bing"),
++                ["st-msn"] = new ParentServiceGroupInfo("sg-msn", "Feed & Verticals", "MSN"),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .ReturnsAsync(parentLookup);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(3, result.Count);
++            Assert.AreEqual("Ads", result["ads"]);
++            Assert.AreEqual("Bing", result["edgebrowser"]);
++            Assert.AreEqual("MSN", result["BingNews"]);
++        }
++
++        /// <summary>
++        /// Verifies that quotas with no parent match are excluded from the result.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_WithUnresolvedParents_ExcludesUnmatchedAppIds()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = "known", ServiceName = "Known", ServiceTreeId = "st-known" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "unknown", ServiceName = "Unknown", ServiceTreeId = "st-unknown" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-known"] = new ParentServiceGroupInfo("sg-1", "Bing Experiences", "Bing"),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .ReturnsAsync(parentLookup);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(1, result.Count);
++            Assert.AreEqual("Bing", result["known"]);
++            Assert.IsFalse(result.ContainsKey("unknown"));
++        }
++
++        /// <summary>
++        /// Verifies that empty quotas return an empty mapping.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_WithNoQuotas_ReturnsEmpty()
++        {
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(new List<ServiceAuthQuotaManagement>());
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(0, result.Count);
++        }
++
++        /// <summary>
++        /// Verifies that null quotas return an empty mapping.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_WithNullQuotas_ReturnsEmpty()
++        {
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync((IList<ServiceAuthQuotaManagement>)null);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(0, result.Count);
++        }
++
++        /// <summary>
++        /// Verifies that quotas with empty QuotaAppId are skipped.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_SkipsQuotasWithEmptyAppId()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = string.Empty, ServiceName = "NoId", ServiceTreeId = "st-1" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "valid", ServiceName = "Valid", ServiceTreeId = "st-1" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-1"] = new ParentServiceGroupInfo("sg-1", "Bing Experiences", "Bing"),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .ReturnsAsync(parentLookup);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(1, result.Count);
++            Assert.AreEqual("Bing", result["valid"]);
++        }
++
++        /// <summary>
++        /// Verifies that duplicate QuotaAppIds keep only the first mapping.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_DuplicateAppIds_KeepsFirst()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = "dup", ServiceName = "First", ServiceTreeId = "st-ads" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "dup", ServiceName = "Second", ServiceTreeId = "st-bing" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-ads"] = new ParentServiceGroupInfo("sg-ads", "Microsoft Ads", "Ads"),
++                ["st-bing"] = new ParentServiceGroupInfo("sg-bing", "Bing Experiences", "Bing"),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .ReturnsAsync(parentLookup);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(1, result.Count);
++            Assert.AreEqual("Ads", result["dup"]);
++        }
++
++        /// <summary>
++        /// Verifies that parents with empty Product are excluded from the mapping.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_ParentWithEmptyProduct_ExcludesMapping()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = "noProduct", ServiceName = "NoProduct", ServiceTreeId = "st-1" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-1"] = new ParentServiceGroupInfo("sg-1", "Unknown Group", string.Empty),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .ReturnsAsync(parentLookup);
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(0, result.Count);
++        }
++
++        /// <summary>
++        /// Verifies that distinct ServiceTreeIds are passed to the parent resolver.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_DeduplicatesServiceTreeIds()
++        {
++            var quotas = new List<ServiceAuthQuotaManagement>
++            {
++                new ServiceAuthQuotaManagement { QuotaAppId = "a", ServiceName = "A", ServiceTreeId = "st-shared" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "b", ServiceName = "B", ServiceTreeId = "st-shared" },
++                new ServiceAuthQuotaManagement { QuotaAppId = "c", ServiceName = "C", ServiceTreeId = "st-other" },
++            };
++
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ReturnsAsync(quotas);
++
++            IEnumerable<string> capturedIds = null;
++            var parentLookup = new Dictionary<string, ParentServiceGroupInfo>
++            {
++                ["st-shared"] = new ParentServiceGroupInfo("sg-1", "Bing Experiences", "Bing"),
++                ["st-other"] = new ParentServiceGroupInfo("sg-2", "Microsoft Ads", "Ads"),
++            };
++
++            this.mockParentResolver
++                .Setup(x => x.ResolveParentsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
++                .Callback<IEnumerable<string>, CancellationToken>((ids, _) => capturedIds = ids.ToList())
++                .ReturnsAsync(parentLookup);
++
++            await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.IsNotNull(capturedIds);
++            Assert.AreEqual(2, capturedIds.Count());
++        }
++
++        /// <summary>
++        /// Verifies that exceptions from the config service are handled gracefully.
++        /// </summary>
++        [TestMethod]
++        public async Task ResolveAsync_WhenConfigServiceThrows_ReturnsEmpty()
++        {
++            this.mockConfigService
++                .Setup(x => x.GetServiceQuotaAndAuthManagementAsync(It.IsAny<string>()))
++                .ThrowsAsync(new System.Exception("Service unavailable"));
++
++            var result = await this.resolver.ResolveAsync(CancellationToken.None);
++
++            Assert.AreEqual(0, result.Count);
++        }
++    }
++}
+diff --git a/fleetServices/CodexUpdater/src/Service/Startup.cs b/fleetServices/CodexUpdater/src/Service/Startup.cs
+index 185ed96a..06b2a6b4 100644
+--- a/fleetServices/CodexUpdater/src/Service/Startup.cs
++++ b/fleetServices/CodexUpdater/src/Service/Startup.cs
+@@ -127,10 +127,7 @@ namespace Microsoft.Falcon.CodexUpdater
+             services.AddSingleton(ServiceTreeKustoOptions.FromEnvironment());
+             services.AddSingleton<IServiceTreeNodeLookup, ServiceTreeKustoClient>();
+             services.AddSingleton<IServiceTreeParentResolver, ServiceTreeParentResolver>();
+-            services.AddScoped<AppIdToProductResolver>();
+-
+-            // TODO: Replace with just AppIdToProductResolver once Kusto Reader permissions are confirmed working.
+-            services.AddScoped<IAppIdToProductResolver, FallbackAppIdToProductResolver>();
++            services.AddScoped<IAppIdToProductResolver, AppIdToProductResolver>();
+         }
+ 
+         /// <summary>

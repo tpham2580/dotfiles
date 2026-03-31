@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-30T11:15:32.964665",
+  "model": "claude-opus-4.6-1m",
+  "prompt_tokens": 101561,
+  "scaled_prompt_tokens": 101561,
+  "completion_tokens": 12,
+  "actual_limit": 936000,
+  "expected_limit": 936000,
+  "utilization_pct": 10.9,
+  "remaining_tokens": 834439,
+  "alert_level": "NORMAL",
+  "source": "completion"
+}

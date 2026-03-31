@@ -1,0 +1,85 @@
+{
+  "version": 2,
+  "plugins": {
+    "security-guidance@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\security-guidance\\d53f6ca4cdb0",
+        "version": "d53f6ca4cdb0",
+        "installedAt": "2026-03-17T18:23:14.194Z",
+        "lastUpdated": "2026-03-19T17:55:12.150Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "frontend-design@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\frontend-design\\d53f6ca4cdb0",
+        "version": "d53f6ca4cdb0",
+        "installedAt": "2026-03-17T18:23:34.416Z",
+        "lastUpdated": "2026-03-19T17:55:12.208Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "context7@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\context7\\d53f6ca4cdb0",
+        "version": "d53f6ca4cdb0",
+        "installedAt": "2026-03-17T18:23:59.781Z",
+        "lastUpdated": "2026-03-19T17:55:12.096Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "typescript-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\typescript-lsp\\1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-17T18:24:24.358Z",
+        "lastUpdated": "2026-03-17T18:24:24.358Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "csharp-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\csharp-lsp\\1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-17T18:24:48.651Z",
+        "lastUpdated": "2026-03-17T18:24:48.651Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "code-simplifier@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\code-simplifier\\1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-17T18:26:34.469Z",
+        "lastUpdated": "2026-03-17T18:26:34.469Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "github@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\github\\d53f6ca4cdb0",
+        "version": "d53f6ca4cdb0",
+        "installedAt": "2026-03-17T18:28:12.115Z",
+        "lastUpdated": "2026-03-19T17:55:12.127Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ],
+    "code-review@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "C:\\Users\\timpham\\.claude\\plugins\\cache\\claude-plugins-official\\code-review\\d53f6ca4cdb0",
+        "version": "d53f6ca4cdb0",
+        "installedAt": "2026-03-17T18:28:28.813Z",
+        "lastUpdated": "2026-03-19T17:55:12.176Z",
+        "gitCommitSha": "78497c524da3762865d47377357c30af5b50d522"
+      }
+    ]
+  }
+}
