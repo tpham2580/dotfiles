@@ -104,6 +104,7 @@
     },
 
     "bluetooth": {
+	    "on-click": "blueman-manager",
 	    "format": " {status}",
 	    "format-disabled": "", // an empty format will hide the module
 	    "format-connected": " {num_connections}",

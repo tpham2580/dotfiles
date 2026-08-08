@@ -17,14 +17,29 @@ monitor = eDP-1, 1920x1080@60, 0x0, 1.0
 monitor = , preferred, auto, 1
 
 # Desktop, dual monitor:
-#   DP-2 (ViewSonic VX2478) rotated left, to the left of primary
 #   DP-3 (Dell S2417DG) primary at 165Hz
-# monitor = DP-2, 2560x1440@60, 0x0, 1, transform, 1
+#   DP-2 (ViewSonic VX2478) rotated left, to the left of primary
 # monitor = DP-3, 2560x1440@165, 1440x0, 1
+# monitor = DP-2, 2560x1440@60, 0x0, 1, transform, 1
 
 # G15 Strix, built-in + external at 1440p165, DP-1 on the left:
 # monitor = DP-1, 2560x1440@165, 0x0, 1
 # monitor = eDP-1, 2560x1440@165, 2560x0, 1
+
+# --- workspace placement ----------------------------------------------------
+# Which monitor each workspace opens on. Only meaningful with more than one
+# output, so it lives here rather than in the shared config.
+# workspace = 1, monitor:DP-3, default:true
+# workspace = 2, monitor:DP-3
+# workspace = 3, monitor:DP-3
+# workspace = 4, monitor:DP-3
+# workspace = 5, monitor:DP-3
+# workspace = 6, monitor:DP-2
+# workspace = 7, monitor:DP-2
+# workspace = 8, monitor:DP-2
+
+# Some XWayland apps read the X11 primary output when deciding where to open.
+# exec-once = xrandr --output DP-3 --primary
 
 # --- wallpaper --------------------------------------------------------------
 # One swaybg per output. `-m fill` crops to fit, `-m fit` letterboxes.
