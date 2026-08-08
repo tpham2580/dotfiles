@@ -355,7 +355,18 @@ install_copilot_cli() {
 install_copilot_vim() {
   local dest="$HOME/.config/nvim/pack/github/start/copilot.vim"
   if [[ -d $dest/.git ]]; then
-    skip "copilot.vim already present"
+    # Update rather than skip. A --depth 1 clone never advances on its own, so
+    # skipping here let machines drift apart by many releases.
+    if (( DRY_RUN )); then
+      skip "copilot.vim present, would update"
+      return 0
+    fi
+    if git -C "$dest" fetch --quiet --depth 1 origin HEAD 2>/dev/null \
+      && git -C "$dest" reset --quiet --hard FETCH_HEAD 2>/dev/null; then
+      ok "copilot.vim updated ($(git -C "$dest" log --oneline -1))"
+    else
+      warn "copilot.vim present but could not be updated"
+    fi
     return 0
   fi
   run mkdir -p "$(dirname "$dest")"
