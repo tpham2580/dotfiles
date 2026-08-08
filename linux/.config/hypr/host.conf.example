@@ -48,6 +48,18 @@ exec = swaybg -m fill -i ~/.config/hypr/sledge-catppuccin.jpg
 # Desktop version (per-output, matching the rotated DP-2 above):
 # exec = swaybg -o DP-2 -m fit -i ~/.config/hypr/sledge-catppuccin.jpg & swaybg -o DP-3 -m fill -i ~/.config/hypr/sledge-catppuccin.jpg
 
+# --- Hyprland version compatibility -----------------------------------------
+# Machines can run different Hyprland versions, so version-specific options
+# belong here rather than in the shared config.
+#
+# Hyprland < 0.55 only: pseudotile is the master switch for pseudotiling, and
+# the mainMod + P binding does nothing without it. The option was REMOVED in
+# 0.55, so setting it there produces a config error — keep it commented out on
+# 0.55 and newer. Check with `hyprctl version`.
+# dwindle {
+#     pseudotile = yes
+# }
+
 # --- polkit authentication agent --------------------------------------------
 # Path depends on which desktop libraries the machine has installed.
 # Arch + polkit-gnome:
