@@ -196,6 +196,7 @@ function Install-Herdr {
     # after it here, and collapses any failure into a bare message with no line
     # number to act on.
     $installer = Join-Path ([System.IO.Path]::GetTempPath()) ('herdr-install-{0}.ps1' -f [guid]::NewGuid().ToString('N'))
+    $shim      = Join-Path ([System.IO.Path]::GetTempPath()) ('herdr-shim-{0}.ps1' -f [guid]::NewGuid().ToString('N'))
     try {
         Invoke-RestMethod -Uri 'https://herdr.dev/install.ps1' -TimeoutSec 60 -OutFile $installer
     }
@@ -204,18 +205,71 @@ function Install-Herdr {
         return
     }
 
+    # The upstream installer verifies the download by running herdr.exe out of
+    # its staging directory, then immediately renames that directory into place.
+    # Windows keeps the executable image open for roughly half a second after
+    # the process exits, and a directory cannot be renamed while anything inside
+    # it is open -- so the rename loses a race it never had a chance to win and
+    # the install dies on "the process cannot access the file because it is
+    # being used by another process" at install.ps1:638. This is not antivirus
+    # and not specific to any one machine: it reproduces 3/3 here running the
+    # documented `irm https://herdr.dev/install.ps1 | iex` verbatim.
+    #
+    # Retrying the move afterwards does NOT work. A failed directory move still
+    # creates the destination, so the retry moves the staging directory *inside*
+    # it and the binary lands at <release>\<staging>\herdr.exe, which upstream
+    # then fails to run. The lock has to be waited out *before* the move.
+    #
+    # All four upstream Move-Item calls (454, 635, 638, 641) pass exactly
+    # -LiteralPath and -Destination and none take pipeline input, so this proxy
+    # covers them faithfully. Dot-sourcing is what puts it in scope for the
+    # installer; the rest of its behaviour is untouched.
+    $shimBody = @'
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Wait-DotfilesUnlocked {
+    param([string]$Path, [int]$TimeoutMs = 15000)
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($true) {
+        $locked = $false
+        foreach ($file in @(Get-ChildItem -LiteralPath $Path -Recurse -File -Force -ErrorAction SilentlyContinue)) {
+            try { [System.IO.File]::Open($file.FullName, 'Open', 'Read', 'None').Dispose() }
+            catch { $locked = $true; break }
+        }
+        # On timeout, fall through and let the real Move-Item report the error.
+        if (-not $locked -or $sw.ElapsedMilliseconds -ge $TimeoutMs) { return }
+        Start-Sleep -Milliseconds 100
+    }
+}
+
+function Move-Item {
+    param(
+        [Parameter(Mandatory)][string]$LiteralPath,
+        [Parameter(Mandatory)][string]$Destination
+    )
+    if (Test-Path -LiteralPath $LiteralPath -PathType Container) {
+        Wait-DotfilesUnlocked -Path $LiteralPath
+    }
+    Microsoft.PowerShell.Management\Move-Item -LiteralPath $LiteralPath -Destination $Destination
+}
+
+. $env:DOTFILES_HERDR_INSTALLER
+'@
+    Set-Content -LiteralPath $shim -Value $shimBody -Encoding UTF8
+    $env:DOTFILES_HERDR_INSTALLER = $installer
+
     $pwshExe = (Get-Process -Id $PID).Path
     try {
         for ($attempt = 1; $attempt -le 3; $attempt++) {
-            $out = & $pwshExe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $installer 2>&1
+            $out = & $pwshExe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $shim 2>&1
             if ($LASTEXITCODE -eq 0) { Write-Good 'herdr installed'; return }
 
             $text = ($out | Out-String).Trim()
 
-            # The installer hashes the package immediately after writing it, and
-            # real-time antivirus often still has that file open -- which
-            # surfaces as "the process cannot access the file because it is
-            # being used by another process". The lock clears on its own.
+            # Anything still locked after the shim waited it out is a different
+            # problem -- most likely antivirus holding the downloaded package
+            # open -- so back off further before trying again.
             if ($attempt -lt 3 -and $text -match 'being used by another process') {
                 Write-Note ('attempt {0} hit a file lock (antivirus scan?), retrying in 5s' -f $attempt)
                 Start-Sleep -Seconds 5
@@ -229,7 +283,10 @@ function Install-Herdr {
             return
         }
     }
-    finally { Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue }
+    finally {
+        Remove-Item -LiteralPath $installer, $shim -Force -ErrorAction SilentlyContinue
+        Remove-Item Env:\DOTFILES_HERDR_INSTALLER -ErrorAction SilentlyContinue
+    }
 }
 
 function Install-Hunk {
