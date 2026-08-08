@@ -22,6 +22,32 @@ linux/.config/herdr/.plugins.lock
 
 # hunk records the last-seen CLI version here.
 linux/.config/hunk/state.json
+windows/.config/hunk/state.json
+
+# Windows herdr lives in %APPDATA%; keep the config, drop the runtime state.
+windows/AppData/Roaming/herdr/*.log
+windows/AppData/Roaming/herdr/*.sock
+windows/AppData/Roaming/herdr/session.json
+windows/AppData/Roaming/herdr/sessions/
+windows/AppData/Roaming/herdr/.plugins.lock
+
+# Windows Terminal rewrites its LocalState on every launch; only the settings
+# are configuration, the rest is per-machine runtime state.
+windows/AppData/Local/Packages/*/LocalState/state.json
+windows/AppData/Local/Packages/*/LocalState/elevated-state.json
+windows/AppData/Local/Packages/*/LocalState/*.backup
+
+# GlazeWM and Zebar write their crash logs next to their configs, and Zebar
+# records marketplace install receipts (timestamps) under .marketplace/.
+windows/.glzr/**/errors.log
+windows/.glzr/zebar/.marketplace/
+
+# ~/.copilot holds Copilot CLI runtime state (transcripts, session state), so
+# only the herdr helper scripts are tracked out of it.
+windows/.copilot/*
+!windows/.copilot/scripts/
+windows/.copilot/scripts/*
+!windows/.copilot/scripts/*Herdr*.ps1
 
 # Neovim installs plugins itself; only the lockfile is tracked.
 linux/.config/nvim/pack/

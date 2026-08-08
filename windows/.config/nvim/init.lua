@@ -93,6 +93,18 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+-- [[ Ensure external CLI tools are discoverable on PATH ]]
+--  Some launch contexts (e.g. a psmux/tmux pane or GUI instance started before a tool
+--  was installed) inherit a stale PATH that is missing the WinGet shim directory.
+--  Telescope's live_grep requires `ripgrep` (rg) on PATH, so guarantee the WinGet Links
+--  dir is present. This is idempotent: a no-op when the directory is already on PATH.
+if vim.fn.has 'win32' == 1 then
+  local winget_links = vim.fn.expand '$LOCALAPPDATA' .. '\\Microsoft\\WinGet\\Links'
+  if vim.fn.isdirectory(winget_links) == 1 and not string.find(vim.env.PATH or '', winget_links, 1, true) then
+    vim.env.PATH = winget_links .. ';' .. (vim.env.PATH or '')
+  end
+end
+
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -154,6 +166,11 @@ vim.opt.inccommand = 'split'
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
+-- Enable 24-bit RGB color in the terminal UI.
+--  Forced on because psmux/tmux may not advertise truecolor support, which otherwise
+--  makes colorschemes fall back to a washed-out 256-color palette.
+vim.opt.termguicolors = true
+
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
@@ -166,7 +183,9 @@ end
 --  See `:help vim.keymap.set()`
 
 -- Code Action for dropdown select
-vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, { desc = 'Code actions' })
+vim.keymap.set({ 'n', 'v' }, '<space>ca', function()
+  vim.lsp.buf.code_action()
+end, { desc = 'Code actions' })
 
 -- Center the cursor after scrolling with <C-d> and <C-u>
 vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Scroll down and center cursor' })
@@ -181,7 +200,9 @@ vim.keymap.set('n', 'N', 'Nzzzv')
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>q', function()
+  vim.diagnostic.setloclist()
+end, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Diagnostics show up on right side
 vim.diagnostic.config {
@@ -229,6 +250,19 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- netrw maps <C-l> buffer-locally to <Plug>NetrwRefresh, which shadows the global
+-- <C-l> window-navigation mapping above (buffer-local always wins). Restore the
+-- navigation key inside netrw and move the listing refresh to <F5>.
+vim.api.nvim_create_autocmd('FileType', {
+  desc = 'netrw: reclaim <C-l> for window navigation, refresh moves to <F5>',
+  pattern = 'netrw',
+  group = vim.api.nvim_create_augroup('netrw-window-nav', { clear = true }),
+  callback = function(args)
+    vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { buffer = args.buf, desc = 'Move focus to the right window' })
+    vim.keymap.set('n', '<F5>', '<Plug>NetrwRefresh', { buffer = args.buf, desc = 'netrw: refresh listing' })
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -270,6 +304,7 @@ require('lazy').setup({
   -- See `:help gitsigns` to understand what the configuration keys do
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
+    event = { 'BufReadPre', 'BufNewFile' },
     opts = {
       signs = {
         add = { text = '+' },
@@ -281,33 +316,15 @@ require('lazy').setup({
     },
   },
 
-  -- NOTE: Avante (AI Agent)
-  {
-    'yetone/avante.nvim',
-    event = 'VeryLazy',
-    version = false,
-    build = vim.fn.has 'win32' ~= 0
-        and 'powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false'
-      or 'make',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'MunifTanjim/nui.nvim',
-      'zbirenbaum/copilot.lua',
-      'nvim-tree/nvim-web-devicons',
-    },
-    opts = {
-      provider = 'copilot',
-    },
-  },
-
   -- NOTE: Markdown Previewer
   -- :Markview
   {
     'OXY2DEV/markview.nvim',
-    lazy = false,
+    -- Load only when a markdown file is opened (keeps startup fast).
+    ft = { 'markdown' },
     opts = {
       preview = {
-        filetypes = { 'markdown', 'Avante' },
+        filetypes = { 'markdown' },
         ignore_buftypes = {},
       },
     },
@@ -340,6 +357,10 @@ require('lazy').setup({
   -- copilot cmp
   {
     'zbirenbaum/copilot-cmp',
+    -- Defer until you start typing; pull in copilot.lua first so the
+    -- 'copilot' cmp source is registered before completion runs.
+    event = 'InsertEnter',
+    dependencies = { 'zbirenbaum/copilot.lua' },
     config = function()
       require('copilot_cmp').setup {
         suggestion = { enabled = false },
@@ -353,11 +374,67 @@ require('lazy').setup({
     'ThePrimeagen/harpoon',
     branch = 'harpoon2',
     dependencies = { 'nvim-lua/plenary.nvim' },
+    -- Lazy-load on the first Harpoon keypress so it stays out of startup.
+    config = function()
+      require('harpoon'):setup()
+    end,
+    keys = function()
+      local keys = {
+        {
+          '<leader>ma',
+          function()
+            require('harpoon'):list():add()
+          end,
+          desc = 'Harpoon: [A]dd file',
+        },
+        {
+          '<C-e>',
+          function()
+            local harpoon = require 'harpoon'
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+          end,
+          desc = 'Harpoon: toggle quick menu',
+        },
+        {
+          '<leader>mm',
+          function()
+            local harpoon = require 'harpoon'
+            harpoon.ui:toggle_quick_menu(harpoon:list())
+          end,
+          desc = 'Harpoon: toggle quick [M]enu',
+        },
+        {
+          '<C-S-P>',
+          function()
+            require('harpoon'):list():prev()
+          end,
+          desc = 'Harpoon: previous mark',
+        },
+        {
+          '<C-S-N>',
+          function()
+            require('harpoon'):list():next()
+          end,
+          desc = 'Harpoon: next mark',
+        },
+      }
+      -- Alt+1 .. Alt+9 jump straight to a marked file.
+      for i = 1, 9 do
+        table.insert(keys, {
+          '<A-' .. i .. '>',
+          function()
+            require('harpoon'):list():select(i)
+          end,
+          desc = 'Harpoon: go to file ' .. i,
+        })
+      end
+      return keys
+    end,
   },
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy', -- Load just after startup instead of blocking it
     opts = {
       icons = {
         -- set icon mappings to true if you have a Nerd Font
@@ -405,6 +482,8 @@ require('lazy').setup({
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>g', group = 'Git [R]eview' },
+        { '<leader>m', group = '[M]ark (Harpoon)' },
       },
     },
   },
@@ -418,7 +497,26 @@ require('lazy').setup({
 
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
-    event = 'VimEnter',
+    -- Load on first use (a picker keymap or :Telescope) instead of at startup.
+    cmd = 'Telescope',
+    keys = {
+      '<leader>sh',
+      '<leader>sk',
+      '<leader>sf',
+      '<leader>ss',
+      '<leader>sw',
+      '<leader>sg',
+      '<leader>sd',
+      '<leader>sr',
+      '<leader>s.',
+      '<leader>sn',
+      '<leader>s/',
+      '<leader>/',
+      '<leader><leader>',
+      '<leader>gs',
+      '<leader>gl',
+      '<leader>gb',
+    },
     branch = 'master',
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -463,18 +561,64 @@ require('lazy').setup({
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
-        -- You can put your default mappings / updates / etc. in here
-        --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          -- Faster live_grep: ripgrep with lean, smart-case flags; skip .git/node_modules
+          vimgrep_arguments = {
+            'rg',
+            '--color=never',
+            '--no-heading',
+            '--with-filename',
+            '--line-number',
+            '--column',
+            '--smart-case',
+            '--hidden',
+            '--glob=!**/.git/*',
+            '--glob=!**/node_modules/*',
+          },
+          -- Cheaper result rendering on large result sets
+          path_display = { 'truncate' },
+          sorting_strategy = 'ascending',
+          layout_strategy = 'horizontal',
+          layout_config = {
+            prompt_position = 'top',
+            horizontal = { preview_width = 0.5 },
+            width = 0.9,
+            height = 0.9,
+          },
+          -- Don't render previews for huge/binary files (a common source of lag)
+          preview = {
+            filesize_limit = 0.5, -- megabytes
+            timeout = 200, -- ms
+          },
+          mappings = {
+            i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          },
+        },
+        pickers = {
+          find_files = {
+            -- Prefer fd (fastest); fall back to ripgrep if fd isn't installed
+            find_command = (function()
+              if vim.fn.executable 'fd' == 1 then
+                return { 'fd', '--type', 'f', '--hidden', '--strip-cwd-prefix', '--exclude', '.git', '--exclude', 'node_modules', '--exclude', 'bin', '--exclude', 'obj' }
+              else
+                return { 'rg', '--files', '--hidden', '--glob', '!**/.git/*', '--glob', '!**/node_modules/*' }
+              end
+            end)(),
+          },
+          buffers = {
+            sort_mru = true,
+            ignore_current_buffer = true,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = 'smart_case',
           },
         },
       }
@@ -495,6 +639,11 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      -- Git review pickers (hunk handles changeset review; these browse status/history)
+      vim.keymap.set('n', '<leader>gs', builtin.git_status, { desc = 'Git: [S]tatus (changed files)' })
+      vim.keymap.set('n', '<leader>gl', builtin.git_commits, { desc = 'Git: [L]og (all commits)' })
+      vim.keymap.set('n', '<leader>gb', builtin.git_bcommits, { desc = 'Git: commits for current [B]uffer' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -538,6 +687,7 @@ require('lazy').setup({
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
+    event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
       { 'williamboman/mason.nvim', version = '1.11.0', config = true }, -- NOTE: Must be loaded before dependants
@@ -598,27 +748,39 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('gd', function()
+            require('telescope.builtin').lsp_definitions()
+          end, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('gr', function()
+            require('telescope.builtin').lsp_references()
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          map('gI', function()
+            require('telescope.builtin').lsp_implementations()
+          end, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+          map('<leader>D', function()
+            require('telescope.builtin').lsp_type_definitions()
+          end, 'Type [D]efinition')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
-          map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+          map('<leader>ds', function()
+            require('telescope.builtin').lsp_document_symbols()
+          end, '[D]ocument [S]ymbols')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
-          map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+          map('<leader>ws', function()
+            require('telescope.builtin').lsp_dynamic_workspace_symbols()
+          end, '[W]orkspace [S]ymbols')
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
@@ -787,6 +949,10 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        -- NOTE: `copilot-language-server` is deliberately NOT listed here. Mason's registry
+        -- pins a version that was yanked from npm (install dies with ETARGET/notarget), so
+        -- it is installed globally instead: npm install -g @github/copilot-language-server
+        -- lspconfig resolves the bare `copilot-language-server` command from PATH.
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -814,6 +980,29 @@ require('lazy').setup({
           end,
         },
       }
+
+      -- C# is served by roslyn.nvim, which registers its own `roslyn` config and calls
+      -- `vim.lsp.enable('roslyn')` from its own plugin file. That bypasses the handler
+      -- above in two ways we have to correct for:
+      --   1. mason-lspconfig auto-enables every *installed* server it recognises, so the
+      --      leftover omnisharp package attaches a second C# LSP to every `cs` buffer.
+      --   2. mason-lspconfig does not recognise `roslyn`, so the handler never runs for
+      --      it and the nvim-cmp capabilities never get merged in.
+      vim.lsp.enable('omnisharp', false)
+      vim.lsp.config('roslyn', {
+        capabilities = vim.tbl_deep_extend('force', capabilities, {
+          textDocument = {
+            -- roslyn.nvim sets this itself and notes that Roslyn reports no diagnostics
+            -- without it. `capabilities` above sets it back to false, so re-assert it.
+            diagnostic = { dynamicRegistration = true },
+          },
+        }),
+      })
+
+      -- Copilot LSP. Powers sidekick.nvim's Next Edit Suggestions; inline completion is
+      -- left to copilot.lua/nvim-cmp, so `vim.lsp.inline_completion` is intentionally
+      -- not enabled here (that would produce two competing sets of suggestions).
+      vim.lsp.enable('copilot')
 
       -- emmet autocomplete
       setup_lsp('emmet_ls', {
@@ -1021,10 +1210,11 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  { 'folke/todo-comments.nvim', event = { 'BufReadPost', 'BufNewFile' }, dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
+    event = 'VeryLazy',
     config = function()
       -- Better Around/Inside textobjects
       --
@@ -1063,6 +1253,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
+    event = { 'BufReadPre', 'BufNewFile' },
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
@@ -1087,16 +1278,14 @@ require('lazy').setup({
   -- NOTE: The Primeagen vim-be-good plugin
   {
     'ThePrimeagen/vim-be-good',
+    cmd = 'VimBeGood',
   },
-  {
-    -- NOTE:
-    'sindrets/diffview.nvim',
-    dependencies = 'nvim-lua/plenary.nvim', -- Diffview requires plenary.nvim
-    config = function()
-      require('diffview').setup {
-        -- Optional configuration settings can go here.
-      }
-    end,
+  { -- Review diffs, branches and file history side-by-side (great for PR review)
+    -- Replaced by `hunk` (terminal review UI). See lua/custom/review.lua:
+    --   <leader>gd  working tree      <leader>gm  branch vs default base
+    --   <leader>rd  active review range      :Hunk [ref]
+    -- File history lives on the telescope pickers: <leader>gl repo log,
+    -- <leader>gb commits for the current buffer.
   },
   {
     -- NOTE: Web Devicons for Nerd Fonts
@@ -1107,8 +1296,10 @@ require('lazy').setup({
   },
   {
     -- NOTE: Leetcode
-    -- Just type in nvim Leetcode.nvim to launch terminal
+    -- Launch with `:Leet`. Lazy-loaded so it stops pulling telescope,
+    -- treesitter and nvim-notify into every startup.
     'kawre/leetcode.nvim',
+    cmd = 'Leet',
     build = ':TSUpdate html',
     dependencies = {
       'nvim-telescope/telescope.nvim',
@@ -1144,7 +1335,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
@@ -1170,60 +1361,25 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
+  -- Don't re-notify on external config changes; small startup/runtime win.
+  change_detection = { notify = false },
+  -- Disable some built-in plugins we don't use to trim startup.
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        'gzip',
+        'tarPlugin',
+        'tohtml',
+        'tutor',
+        'zipPlugin',
+      },
+    },
+  },
 })
 
--- NOTE: Harpoon setup
-local harpoon = require 'harpoon'
-
--- REQUIRED
-harpoon:setup()
--- REQUIRED
-
-vim.keymap.set('n', '<leader>a', function()
-  harpoon:list():add()
-end)
-vim.keymap.set('n', '<C-e>', function()
-  harpoon.ui:toggle_quick_menu(harpoon:list())
-end)
-
-vim.keymap.set('n', '<A-1>', function()
-  harpoon:list():select(1)
-end)
-vim.keymap.set('n', '<A-2>', function()
-  harpoon:list():select(2)
-end)
-vim.keymap.set('n', '<A-3>', function()
-  harpoon:list():select(3)
-end)
-vim.keymap.set('n', '<A-4>', function()
-  harpoon:list():select(4)
-end)
-vim.keymap.set('n', '<A-5>', function()
-  harpoon:list():select(5)
-end)
-vim.keymap.set('n', '<A-6>', function()
-  harpoon:list():select(6)
-end)
-vim.keymap.set('n', '<A-7>', function()
-  harpoon:list():select(7)
-end)
-vim.keymap.set('n', '<A-8>', function()
-  harpoon:list():select(8)
-end)
-vim.keymap.set('n', '<A-9>', function()
-  harpoon:list():select(9)
-end)
-vim.keymap.set('n', '<A-10>', function()
-  harpoon:list():select(10)
-end)
-
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set('n', '<C-S-P>', function()
-  harpoon:list():prev()
-end)
-vim.keymap.set('n', '<C-S-N>', function()
-  harpoon:list():next()
-end)
+-- Send a visual selection + a prompt to the Copilot agent in the current Herdr
+-- session (see lua/custom/aisend.lua). Standalone -- no plugin dependency.
+require('custom.aisend').setup()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

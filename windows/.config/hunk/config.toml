@@ -1,0 +1,25 @@
+# hunk — persistent view preferences (Windows)
+# docs: https://github.com/modem-dev/hunk#config
+#
+# Kept in step with linux/.config/hunk/config.toml. Two deliberate differences:
+#   theme                   kanagawa-dragon rather than catppuccin-mocha, to
+#                           match nvim and herdr on this machine.
+#   transparent_background  the counterpart of herdr's `panel_bg = "reset"`, so
+#                           Windows Terminal's `opacity` shows through hunk too.
+#
+# `tab_width` is NOT a recognised key (hunk 0.17.7 reads mode, vcs, theme,
+# watch, exclude_untracked, line_numbers, wrap_lines, hunk_headers, menu_bar,
+# agent_notes, copy_decorations, transparent_background, color_moved), so the
+# one in the Linux config is a no-op and is not mirrored here.
+#
+# The sidebar is NOT a config key. It is width-driven: hunk shows it
+# automatically once the terminal is >= 220 columns (FULL_VIEWPORT_MIN_WIDTH).
+# Below that, toggle it manually with `s` — that works down to ~71 columns
+# (SIDEBAR_MIN_WIDTH 22 + divider 1 + DIFF_MIN_WIDTH 48).
+
+theme = "kanagawa-dragon"
+mode = "stack"
+line_numbers = true
+wrap_lines = true
+menu_bar = true
+transparent_background = true

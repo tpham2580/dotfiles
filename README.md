@@ -6,6 +6,8 @@ Welcome to my **workspace configuration dotfiles** repository! 🎉 These files 
 
 ## 🚀 Quick start on a new machine
 
+### 🐧 Linux
+
 ```bash
 git clone https://github.com/tpham2580/dotfiles.git ~/dotfiles
 cd ~/dotfiles
@@ -46,6 +48,59 @@ nvim              # lazy.nvim installs plugins, then run :Copilot setup
 herdr             # start the multiplexer (prefix is ctrl+b)
 ```
 
+### 🪟 Windows
+
+```powershell
+git clone https://github.com/tpham2580/dotfiles.git $HOME\dotfiles
+cd $HOME\dotfiles
+.\install.ps1
+```
+
+`install.ps1` is the PowerShell counterpart of `install.sh`: it installs the
+missing packages with `winget`, then copies every config under `windows\` into
+place. It requires **PowerShell 7** (`#Requires -Version 7.0`) — Windows
+PowerShell 5.1 runs `Restricted` by default and will not dot-source the herdr
+helpers.
+
+| Flag | Effect |
+| --- | --- |
+| *(none)* | Packages + configs |
+| `-NoPackages` | Deploy config files only, install nothing |
+| `-PackagesOnly` | Install software only, touch no config files |
+| `-DryRun` | Print every action without doing any of it |
+| `-Yes` | Never prompt |
+
+Same safety rules as Linux: replaced files are moved to
+`~\.dotfiles-backup\<timestamp>\` first, and files that already match the repo
+are skipped, so re-running after a `git pull` is cheap.
+
+**Two packages do not come from winget:**
+
+- **herdr** — `winget search herdr` only returns a *third-party fork* several
+  versions behind, so the script always uses the upstream installer
+  (`irm https://herdr.dev/install.ps1 | iex`).
+- **hunk** — `npm install -g hunkdiff`.
+
+**Themes are read back, not hardcoded.** The script prints the herdr and hunk
+themes by parsing the configs it just deployed, so changing a theme in
+`windows\AppData\Roaming\herdr\config.toml` is all it takes — the installer
+needs no edit.
+
+**Paths are retargeted per machine.** herdr does not expand `$HOME` (or any
+variable) inside `[[keys.command]]`, so the tracked `config.toml` has to carry an
+absolute path to the helper scripts. `install.ps1` rewrites that path to the
+current machine's home directory as it deploys, so the bindings work under any
+username or profile location — nothing to fix by hand. The repo copy keeps
+whatever the last machine committed; only the deployed copy is rewritten.
+
+After it finishes:
+
+```powershell
+pwsh              # reload the shell (or: . $PROFILE)
+nvim              # lazy.nvim installs plugins, then run :Copilot setup
+herdr             # start the multiplexer (prefix is ctrl+b)
+```
+
 ### 🖥️ Per-machine settings
 
 Anything that differs between machines lives in a `*.example` file. `install.sh`
@@ -55,6 +110,11 @@ local edits survive every later run and every `git pull`.
 | Template | Becomes | Holds |
 | --- | --- | --- |
 | `linux/.config/hypr/host.conf.example` | `~/.config/hypr/host.conf` | Monitor layout, wallpaper, polkit agent path |
+| `windows/AppData/Roaming/herdr/sessionize-paths` | `%APPDATA%\herdr\sessionize-paths` | Folders the sessionizer searches (`C:\Projects`) |
+
+On Windows the mechanism is the same but the file has no `.example` suffix:
+`install.ps1` treats `sessionize-paths` as **seed-once**, writing it only when it
+is absent, so per-machine search roots survive later runs and `git pull`.
 
 `hyprland.conf` sources `host.conf` on its first line, so the shared config stays
 identical on every machine and only the monitor block changes. Edit
@@ -67,7 +127,8 @@ for the laptop and desktop layouts.
 
 ```
 dotfiles/
-├── install.sh                  # ← run this
+├── install.sh                  # ← run this on Linux
+├── install.ps1                 # ← run this on Windows
 ├── linux/                      # mirrors $HOME exactly
 │   ├── .config/
 │   │   ├── herdr/              # herdr multiplexer (tmux-compatible keymap)
@@ -86,14 +147,34 @@ dotfiles/
 │   ├── .zshrc                  # Zsh config
 │   └── lock.sh                 # i3 lock screen script
 ├── windows/                    # Windows-only configs
-│   ├── .config/nvim/           # Neovim (Windows)
-│   └── .glzr/glazewm/          # GlazeWM tiling WM
+│   ├── AppData/
+│   │   ├── Local/Packages/…/   # Windows Terminal settings.json
+│   │   └── Roaming/herdr/      # herdr config + sessionize search roots
+│   ├── .copilot/scripts/       # herdr helper scripts (PowerShell)
+│   ├── .config/hunk/           # hunk diff viewer
+│   ├── .config/nvim/           # Neovim (deploys to %LOCALAPPDATA%\nvim)
+│   └── .glzr/
+│       ├── glazewm/            # GlazeWM tiling WM
+│       └── zebar/              # Zebar status bar
 └── README.md
 ```
 
 Every path under `linux/` maps to the same path under `$HOME`, so
 `linux/.config/nvim/init.lua` → `~/.config/nvim/init.lua`. To add a new config,
 drop it in the matching place and it deploys automatically.
+
+**`windows/` does not mirror `$HOME` one-for-one**, because Windows apps
+disagree about where config belongs. `install.ps1` applies these rules in order:
+
+| Path under `windows/` | Deploys to | Used by |
+| --- | --- | --- |
+| `.config/nvim/*` | `%LOCALAPPDATA%\nvim\` | Neovim |
+| `AppData/Roaming/*` | `%APPDATA%\` | herdr |
+| `AppData/Local/*` | `%LOCALAPPDATA%\` | Windows Terminal |
+| *everything else* | `$HOME\` | hunk, GlazeWM, Zebar, Copilot scripts |
+
+The `.config/nvim` entry is a leftover from the Linux tree — Neovim on Windows
+reads `%LOCALAPPDATA%\nvim`, not `~\.config\nvim`, so it needs the special case.
 
 ---
 
@@ -246,19 +327,202 @@ after upgrading herdr to see exactly what, if anything, broke.
 
 ## 🪟 Windows
 
-`install.sh` is Linux-only. On Windows, copy the files manually.
+`install.sh` is Linux-only. On Windows, copy the files manually. Every path
+under `windows/` maps to the same path under `$HOME`, so
+`windows/AppData/Roaming/herdr/config.toml` → `~/AppData/Roaming/herdr/config.toml`.
+
+### **herdr** — terminal multiplexer
+
+- Configuration file: `windows/AppData/Roaming/herdr/config.toml`
+- Deploy path: `%APPDATA%\herdr\config.toml` (reload with `herdr server reload-config`)
+- The `[keys]` block is kept **identical to `linux/.config/herdr/config.toml`** —
+  same tmux-compatible prefix (`ctrl+b`), same 36 bindings. Only the sections
+  below it differ, and each difference is a Windows constraint:
+
+  | Windows-only | Why |
+  | --- | --- |
+  | `onboarding = false` | Skips the first-run wizard |
+  | `[theme] name = "kanagawa"` | Matches nvim's `kanagawa-dragon` (Linux is catppuccin) |
+  | `[theme.custom] panel_bg = "reset"` | Lets Windows Terminal's `opacity` show through |
+  | `[terminal] default_shell = "pwsh"` | PowerShell 5.1 is `Restricted` and refuses to dot-source the helper scripts |
+  | `[[keys.command]]` paths | PowerShell in `~\.copilot\scripts` instead of bash in `~/.script` |
+
+- The helper scripts are PowerShell instead of bash, and there is no `jq`
+  dependency — `ConvertFrom-Json` does the same job.
+- **Requires:** `fzf` (`winget install --id junegunn.fzf`) and PowerShell 7 (`pwsh`).
+- ⚠️ The `[[keys.command]]` entries use **absolute** `C:\Users\<you>\...` paths.
+  herdr does not expand `$HOME` / `%USERPROFILE%` there, so fix the user name
+  after copying the file to a new machine.
+
+| Key | Action |
+| --- | --- |
+| `prefix+alt+s` | Workspace / session picker (`Invoke-HerdrSessionizer.ps1`) |
+| `prefix+ctrl+f` | Open any folder as a workspace (`Invoke-HerdrSessionize.ps1`) |
+| `prefix+a` | Start a Copilot agent in the focused pane |
+| `prefix+shift+a` | Same, pre-authorized to drive hunk |
+| `prefix+alt+k` | Stop and delete the current session |
+
+#### Helper scripts (`windows/.copilot/scripts/` → `~/.copilot/scripts/`)
+
+| Script | Purpose |
+| --- | --- |
+| `Invoke-HerdrSession.ps1` | Core session helpers: `Get-HerdrExe`, `Get-HerdrSession`, `Connect-HerdrSession`, the detach→attach handoff |
+| `Invoke-HerdrSessionize.ps1` | Open any folder as a workspace — the `herdr-sessionize` port |
+| `Invoke-HerdrSessionizer.ps1` | fzf picker over every workspace **and** every session — the `herdr-sessionizer` port |
+| `Select-HerdrSession.ps1` | Session-only picker (superseded by the sessionizer, kept because `hsw` still uses it) |
+| `Start-HerdrAgentHere.ps1` | Start a Copilot agent in the focused pane instead of splitting a new one |
+| `Stop-CurrentHerdrSession.ps1` | Stop + delete the session this pane belongs to, behind a typed confirmation |
+| `Remove-StoppedHerdrSession.ps1` | The reaper that outlives the killed server to finish the delete |
+
+#### Shell bindings and aliases
+
+Add to `$PROFILE` (load the sessionizer **after** `Invoke-HerdrSession.ps1` —
+it rebinds `Alt+S` from the session-only picker to the unified one):
+
+```powershell
+$__herdrSession = "$HOME\.copilot\scripts\Invoke-HerdrSession.ps1"
+if (Test-Path $__herdrSession) { . $__herdrSession }
+
+$__herdrSessionizer = "$HOME\.copilot\scripts\Invoke-HerdrSessionizer.ps1"
+if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
+```
+
+| Key / alias | Action |
+| --- | --- |
+| `Alt+S` / `hz` | Workspace + session picker |
+| `Ctrl+F` / `hf` | Open any folder as a workspace (fzf) |
+| `hf <dir>` / `hw <dir>` | Open a specific folder as a workspace |
+| `hf -Edit` | Edit the search-roots file |
+| `hz -Rows` | Print the raw picker rows (what fzf's reload binding calls) |
+| `hdr [name]` | Attach in a loop that honors the switch handoff |
+| `hsw [name]` | Session-only picker / switch |
+
+Inside the pickers: `enter` switches, `ctrl-t` opens in a new Windows Terminal
+tab, `del` closes a workspace or stops+deletes a session, `ctrl-c` cancels.
+
+`del` always asks for confirmation first — it sits one key away from the arrows,
+and closing a workspace kills every process in it. It additionally refuses to
+touch the `default` session or the session you are currently attached to. If you
+close the workspace you are *looking at*, focus moves to the next remaining one
+(or the previous, if it was last); closing the very last workspace ends the
+session and drops you back to the plain terminal.
+
+#### Two Windows fzf traps worth knowing
+
+Linux's `herdr-sessionizer` deletes **in place** with
+`del:execute-silent(...)+reload(...)`. That is not portable, and neither failure
+mode is obvious — both just look like a dead key:
+
+1. **A child process cannot prompt you.** On Linux the child reopens `/dev/tty`.
+   Windows has no equivalent, and fzf's own stdin is the pipe feeding it rows —
+   so a child spawned by `execute` inherits a stdin already at EOF, on a console
+   fzf is still painting. The prompt is invisible and reads nothing, so it always
+   declines. **Fix:** `del` is reported via `--expect` instead; fzf exits, the
+   parent PowerShell process (which owns the console) confirms and deletes, then
+   reopens the picker. Closing several rows in a row still works — the list just
+   blinks instead of reloading in place.
+
+2. **`--bind` / `--preview` commands must contain no double quotes.** PowerShell
+   escapes an embedded `"` as `\"` when building a native command line and
+   `cmd.exe` does not undo it, so `-File "C:\...ps1"` arrives as
+   `-File \"C:\...ps1\"`. Under `reload` that yields no output and the picker
+   goes **blank**. `--with-shell` cannot help: fzf funnels placeholder commands
+   through a temp batch file on Windows. **Fix:** keep quotes out of fzf's argv —
+   the folder preview puts them in the *value* of `%HERDR_PWSH%`, which `cmd`
+   expands at run time. Note also that fzf substitutes `{}` / `{1}` as
+   **single-quoted** values that `cmd` does not strip, which is why the preview
+   is routed through `pwsh`, where `'C:\some path'` is already valid syntax.
+
+#### How this differs from Linux
+
+A herdr *named session* is a separate server process with its own socket, and a
+client cannot re-point itself at another one. Linux therefore hides sessions
+from the picker while you are inside herdr. Windows instead uses a **handoff
+file** (`~\.herdr\.switch-target`): picking something in another session writes
+the target, and the outer `hdr` attach loop re-attaches to it as soon as you
+press the detach key (`ctrl+b d`).
+
+Because focusing a workspace is a plain socket call to *that* session's server,
+the sessionizer can list and focus workspaces across every running session — so
+one `enter` + one detach lands you on exactly the workspace you picked.
+
+- Search roots for the folder picker: `windows/AppData/Roaming/herdr/sessionize-paths`
+  (one `path[:depth]` per line; `~` expands; override the file with
+  `$env:HERDR_SESSIONIZE_PATHS`). It is seeded automatically on first use.
+
+### **hunk** — diff viewer
+
+- Configuration file: `windows/.config/hunk/config.toml`
+- Deploy path: `~\.config\hunk\config.toml`
+- Mirrors `linux/.config/hunk/config.toml` apart from two deliberate changes:
+  `theme = "kanagawa-dragon"` (matching nvim and herdr on Windows) and
+  `transparent_background = true`, the counterpart of herdr's
+  `panel_bg = "reset"` so Windows Terminal's `opacity` shows through hunk too.
+- ⚠️ `tab_width` is **not** a recognised key in hunk 0.17.7 — the accepted set is
+  `mode`, `vcs`, `theme`, `watch`, `exclude_untracked`, `line_numbers`,
+  `wrap_lines`, `hunk_headers`, `menu_bar`, `agent_notes`, `copy_decorations`,
+  `transparent_background`, `color_moved`. The `tab_width` line in the Linux
+  config is a no-op and is not mirrored here.
+- Unlike Linux, hunk is **not** wired into git as the difftool here — Windows
+  `~\.gitconfig` has no `[diff] tool = hunk`. Add it if you want `git difftool`
+  to open hunk:
+  ```gitconfig
+  [diff]
+      tool = hunk
+  [difftool "hunk"]
+      cmd = hunk difftool \"$LOCAL\" \"$REMOTE\" \"$BASE\"
+  [difftool]
+      prompt = false
+  ```
+- Install: `npm install -g hunkdiff`
 
 ### **GlazeWM**
 
 - Configuration file: `windows/.glzr/glazewm/config.yaml`
 - Deploy path: `~/.glzr/glazewm/config.yaml`
+- Install: `winget install glzr-io.glazewm`
 - Windows tiling window manager (i3-like for Windows)
 - Uses `lwin` (Windows key) as the primary modifier
 - Requires a `DisabledHotkeys` registry entry for `Win+Number` workspace switching:
   ```powershell
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "DisabledHotkeys" -Value "0123456789" -Type String
   ```
-- Status bar: [Zebar](https://github.com/glzr-io/zebar)
+- `install.ps1` runs `glazewm command wm-reload-config` after deploying, so an
+  already-running instance picks up the new config without a restart.
+
+### **Zebar** — GlazeWM status bar
+
+- Configuration file: `windows/.glzr/zebar/settings.json`
+- Deploy path: `~/.glzr/zebar/settings.json`
+- Install: `winget install glzr-io.zebar`
+- [Zebar](https://github.com/glzr-io/zebar) is a **hard dependency of the GlazeWM
+  config**, not an optional extra — `config.yaml` starts it and kills it:
+  ```yaml
+  startup_commands: ['shell-exec zebar']
+  shutdown_commands: ['shell-exec taskkill /IM zebar.exe /F']
+  ```
+  It is also in the `window_rules` ignore list so the bar is never tiled. Without
+  Zebar installed, GlazeWM starts with no bar at all, so `install.ps1` warns
+  about it in the "Still to do" section.
+- `settings.json` only selects the startup widget (the `glzr-io.starter` pack,
+  `with-glazewm` widget, `default` preset). The widget pack itself ships with
+  Zebar. `.marketplace/` holds install receipts (timestamps) and is gitignored.
+
+### **Windows Terminal**
+
+- Configuration file:
+  `windows/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json`
+- Deploy path: the same path under `%LOCALAPPDATA%`
+- Install: `winget install Microsoft.WindowsTerminal`
+- Tracked because herdr's `panel_bg = "reset"` depends on the terminal's own
+  opacity/theme to render correctly.
+- ⚠️ Windows Terminal **rewrites this file itself** — it appends profiles when it
+  discovers newly installed shells. Expect it to drift, and copy it back before
+  committing. Its sibling files (`state.json`, `elevated-state.json`, `*.backup`)
+  are per-machine runtime state and are gitignored.
+- Profile GUIDs are generated from the profile source, so stock profiles resolve
+  on any machine; a profile pointing at a shell that is not installed simply
+  fails to launch.
 
 ### **Neovim (nvim)**
 
@@ -266,9 +530,14 @@ after upgrading herdr to see exactly what, if anything, broke.
 - Deploy path: `~/AppData/Local/nvim/init.lua`
 - Base configuration came from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
 - Current theme: [Kanagawa](https://github.com/rebelot/kanagawa.nvim) (kanagawa-dragon)
-- ⚠️ This config has **not** been updated alongside the Linux one — it still uses
-  `avante.nvim` and `diffview.nvim` and has no `herdr`/`hunk` integration
-  (neither tool runs on Windows).
+- The Windows tree has since diverged from the Linux one and carries three
+  modules that tie Neovim into the herdr/hunk workflow:
+
+  | Module | Does |
+  | --- | --- |
+  | `lua/custom/review.lua` | Review mode — repoints gitsigns at the **merge-base** with the target branch, so every hunk a branch introduced stays highlighted in real, editable buffers even after it is committed and pushed (plain gitsigns diffs against `HEAD`, so the gutter goes blank once you commit). |
+  | `lua/custom/plugins/review.lua` | Lazy-loads the above off `gitsigns.nvim`; `init` only registers commands and keymaps, so startup cost is unmeasurable. |
+  | `lua/custom/aisend.lua` | Sends a visual selection plus a prompt to the Copilot agent in the current herdr session — the terminal equivalent of VS Code's "add selection to Copilot chat". Pairs with hunk: press `e` on a hunk, select lines, `<leader>ai`. |
 
 ---
 
@@ -286,3 +555,27 @@ git diff                        # review, then commit
 
 Do **not** copy back `~/.config/hypr/host.conf` — it is intentionally
 machine-specific and untracked.
+
+On Windows — or just re-run `.\install.ps1` after editing the repo copy, which
+deploys in the other direction:
+
+```powershell
+cd $HOME\dotfiles
+$wt = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
+
+Copy-Item $env:APPDATA\herdr\config.toml       windows\AppData\Roaming\herdr\config.toml
+Copy-Item $env:APPDATA\herdr\sessionize-paths  windows\AppData\Roaming\herdr\sessionize-paths
+Copy-Item ~\.config\hunk\config.toml           windows\.config\hunk\config.toml
+Copy-Item ~\.copilot\scripts\*Herdr*.ps1       windows\.copilot\scripts\
+Copy-Item ~\.glzr\glazewm\config.yaml          windows\.glzr\glazewm\config.yaml
+Copy-Item ~\.glzr\zebar\settings.json          windows\.glzr\zebar\settings.json
+Copy-Item $wt\settings.json                    windows\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
+Copy-Item $env:LOCALAPPDATA\nvim\* windows\.config\nvim\ -Recurse -Force -Exclude pack,plugin
+
+git diff
+```
+
+`git status` is the safety net here: the runtime files that sit next to these
+configs (`errors.log`, `state.json`, `*.backup`, `.marketplace/`, nvim's `pack/`
+and `plugin/`) are all gitignored, so an over-broad copy cannot leak them into a
+commit.

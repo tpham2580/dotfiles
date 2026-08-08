@@ -1,0 +1,153 @@
+# herdr config (Windows) — tmux-compatible keymap.
+# docs: https://herdr.dev/docs/configuration/
+# reload after edits:  herdr server reload-config   (or prefix+shift+r)
+#
+# The [keys] block is kept in lockstep with linux/.config/herdr/config.toml.
+# Only the Windows-specific sections below it differ.
+#
+# Concept mapping from tmux:
+#   tmux session  ->  herdr WORKSPACE  (one per project; this is your daily switcher)
+#   tmux window   ->  herdr TAB
+#   tmux pane     ->  herdr PANE
+# A herdr "named session" is a whole separate server, NOT a tmux session. Those
+# are switched with prefix+alt+s / `hz` / `hdr` (see ~\.copilot\scripts).
+
+onboarding = false
+
+[keys]
+prefix = "ctrl+b"
+
+# --- session / workspace (tmux: s, w, (, ) ) ---------------------------------
+# tmux prefix+s = choose-tree. herdr's settings moves to prefix+shift+s.
+workspace_picker = ["prefix+s", "prefix+w"]
+settings = "prefix+shift+s"
+previous_workspace = ["ctrl+alt+p"]
+next_workspace = ["ctrl+alt+n"]
+switch_workspace = "prefix+shift+1..9"
+new_workspace = "prefix+shift+n"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+
+# --- detach (tmux: d) --------------------------------------------------------
+detach = ["prefix+d", "prefix+q"]
+
+# --- tabs / windows (tmux: c, n, p, 1-9, &, ,) -------------------------------
+new_tab = "prefix+c"
+next_tab = ["prefix+n", "ctrl+alt+]"]
+previous_tab = ["prefix+p", "ctrl+alt+["]
+switch_tab = "prefix+1..9"
+close_tab = ["prefix+ampersand", "prefix+shift+x"]
+rename_tab = ["prefix+comma", "prefix+shift+t"]
+
+# --- splits (tmux: % vertical, " horizontal) ---------------------------------
+# herdr's own prefix+v / prefix+minus are kept as aliases.
+split_vertical = ["prefix+%", "prefix+v"]
+split_horizontal = ["prefix+\"", "prefix+minus"]
+
+# --- pane focus (tmux: arrows; vim hjkl kept) --------------------------------
+focus_pane_left = ["prefix+left", "prefix+h"]
+focus_pane_down = ["prefix+down", "prefix+j"]
+focus_pane_up = ["prefix+up", "prefix+k"]
+focus_pane_right = ["prefix+right", "prefix+l"]
+cycle_pane_next = ["prefix+o", "prefix+tab"]
+last_pane = "prefix+semicolon"
+
+# --- pane ops (tmux: x, z, r, !) ---------------------------------------------
+close_pane = "prefix+x"
+zoom = "prefix+z"
+resize_mode = "prefix+r"
+rename_pane = "prefix+shift+p"
+
+# --- herdr extras ------------------------------------------------------------
+toggle_sidebar = "prefix+b"
+goto = "prefix+g"
+help = "prefix+?"
+reload_config = "prefix+shift+r"
+edit_scrollback = "prefix+e"
+focus_agent = "prefix+alt+1..9"
+next_agent = "ctrl+alt+j"
+previous_agent = "ctrl+alt+k"
+
+# --- custom commands ---------------------------------------------------------
+# The Linux equivalents are bash scripts in ~/.script; on Windows they are
+# PowerShell in ~\.copilot\scripts. herdr does not expand $HOME or %USERPROFILE%
+# here, so these paths are absolute — fix the user name on a new machine.
+
+# Cross-session picker. Herdr sessions are separate servers, so the built-in
+# workspace picker cannot see them; this popup runs an fzf list over every
+# workspace in every running session PLUS `herdr session list`. enter focuses
+# the workspace (queueing a session switch when it lives in another session, so
+# prefix+d lands you on it); ctrl-t opens it in a new Windows Terminal tab; del
+# closes a workspace or stops+deletes a session in place.
+[[keys.command]]
+key = "prefix+alt+s"
+type = "popup"
+command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Invoke-HerdrSessionizer.ps1" -Popup'
+description = "switch workspace / session"
+width = "80%"
+height = "60%"
+
+# Open ANY folder as a workspace — the tmux-sessionizer replacement. Search
+# roots live in %APPDATA%\herdr\sessionize-paths (one `path[:depth]` per line).
+# Picking a folder that is already open focuses it instead of duplicating it.
+[[keys.command]]
+key = "prefix+ctrl+f"
+type = "popup"
+command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Invoke-HerdrSessionize.ps1" -Popup'
+description = "open folder as workspace"
+width = "80%"
+height = "60%"
+
+# Spin up an agent in the FOCUSED pane instead of opening a new one.
+# type = "pane" splits a fresh pane on every press, which piles up panes when
+# the binding is hit repeatedly, so this shells out to a script that runs the
+# agent in the current pane and no-ops when that pane is already busy.
+[[keys.command]]
+key = "prefix+a"
+type = "shell"
+command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Start-HerdrAgentHere.ps1"'
+description = "start Copilot CLI in this pane"
+
+# Same, pre-authorized to drive hunk so code review needs no approval prompts.
+[[keys.command]]
+key = "prefix+shift+a"
+type = "shell"
+command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Start-HerdrAgentHere.ps1" -Hunk'
+description = "start Copilot CLI (hunk pre-authorized)"
+
+# Kill the current session. Herdr has no built-in stop-session action, so this
+# popup wraps `herdr server stop` behind a type-the-name confirmation.
+[[keys.command]]
+key = "prefix+alt+k"
+type = "popup"
+command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Stop-CurrentHerdrSession.ps1"'
+description = "stop and delete this session"
+width = "60%"
+height = "40%"
+
+# --- Windows-only appearance -------------------------------------------------
+# Linux is catppuccin; Windows is kanagawa to match nvim's kanagawa-dragon.
+[theme]
+name = "kanagawa"
+auto_switch = false
+
+# Emit no background color so Windows Terminal's `opacity` shows the desktop
+# through Herdr's panels instead of the theme painting a solid fill.
+[theme.custom]
+panel_bg = "reset"
+
+# New panes use PowerShell 7. Windows PowerShell 5.1 (Herdr's default on
+# Windows) has no LocalMachine execution policy set, so it falls back to
+# Restricted and refuses to dot-source ~\.copilot\scripts\*.ps1 -- which breaks
+# `hs`, `hz` and `hf`. pwsh is RemoteSigned and loads them fine.
+[terminal]
+default_shell = "pwsh"
+
+[ui]
+tab_bar_position = "top"
+
+[ui.toast]
+delivery = "system"
+
+[ui.sound]
+enabled = false

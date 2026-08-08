@@ -1,0 +1,7 @@
+# Search roots for the herdr folder picker (ctrl+f / hf).
+# One entry per line:   path[:depth]
+#   depth 0  the folder itself only
+#   depth 1  immediate children
+#   depth 2+ search that many levels down
+# Lines beginning with # are ignored. ~ expands to your home directory.
+C:\Projects:1
