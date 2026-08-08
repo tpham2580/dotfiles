@@ -189,14 +189,47 @@ function Install-Herdr {
     }
 
     if ($DryRun) { Write-Dry 'irm https://herdr.dev/install.ps1 | iex'; return }
+
+    # Run the upstream installer as a file in a child process rather than
+    # `irm | iex`. Piping it into this scope leaks its `Set-StrictMode -Version
+    # Latest` and `$ErrorActionPreference = "Stop"` into everything that runs
+    # after it here, and collapses any failure into a bare message with no line
+    # number to act on.
+    $installer = Join-Path ([System.IO.Path]::GetTempPath()) ('herdr-install-{0}.ps1' -f [guid]::NewGuid().ToString('N'))
     try {
-        Invoke-RestMethod -Uri 'https://herdr.dev/install.ps1' -TimeoutSec 60 | Invoke-Expression
-        Write-Good 'herdr installed'
+        Invoke-RestMethod -Uri 'https://herdr.dev/install.ps1' -TimeoutSec 60 -OutFile $installer
     }
     catch {
-        Write-Note "herdr install failed: $_"
-        Write-Note 'if this says "used by another process", stop every herdr session and re-run'
+        Write-Note "could not download the herdr installer: $($_.Exception.Message)"
+        return
     }
+
+    $pwshExe = (Get-Process -Id $PID).Path
+    try {
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $out = & $pwshExe -NoLogo -NoProfile -ExecutionPolicy Bypass -File $installer 2>&1
+            if ($LASTEXITCODE -eq 0) { Write-Good 'herdr installed'; return }
+
+            $text = ($out | Out-String).Trim()
+
+            # The installer hashes the package immediately after writing it, and
+            # real-time antivirus often still has that file open -- which
+            # surfaces as "the process cannot access the file because it is
+            # being used by another process". The lock clears on its own.
+            if ($attempt -lt 3 -and $text -match 'being used by another process') {
+                Write-Note ('attempt {0} hit a file lock (antivirus scan?), retrying in 5s' -f $attempt)
+                Start-Sleep -Seconds 5
+                continue
+            }
+
+            Write-Bad ('herdr install failed (exit {0})' -f $LASTEXITCODE)
+            $tail = $text -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -Last 12
+            foreach ($line in $tail) { Write-Host ('      {0}' -f $line) -ForegroundColor DarkGray }
+            Write-Note 'install herdr by hand with: irm https://herdr.dev/install.ps1 | iex'
+            return
+        }
+    }
+    finally { Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue }
 }
 
 function Install-Hunk {
