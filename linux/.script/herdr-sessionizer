@@ -12,7 +12,8 @@
 # never switched to in place. Those rows are therefore hidden while inside herdr.
 #
 # Keys inside the picker:
-#   enter   focus workspace / open project as workspace / attach session
+#   enter   focus workspace / attach session, or create a workspace from a name
+#           that matches nothing (it lands in the running session)
 #   del     close workspace, or stop+delete a named session
 #   ctrl-c  cancel
 #
@@ -35,12 +36,17 @@ server_up() { "$HERDR" workspace list >/dev/null 2>&1; }
 
 # ---------------------------------------------------------------- row listing
 # Row format:  TYPE \t ID \t DISPLAY
-# Default view: active herdr entities only (workspaces + named sessions).
+# Default view: active herdr entities only (workspaces + named sessions), plus a
+# "create" row echoing the current query so a new name is always selectable even
+# when it happens to fuzzy-match an existing workspace.
 list_rows() {
+  local query="${1:-}"
+  local labels=()
   if server_up; then
     while IFS=$TAB read -r id label panes status; do
       [[ -z "$id" ]] && continue
       local unit="panes"; [[ "$panes" == "1" ]] && unit="pane"
+      labels+=("$label")
       printf 'ws\t%s\t  %s\t(%s %s, %s)\n' "$id" "$label" "$panes" "$unit" "$status"
     done < <("$HERDR" workspace list 2>/dev/null \
       | jq -r '.result.workspaces[]? | "\(.workspace_id)\t\(.label)\t\(.pane_count)\t\(.agent_status)"' 2>/dev/null)
@@ -52,6 +58,15 @@ list_rows() {
       [[ -z "$name" || "$name" == "name" ]] && continue
       printf 'ses\t%s\t  %s\t(session, %s)\n' "$name" "$name" "$status"
     done < <("$HERDR" session list 2>/dev/null | tail -n +2)
+  fi
+
+  # Labels are unique, so an exact hit is the existing workspace, not a new one.
+  if [[ -n "$query" ]]; then
+    local l
+    for l in ${labels[@]+"${labels[@]}"}; do
+      [[ "$l" == "$query" ]] && return 0
+    done
+    printf 'new\t%s\t  + create: %s\t(new workspace)\n' "$query" "$query"
   fi
 }
 
@@ -71,6 +86,38 @@ delete_row() {
   esac
 }
 
+# ----------------------------------------------------------------- create new
+ensure_server() {
+  server_up && return 0
+  # `workspace create` needs a live server, so start one headlessly first.
+  setsid nohup "$HERDR" server >/dev/null 2>&1 </dev/null &
+  local i
+  for i in $(seq 1 30); do
+    server_up && return 0
+    sleep 0.5
+  done
+  return 1
+}
+
+# A typed name that matches no row becomes a NEW workspace in the session that is
+# already running, opened at the directory the picker was launched from.
+create_named() {
+  local name="$1" cwd id
+  if ! ensure_server; then
+    echo "herdr-sessionizer: could not start the herdr server" >&2
+    exit 1
+  fi
+  cwd="${HERDR_ACTIVE_PANE_CWD:-$PWD}"
+  id=$("$HERDR" workspace create --cwd "$cwd" --label "$name" 2>/dev/null \
+    | jq -r '.result.workspace.workspace_id // empty')
+  if [[ -z "$id" ]]; then
+    echo "herdr-sessionizer: could not create workspace '$name'" >&2
+    exit 1
+  fi
+  "$HERDR" workspace focus "$id" >/dev/null 2>&1
+  in_herdr || exec "$ATTACH"
+}
+
 # ------------------------------------------------------------------- dispatch
 dispatch() {
   local row="$1" type id
@@ -85,12 +132,15 @@ dispatch() {
     ses)
       if [[ "$id" == "default" ]]; then exec "$ATTACH"; else exec "$ATTACH" --session "$id"; fi
       ;;
+    new)
+      create_named "$id"
+      ;;
   esac
 }
 
 # ------------------------------------------------------------------ entrypoint
 case "${1:-}" in
-  --list)   list_rows; exit 0 ;;
+  --list)   shift; list_rows "${1:-}"; exit 0 ;;
   --delete) shift; delete_row "$1"; exit 0 ;;
   "")       ;;
   *)        echo "usage: herdr-sessionizer [--list|--delete ROW]" >&2
@@ -103,19 +153,37 @@ command -v fzf >/dev/null || { echo "fzf is required" >&2; exit 1; }
 self="${BASH_SOURCE[0]}"
 
 rows=$(list_rows)
-if [[ -z "$rows" ]]; then
-  echo "no active herdr workspaces or sessions — use ctrl+f to open a folder" >&2
-  exit 0
-fi
+
+# Feeding fzf nothing (rather than a blank line) keeps an empty server pickable,
+# so a first workspace can still be created by name. `return 0` protects pipefail.
+emit_rows() { [[ -n "$rows" ]] && printf '%s\n' "$rows"; return 0; }
 
 # ctrl-n / ctrl-p are intentionally left unbound: they are fzf's own
 # next/previous item movement.
-selected=$(
-  printf '%s\n' "$rows" | fzf \
+# change:reload rebuilds the list on each keystroke so the "+ create" row always
+# mirrors what is typed. --print-query stays as a fallback for a no-match enter.
+# --no-sort keeps score ranking from floating the create row above real
+# workspaces: existing rows stay in server order and "+ create" is always last,
+# so enter still switches by default and creating is a deliberate move down.
+out=$(
+  emit_rows | fzf \
     --delimiter="$TAB" --with-nth=3.. \
-    --prompt='herdr> ' --height=60% --reverse --ansi --no-multi \
-    --header='enter: switch   del: close   ctrl-c: cancel' \
-    --bind="del:execute-silent($self --delete {})+reload($self --list)"
-) || exit 0
+    --prompt='herdr> ' --height=60% --reverse --ansi --no-multi --no-sort \
+    --print-query \
+    --header='enter: switch or create   del: close   ctrl-c: cancel' \
+    --bind="change:reload($self --list {q})" \
+    --bind="del:execute-silent($self --delete {})+reload($self --list {q})"
+)
+status=$?
 
-dispatch "$selected"
+# 130 = ctrl-c / esc, 2 = fzf error. 0 = row chosen, 1 = no match (create path).
+[[ $status -eq 130 || $status -eq 2 ]] && exit 0
+
+query=$(sed -n 1p <<<"$out")
+selected=$(sed -n 2p <<<"$out")
+
+if [[ -n "$selected" ]]; then
+  dispatch "$selected"
+elif [[ -n "$query" ]]; then
+  create_named "$query"
+fi
