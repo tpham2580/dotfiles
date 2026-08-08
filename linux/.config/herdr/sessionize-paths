@@ -1,0 +1,9 @@
+# Search roots for herdr-sessionize (ctrl+f).
+# One entry per line:   path[:depth]
+#   depth 0  the folder itself only
+#   depth 1  immediate children
+#   depth 2+ search that many levels down
+# Lines beginning with # are ignored. ~ is expanded.
+~:0
+~/Projects:1
+~/Documents:1

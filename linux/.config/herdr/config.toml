@@ -1,0 +1,99 @@
+# herdr config — tmux-compatible keymap
+# docs: https://herdr.dev/docs/configuration/
+# reload after edits:  herdr server reload-config   (or prefix+shift+r)
+#
+# Concept mapping from tmux:
+#   tmux session  ->  herdr WORKSPACE  (one per project; this is your daily switcher)
+#   tmux window   ->  herdr TAB
+#   tmux pane     ->  herdr PANE
+# A herdr "named session" is a whole separate server, NOT a tmux session.
+# Those are switched from the terminal with `hs` / `ha` (see ~/.script/herdr.zsh).
+
+[keys]
+prefix = "ctrl+b"
+
+# --- session / workspace (tmux: s, w, (, ) ) ---------------------------------
+# tmux prefix+s = choose-tree. herdr's settings moves to prefix+shift+s.
+workspace_picker = ["prefix+s", "prefix+w"]
+settings = "prefix+shift+s"
+previous_workspace = ["ctrl+alt+p"]
+next_workspace = ["ctrl+alt+n"]
+switch_workspace = "prefix+shift+1..9"
+new_workspace = "prefix+shift+n"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+
+# --- detach (tmux: d) --------------------------------------------------------
+detach = ["prefix+d", "prefix+q"]
+
+# --- tabs / windows (tmux: c, n, p, 1-9, &, ,) -------------------------------
+new_tab = "prefix+c"
+next_tab = ["prefix+n", "ctrl+alt+]"]
+previous_tab = ["prefix+p", "ctrl+alt+["]
+switch_tab = "prefix+1..9"
+close_tab = ["prefix+ampersand", "prefix+shift+x"]
+rename_tab = ["prefix+comma", "prefix+shift+t"]
+
+# --- splits (tmux: % vertical, " horizontal) ---------------------------------
+# herdr's own prefix+v / prefix+minus are kept as aliases.
+split_vertical = ["prefix+%", "prefix+v"]
+split_horizontal = ["prefix+\"", "prefix+minus"]
+
+# --- pane focus (tmux: arrows; vim hjkl kept) --------------------------------
+focus_pane_left = ["prefix+left", "prefix+h"]
+focus_pane_down = ["prefix+down", "prefix+j"]
+focus_pane_up = ["prefix+up", "prefix+k"]
+focus_pane_right = ["prefix+right", "prefix+l"]
+cycle_pane_next = ["prefix+o", "prefix+tab"]
+last_pane = "prefix+semicolon"
+
+# --- pane ops (tmux: x, z, r, !) ---------------------------------------------
+close_pane = "prefix+x"
+zoom = "prefix+z"
+resize_mode = "prefix+r"
+rename_pane = "prefix+shift+p"
+
+# --- herdr extras ------------------------------------------------------------
+toggle_sidebar = "prefix+b"
+goto = "prefix+g"
+help = "prefix+?"
+reload_config = "prefix+shift+r"
+edit_scrollback = "prefix+e"
+focus_agent = "prefix+alt+1..9"
+next_agent = "ctrl+alt+j"
+previous_agent = "ctrl+alt+k"
+
+# --- custom commands ---------------------------------------------------------
+[[keys.command]]
+key = "prefix+alt+s"
+type = "popup"
+command = "$HOME/.script/herdr-sessionizer"
+description = "switch workspace / session"
+width = "70%"
+height = "60%"
+
+[[keys.command]]
+key = "prefix+ctrl+f"
+type = "popup"
+command = "$HOME/.script/herdr-sessionize"
+description = "open folder as workspace"
+width = "70%"
+height = "60%"
+
+[[keys.command]]
+key = "prefix+shift+a"
+type = "shell"
+command = "$HOME/.script/herdr-copilot"
+description = "start Copilot CLI in this pane"
+
+[theme]
+name = "catppuccin"
+
+[ui]
+tab_bar_position = "top"
+
+[ui.toast]
+delivery = "system"
+
+[ui.sound]
+enabled = false

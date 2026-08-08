@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$(find ~/Projects ~/ -mindepth 1 -maxdepth 1 -type d | fzf)
+fi
+
+if [[ -z $selected ]]; then
+    exit 0
+fi
+
+selected_name=$(basename "$selected" | tr . _)
+tmux_running=$(pgrep tmux)
+
+# If no tmux is running at all, create a new session and attach
+if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
+    tmux new-session -s "$selected_name" -c "$selected"
+    exit 0
+fi
+
+# If the session doesn't exist, create it
+if ! tmux has-session -t="$selected_name" 2> /dev/null; then
+    tmux new-session -ds "$selected_name" -c "$selected"
+fi
+
+# Attach to the session, whether it was just created or already existed
+if [[ -z $TMUX ]]; then
+    # Not inside a tmux session, attach directly
+    tmux attach -t "$selected_name"
+else
+    # Inside a tmux session, switch the client to the new session
+    tmux switch-client -t "$selected_name"
+fi

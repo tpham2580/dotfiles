@@ -1,0 +1,39 @@
+# --- Claude Code: keep the config, drop the runtime state -------------------
+# Everything except settings.json and agents/ is per-machine runtime state.
+# projects/ in particular holds full conversation transcripts, which routinely
+# contain source code and credentials from whatever machine wrote them.
+.claude/*
+!.claude/settings.json
+!.claude/agents/
+.claude/agents/**/*.jsonl
+
+# --- Codex: keep the config, drop the runtime state -------------------------
+.codex/*
+!.codex/AGENTS.md
+!.codex/config.toml
+
+# --- Runtime / state that must never be committed ---------------------------
+# herdr writes logs, sockets and live session state next to its config.
+linux/.config/herdr/*.log
+linux/.config/herdr/*.sock
+linux/.config/herdr/session.json
+linux/.config/herdr/sessions/
+linux/.config/herdr/.plugins.lock
+
+# hunk records the last-seen CLI version here.
+linux/.config/hunk/state.json
+
+# Neovim installs plugins itself; only the lockfile is tracked.
+linux/.config/nvim/pack/
+linux/.config/nvim/plugin/
+windows/.config/nvim/pack/
+windows/.config/nvim/plugin/
+
+# --- Editor / OS noise ------------------------------------------------------
+*.bak
+*.bak-*
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

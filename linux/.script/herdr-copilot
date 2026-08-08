@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# herdr-copilot — start GitHub Copilot CLI in the CURRENT herdr pane.
+# Bound to prefix+A in ~/.config/herdr/config.toml.
+#
+# Uses `herdr agent start` rather than just typing the command, so herdr
+# registers it as a real agent and tracks working / blocked / idle state.
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-herdr}"
+PANE="${HERDR_ACTIVE_PANE_ID:-${HERDR_PANE_ID:-}}"
+
+if [[ -z "$PANE" ]]; then
+  echo "herdr-copilot: no active pane (run this from inside herdr)" >&2
+  exit 1
+fi
+
+command -v copilot >/dev/null || { echo "herdr-copilot: copilot not on PATH" >&2; exit 1; }
+
+# Agent names must match [a-z][a-z0-9_-]{0,31} and be unique among live agents,
+# so derive a stable one from the pane id: "w1:p2" -> "copilot-w1-p2".
+name="copilot-$(printf '%s' "$PANE" | tr ':' '-' | tr -cd 'a-zA-Z0-9_-' | tr '[:upper:]' '[:lower:]')"
+name="${name:0:32}"
+
+# Already running in this pane? Nothing to do — it is the focused pane already.
+if "$HERDR" agent list 2>/dev/null \
+  | jq -e --arg n "$name" '.result.agents[]? | select(.name == $n)' >/dev/null 2>&1; then
+  exit 0
+fi
+
+# Some other agent may already own this pane.
+if "$HERDR" agent list 2>/dev/null \
+  | jq -e --arg p "$PANE" '.result.agents[]? | select(.pane_id == $p)' >/dev/null 2>&1; then
+  echo "herdr-copilot: an agent is already running in $PANE" >&2
+  exit 1
+fi
+
+if out=$("$HERDR" agent start "$name" --kind copilot --pane "$PANE" "$@" 2>&1); then
+  exit 0
+fi
+
+# agent start needs the pane sitting at an interactive shell prompt. If it is
+# busy, fall back to typing the command so the keybinding still does something.
+case "$out" in
+  *not*available*|*busy*|*foreground*|*prompt*)
+    "$HERDR" pane run "$PANE" copilot >/dev/null 2>&1 && exit 0
+    ;;
+esac
+
+echo "herdr-copilot: $out" >&2
+exit 1

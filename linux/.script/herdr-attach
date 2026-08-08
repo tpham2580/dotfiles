@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# herdr-attach — attach to herdr, and return to the shell when you close your
+# last workspace (instead of landing in an auto-created empty workspace).
+#
+# The watcher is started first, then this shell is REPLACED by the herdr client
+# via exec. That is deliberate: after exec the client inherits this process id,
+# so the watcher already knows exactly which pid to signal, with no process
+# name matching or guesswork.
+#
+# Everything else about herdr is unchanged. prefix+d still detaches normally,
+# and the server keeps running in the background either way.
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-$HOME/.local/bin/herdr}"
+WATCHER="$HOME/.script/herdr-watch-empty"
+
+if [[ -x "$WATCHER" ]] && command -v jq >/dev/null 2>&1; then
+  setsid "$WATCHER" "$$" >/dev/null 2>&1 </dev/null &
+fi
+
+exec "$HERDR" "$@"

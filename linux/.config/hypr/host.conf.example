@@ -1,0 +1,44 @@
+# hypr host.conf — the parts of the Hyprland config that differ per machine.
+#
+# install.sh copies this file to ~/.config/hypr/host.conf only when that file
+# does not already exist, so your monitor layout survives every later run of
+# install.sh and every `git pull`. It is sourced from the top of hyprland.conf.
+#
+# Uncomment the block that matches the machine, or write your own.
+# `hyprctl monitors` lists the connector names (eDP-1, DP-2, HDMI-A-1, ...).
+
+# --- monitors ---------------------------------------------------------------
+# Format: monitor = NAME, RESOLUTION@HZ, POSITION, SCALE [, transform, N]
+# transform 1 = rotated 90° left.
+
+# Laptop, single built-in panel (default — safe on any machine).
+monitor = eDP-1, 1920x1080@60, 0x0, 1.0
+# Catch-all so an unknown display still lights up.
+monitor = , preferred, auto, 1
+
+# Desktop, dual monitor:
+#   DP-2 (ViewSonic VX2478) rotated left, to the left of primary
+#   DP-3 (Dell S2417DG) primary at 165Hz
+# monitor = DP-2, 2560x1440@60, 0x0, 1, transform, 1
+# monitor = DP-3, 2560x1440@165, 1440x0, 1
+
+# G15 Strix, built-in + external at 1440p165, DP-1 on the left:
+# monitor = DP-1, 2560x1440@165, 0x0, 1
+# monitor = eDP-1, 2560x1440@165, 2560x0, 1
+
+# --- wallpaper --------------------------------------------------------------
+# One swaybg per output. `-m fill` crops to fit, `-m fit` letterboxes.
+exec = swaybg -m fill -i ~/.config/hypr/sledge-catppuccin.jpg
+
+# Desktop version (per-output, matching the rotated DP-2 above):
+# exec = swaybg -o DP-2 -m fit -i ~/.config/hypr/sledge-catppuccin.jpg & swaybg -o DP-3 -m fill -i ~/.config/hypr/sledge-catppuccin.jpg
+
+# --- polkit authentication agent --------------------------------------------
+# Path depends on which desktop libraries the machine has installed.
+# Arch + polkit-gnome:
+exec-once = /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+# Fedora + polkit-gnome:
+# exec-once = /usr/libexec/polkit-gnome-authentication-agent-1
+# KDE (polkit-kde-agent):
+# exec-once = /usr/libexec/kf6/polkit-kde-authentication-agent-1
+# exec-once = /usr/lib/polkit-kde-authentication-agent-1

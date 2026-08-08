@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+#
+# herdr-watch-empty — detach the herdr client when you close your last workspace.
+#
+# WHY THIS EXISTS
+#   herdr is a persistent server, so it never "ends" the way a tmux session does.
+#   When you close your last workspace while a client is attached, herdr cannot
+#   render nothing, so it immediately creates a replacement workspace in $HOME
+#   labelled "~". That replacement is the "another session opened up" surprise.
+#
+# WHAT IT WATCHES
+#   Once a second it asks the server for the current workspace list and compares
+#   it with the previous poll. It is looking for one specific transition:
+#
+#       every workspace I knew about is gone,
+#       and the only workspace now present is one I have never seen before,
+#       and it is the $HOME placeholder ("~") with a single pane
+#
+#   That combination only happens when herdr auto-replaced your last workspace.
+#   Simply counting zero workspaces would never work, because the replacement
+#   appears in well under a second.
+#
+# WHAT IT DOES THEN
+#   1. SIGTERM the client PID it was given. herdr has no detach API, and the
+#      client is a separate process from the server, so terminating it is
+#      exactly a detach: panes, agents and the server keep running.
+#   2. Once the client is gone, close the leftover "~" placeholder, so the
+#      session is clean next time you attach. This is done after the client
+#      exits, because closing it while attached would just spawn another one.
+#
+# WHEN IT STOPS
+#   As soon as the client PID disappears (you detached with prefix+d, quit, or
+#   it was terminated). It never outlives the client it is watching.
+#
+# Usage: herdr-watch-empty <client-pid>
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-$HOME/.local/bin/herdr}"
+CLIENT_PID="${1:-}"
+INTERVAL="${HERDR_WATCH_INTERVAL:-1}"
+
+[[ -z "$CLIENT_PID" ]] && { echo "usage: herdr-watch-empty <client-pid>" >&2; exit 2; }
+
+client_alive() { kill -0 "$CLIENT_PID" 2>/dev/null; }
+
+prev_ids=""
+
+while true; do
+  sleep "$INTERVAL"
+  client_alive || exit 0
+
+  json=$("$HERDR" workspace list 2>/dev/null) || continue
+  [[ -z "$json" ]] && continue
+
+  ids=$(jq -r '.result.workspaces[]?.workspace_id' <<<"$json" 2>/dev/null | sort | tr '\n' ' ')
+  count=$(jq -r '.result.workspaces | length' <<<"$json" 2>/dev/null)
+  [[ "$count" =~ ^[0-9]+$ ]] || continue
+
+  # Nothing observed yet: record and keep going.
+  if [[ -z "${prev_ids// /}" ]]; then
+    prev_ids="$ids"
+    continue
+  fi
+
+  if [[ "$count" -eq 1 ]]; then
+    only_id=$(jq -r '.result.workspaces[0].workspace_id' <<<"$json")
+    only_label=$(jq -r '.result.workspaces[0].label' <<<"$json")
+    only_panes=$(jq -r '.result.workspaces[0].pane_count' <<<"$json")
+
+    is_new=1
+    for id in $prev_ids; do
+      [[ "$id" == "$only_id" ]] && { is_new=0; break; }
+    done
+
+    # A brand-new, single-pane "~" workspace that replaced everything else is
+    # herdr's placeholder, not something the user opened.
+    if [[ "$is_new" -eq 1 && "$only_label" == "~" && "$only_panes" == "1" ]]; then
+      kill -TERM "$CLIENT_PID" 2>/dev/null
+
+      for _ in $(seq 1 20); do
+        client_alive || break
+        sleep 0.25
+      done
+
+      # With no client attached the server tolerates an empty session, so the
+      # placeholder can be removed for real.
+      client_alive || "$HERDR" workspace close "$only_id" >/dev/null 2>&1
+      exit 0
+    fi
+  fi
+
+  prev_ids="$ids"
+done

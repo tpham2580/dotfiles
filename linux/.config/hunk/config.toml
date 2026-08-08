@@ -1,0 +1,14 @@
+# hunk — persistent view preferences
+# docs: https://github.com/modem-dev/hunk#config
+#
+# The sidebar is NOT a config key. It is width-driven: hunk shows it
+# automatically once the terminal is >= 220 columns (FULL_VIEWPORT_MIN_WIDTH).
+# Below that, toggle it manually with `s` — that works down to ~71 columns
+# (SIDEBAR_MIN_WIDTH 22 + divider 1 + DIFF_MIN_WIDTH 48).
+
+theme = "catppuccin-mocha"
+mode = "stack"
+line_numbers = true
+wrap_lines = true
+menu_bar = true
+tab_width = 4

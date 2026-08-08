@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+#
+# herdr-sessionize — open ANY folder as a herdr workspace.
+# The herdr replacement for ~/.local/scripts/tmux-sessionizer, bound to ctrl+f.
+#
+#   tmux new-session -c $dir  ->  herdr workspace create --cwd $dir
+#   tmux switch-client -t X   ->  herdr workspace focus X
+#
+# Picking a folder that is already open focuses it instead of duplicating it.
+#
+# fzf's own ctrl-n / ctrl-p (next/previous item) are deliberately left unbound.
+#
+# Usage:
+#   herdr-sessionize             fzf folder picker
+#   herdr-sessionize <dir>       open a specific folder directly
+#   herdr-sessionize --list      print candidate folders
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-herdr}"
+ATTACH="$HOME/.script/herdr-attach"
+
+# Allow list of search roots, one per line, in the form  path[:depth]
+# Mirrors the tmux-sessionizer roots by default.
+ALLOW_FILE="${HERDR_SESSIONIZE_PATHS:-$HOME/.config/herdr/sessionize-paths}"
+
+read -r -d '' DEFAULT_ALLOW <<'EOF' || true
+# Search roots for herdr-sessionize (ctrl+f).
+# One entry per line:   path[:depth]
+#   depth 0  the folder itself only
+#   depth 1  immediate children (the tmux-sessionizer behavior)
+#   depth 2+ search that many levels down
+# Lines beginning with # are ignored. ~ is expanded.
+~/Projects:1
+~:1
+EOF
+
+PRUNE=(
+  .git node_modules .cache .venv venv __pycache__ target .npm .rustup
+  .cargo .mozilla .local .steam .gradle .m2 .nuget .dotnet .conda
+  dist build .next .nuxt .parcel-cache .pytest_cache .mypy_cache
+  .terraform vendor .tox .eggs site-packages .svn .hg
+)
+
+in_herdr() { [[ -n "${HERDR_PANE_ID:-}${HERDR_ACTIVE_PANE_ID:-}" ]]; }
+server_up() { "$HERDR" workspace list >/dev/null 2>&1; }
+
+seed_allow() {
+  [[ -f "$ALLOW_FILE" ]] && return 0
+  mkdir -p "$(dirname "$ALLOW_FILE")"
+  printf '%s\n' "$DEFAULT_ALLOW" > "$ALLOW_FILE"
+}
+
+build_prune_expr() {
+  local first=1
+  printf '('
+  for p in "${PRUNE[@]}"; do
+    [[ $first -eq 0 ]] && printf ' -o'
+    printf ' -name %s' "$p"
+    first=0
+  done
+  printf ' )'
+}
+
+list_dirs() {
+  seed_allow
+  local line root depth
+  while IFS= read -r line; do
+    line="${line%%#*}"                       # strip comments
+    line="${line#"${line%%[![:space:]]*}"}"  # trim leading space
+    line="${line%"${line##*[![:space:]]}"}"  # trim trailing space
+    [[ -z "$line" ]] && continue
+
+    if [[ "$line" == *:* ]]; then
+      root="${line%:*}"
+      depth="${line##*:}"
+    else
+      root="$line"
+      depth=1
+    fi
+    [[ "$depth" =~ ^[0-9]+$ ]] || depth=1
+
+    root="${root/#\~/$HOME}"
+    [[ -d "$root" ]] || continue
+
+    if [[ "$depth" -eq 0 ]]; then
+      printf '%s\n' "$root"
+    else
+      # shellcheck disable=SC2046
+      find "$root" -mindepth 1 -maxdepth "$depth" $(build_prune_expr) -prune \
+        -o -type d -print 2>/dev/null
+    fi
+  done < "$ALLOW_FILE" | awk '!seen[$0]++' | sed "s|^$HOME|~|"
+}
+
+# Workspace labels must be unique, so derive one from the path tail.
+label_for() {
+  local dir="$1" base parent
+  # $HOME would otherwise label as "home/<user>"; keep the scratch workspace short.
+  [[ "${dir%/}" == "$HOME" ]] && { printf 'home'; return; }
+  base=$(basename "$dir")
+  parent=$(basename "$(dirname "$dir")")
+  if [[ "$parent" == "Projects" || "$parent" == "$(basename "$HOME")" || "$parent" == "/" ]]; then
+    printf '%s' "${base//./_}"
+  else
+    printf '%s' "${parent//./_}/${base//./_}"
+  fi
+}
+
+ensure_server() {
+  server_up && return 0
+  # `workspace create` needs a live server, so start one headlessly first.
+  # Without this the workspace is never created and attaching drops you into a
+  # default $HOME workspace instead of the project you picked.
+  setsid nohup "$HERDR" server >/dev/null 2>&1 </dev/null &
+  local i
+  for i in $(seq 1 30); do
+    server_up && return 0
+    sleep 0.5
+  done
+  return 1
+}
+
+open_dir() {
+  local dir="$1" name existing
+  [[ -d "$dir" ]] || { echo "not a directory: $dir" >&2; exit 1; }
+  name=$(label_for "$dir")
+
+  if ! ensure_server; then
+    echo "herdr-sessionize: could not start the herdr server" >&2
+    exit 1
+  fi
+
+  existing=$("$HERDR" workspace list 2>/dev/null \
+    | jq -r --arg n "$name" '.result.workspaces[]? | select(.label==$n) | .workspace_id' \
+    | head -1)
+
+  if [[ -z "$existing" ]]; then
+    existing=$("$HERDR" workspace create --cwd "$dir" --label "$name" 2>/dev/null \
+      | jq -r '.result.workspace.workspace_id // empty')
+  fi
+
+  # Focus explicitly: create does not reliably focus when a client is attached,
+  # which would leave you in the previous workspace after attaching.
+  [[ -n "$existing" ]] && "$HERDR" workspace focus "$existing" >/dev/null 2>&1
+
+  # Already inside herdr: the focus above is the whole job, do not nest a client.
+  in_herdr || exec "$ATTACH"
+}
+
+case "${1:-}" in
+  --list) list_dirs; exit 0 ;;
+  --edit) seed_allow; exec "${EDITOR:-vi}" "$ALLOW_FILE" ;;
+  --paths) seed_allow; printf '%s\n' "$ALLOW_FILE"; exit 0 ;;
+  "")     ;;
+  *)      open_dir "${1/#\~/$HOME}"; exit 0 ;;
+esac
+
+command -v fzf >/dev/null || { echo "fzf is required" >&2; exit 1; }
+
+preview='p={}; p="${p/#\~/'"$HOME"'}"; ls -A --color=always "$p" 2>/dev/null | head -50'
+
+sel=$(
+  list_dirs | fzf \
+    --prompt='open workspace> ' --height=60% --reverse --no-multi \
+    --header='enter: open folder as herdr workspace   ctrl-c: cancel' \
+    --preview="$preview" \
+    --preview-window='right,50%,border-left'
+) || exit 0
+
+[[ -z "$sel" ]] && exit 0
+open_dir "${sel/#\~/$HOME}"

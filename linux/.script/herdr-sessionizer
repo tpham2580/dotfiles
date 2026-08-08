@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+#
+# herdr-sessionizer — fzf picker for herdr workspaces, projects, and sessions.
+# The herdr port of ~/.local/scripts/tmux-sessionizer.
+#
+# Concept map from tmux:
+#   tmux session          -> herdr WORKSPACE   (switch in place, like switch-client)
+#   tmux switch-client -t -> herdr workspace focus
+#   tmux new-session -c   -> herdr workspace create --cwd
+#
+# A herdr *named session* is a separate server, so it can only be ATTACHED to,
+# never switched to in place. Those rows are therefore hidden while inside herdr.
+#
+# Keys inside the picker:
+#   enter   focus workspace / open project as workspace / attach session
+#   del     close workspace, or stop+delete a named session
+#   ctrl-c  cancel
+#
+# Usage:
+#   herdr-sessionizer              interactive picker
+#   herdr-sessionizer <dir>        open a specific directory directly
+#   herdr-sessionizer --list       print rows (used by fzf reload)
+#   herdr-sessionizer --delete R   delete the entity described by row R
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-herdr}"
+ATTACH="$HOME/.script/herdr-attach"
+PROJECT_DIRS=("$HOME/Projects" "$HOME")
+TAB=$'\t'
+
+# A popup gets HERDR_ACTIVE_PANE_ID; a normal pane gets HERDR_PANE_ID.
+in_herdr() { [[ -n "${HERDR_PANE_ID:-}${HERDR_ACTIVE_PANE_ID:-}" ]]; }
+server_up() { "$HERDR" workspace list >/dev/null 2>&1; }
+
+# ---------------------------------------------------------------- row listing
+# Row format:  TYPE \t ID \t DISPLAY
+# Default view: active herdr entities only (workspaces + named sessions).
+list_rows() {
+  if server_up; then
+    while IFS=$TAB read -r id label panes status; do
+      [[ -z "$id" ]] && continue
+      local unit="panes"; [[ "$panes" == "1" ]] && unit="pane"
+      printf 'ws\t%s\t  %s\t(%s %s, %s)\n' "$id" "$label" "$panes" "$unit" "$status"
+    done < <("$HERDR" workspace list 2>/dev/null \
+      | jq -r '.result.workspaces[]? | "\(.workspace_id)\t\(.label)\t\(.pane_count)\t\(.agent_status)"' 2>/dev/null)
+  fi
+
+  # Named sessions are separate servers: attach only works from outside herdr.
+  if ! in_herdr; then
+    while read -r name status _; do
+      [[ -z "$name" || "$name" == "name" ]] && continue
+      printf 'ses\t%s\t  %s\t(session, %s)\n' "$name" "$name" "$status"
+    done < <("$HERDR" session list 2>/dev/null | tail -n +2)
+  fi
+}
+
+# ------------------------------------------------------------------- deletion
+delete_row() {
+  local row="$1" type id
+  type=$(cut -d"$TAB" -f1 <<<"$row")
+  id=$(cut -d"$TAB" -f2 <<<"$row")
+  case "$type" in
+    ws)  "$HERDR" workspace close "$id" >/dev/null 2>&1 ;;
+    ses)
+      [[ "$id" == "default" ]] && exit 0   # never destroy the default session
+      "$HERDR" session stop "$id"   >/dev/null 2>&1
+      "$HERDR" session delete "$id" >/dev/null 2>&1
+      ;;
+    *) : ;;
+  esac
+}
+
+# ------------------------------------------------------------------- dispatch
+dispatch() {
+  local row="$1" type id
+  [[ -z "$row" ]] && exit 0
+  type=$(cut -d"$TAB" -f1 <<<"$row")
+  id=$(cut -d"$TAB" -f2 <<<"$row")
+  case "$type" in
+    ws)
+      "$HERDR" workspace focus "$id" >/dev/null 2>&1
+      in_herdr || exec "$ATTACH"
+      ;;
+    ses)
+      if [[ "$id" == "default" ]]; then exec "$ATTACH"; else exec "$ATTACH" --session "$id"; fi
+      ;;
+  esac
+}
+
+# ------------------------------------------------------------------ entrypoint
+case "${1:-}" in
+  --list)   list_rows; exit 0 ;;
+  --delete) shift; delete_row "$1"; exit 0 ;;
+  "")       ;;
+  *)        echo "usage: herdr-sessionizer [--list|--delete ROW]" >&2
+            echo "to open a folder as a workspace, use herdr-sessionize" >&2
+            exit 2 ;;
+esac
+
+command -v fzf >/dev/null || { echo "fzf is required" >&2; exit 1; }
+
+self="${BASH_SOURCE[0]}"
+
+rows=$(list_rows)
+if [[ -z "$rows" ]]; then
+  echo "no active herdr workspaces or sessions — use ctrl+f to open a folder" >&2
+  exit 0
+fi
+
+# ctrl-n / ctrl-p are intentionally left unbound: they are fzf's own
+# next/previous item movement.
+selected=$(
+  printf '%s\n' "$rows" | fzf \
+    --delimiter="$TAB" --with-nth=3.. \
+    --prompt='herdr> ' --height=60% --reverse --ansi --no-multi \
+    --header='enter: switch   del: close   ctrl-c: cancel' \
+    --bind="del:execute-silent($self --delete {})+reload($self --list)"
+) || exit 0
+
+dispatch "$selected"

@@ -1,0 +1,22 @@
+[user]
+	name = 🐢
+	email = tpham2580@gmail.com
+
+# hunk (https://github.com/modem-dev/hunk) as the diff viewer.
+# `git difftool` opens the hunk TUI instead of vimdiff.
+# Config lives in ~/.config/hunk/config.toml.
+[diff]
+	tool = hunk
+[difftool "hunk"]
+	cmd = hunk difftool \"$LOCAL\" \"$REMOTE\" \"$BASE\"
+[difftool]
+	prompt = false
+
+# Authenticate over HTTPS with the GitHub CLI. Resolved from PATH so this works
+# on any distro (Arch puts gh in /usr/bin, others may not).
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
