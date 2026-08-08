@@ -153,20 +153,50 @@ function Install-CorePackages {
     elseif ($installed -eq 0) { Write-Good 'all packages already present' }
 }
 
+function Get-HerdrPath {
+    <#
+      herdr can live in more than one place: the installer's target, the
+      standalone package directory its bundled updater manages, or wherever a
+      running instance was launched from. Checking only one of these makes the
+      installer think herdr is missing and try to install over a live copy.
+    #>
+    $candidates = @(
+        (Get-Command herdr -ErrorAction SilentlyContinue).Source
+        (Get-Process herdr -ErrorAction SilentlyContinue | Select-Object -First 1).Path
+        (Join-Path $env:LOCALAPPDATA 'Programs\Herdr\bin\herdr.exe')
+        (Join-Path $HOME '.herdr\packages\standalone\current\herdr.exe')
+    )
+    return $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+}
+
 function Install-Herdr {
     # NOT available from winget: `winget search herdr` returns a third-party
     # fork, several minor versions behind. Always use the upstream installer.
-    $local = Join-Path $env:LOCALAPPDATA 'Programs\Herdr\bin\herdr.exe'
-    if ((Test-Tool 'herdr') -or (Test-Path $local)) {
-        Write-Skipped 'herdr already installed'
+    $existing = Get-HerdrPath
+    if ($existing) {
+        Write-Skipped ('herdr already installed ({0})' -f $existing)
         return
     }
+
+    # A running herdr holds its own binary open, so the upstream installer dies
+    # partway through with "the process cannot access the file because it is
+    # being used by another process" -- including when install.ps1 is run from
+    # inside a herdr pane. Say so instead of surfacing that error.
+    $running = @(Get-Process herdr -ErrorAction SilentlyContinue)
+    if ($running) {
+        Write-Note ('herdr is running (pid {0}); close all sessions and re-run to install' -f ($running.Id -join ', '))
+        return
+    }
+
     if ($DryRun) { Write-Dry 'irm https://herdr.dev/install.ps1 | iex'; return }
     try {
         Invoke-RestMethod -Uri 'https://herdr.dev/install.ps1' -TimeoutSec 60 | Invoke-Expression
         Write-Good 'herdr installed'
     }
-    catch { Write-Note "herdr install failed: $_" }
+    catch {
+        Write-Note "herdr install failed: $_"
+        Write-Note 'if this says "used by another process", stop every herdr session and re-run'
+    }
 }
 
 function Install-Hunk {
@@ -415,7 +445,7 @@ function Show-Notes {
     if (-not (Test-Tool 'fzf')) { $notes += 'fzf missing: the sessionizer (prefix+alt+s) and ctrl+f will not work' }
     if (-not (Test-Tool 'nvim')) { $notes += 'neovim missing: the nvim config will not load' }
     if (-not (Test-Tool 'hunk')) { $notes += 'hunk missing: npm install -g hunkdiff' }
-    if (-not (Test-Tool 'herdr')) { $notes += 'herdr missing or not on PATH: irm https://herdr.dev/install.ps1 | iex' }
+    if (-not (Get-HerdrPath)) { $notes += 'herdr missing or not on PATH: irm https://herdr.dev/install.ps1 | iex' }
 
     # config.yaml has `startup_commands: ['shell-exec zebar']`, so a missing
     # Zebar makes GlazeWM start with no status bar at all.
