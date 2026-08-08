@@ -29,6 +29,12 @@ linux/.config/nvim/plugin/
 windows/.config/nvim/pack/
 windows/.config/nvim/plugin/
 
+# Never commit a machine's resolved host config. It is seeded from
+# host.conf.example per machine. This is a safety net for setups where
+# ~/.config/hypr is symlinked into the repo, which would otherwise drop the
+# file straight into the working tree.
+linux/.config/hypr/host.conf
+
 # --- Editor / OS noise ------------------------------------------------------
 *.bak
 *.bak-*
