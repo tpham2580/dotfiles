@@ -561,18 +561,60 @@ function Show-Notes {
 }
 
 function Update-GlazeWM {
-    $exe = (Get-Command glazewm -ErrorAction SilentlyContinue).Source
-    if (-not $exe) {
-        $fallback = 'C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe'
-        if (Test-Path $fallback) { $exe = $fallback }
-    }
-    if (-not $exe) { Write-Skipped 'glazewm not installed'; return }
-    if ($DryRun) { Write-Dry 'glazewm command wm-reload-config'; return }
+    <#
+      Two things bite on a fresh box, and both look like "GlazeWM is installed
+      but there is no UI":
 
-    # Only works against a running instance; a fresh box has none yet.
-    & $exe command wm-reload-config 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) { Write-Good 'glazewm config reloaded' }
-    else { Write-Skipped 'no running glazewm to reload (it reads the config at startup)' }
+      1. The `glazewm` on PATH is the CLI *client*
+         (...\GlazeWM\cli\glazewm.exe), not the window manager
+         (...\GlazeWM\glazewm.exe). Running bare `glazewm` prints usage and
+         exits 0 without starting anything. The WM needs `glazewm start`.
+      2. winget registers no autostart entry, so nothing launches the WM at
+         login even once it has been started by hand.
+    #>
+    $cli = (Get-Command glazewm -ErrorAction SilentlyContinue).Source
+    if (-not $cli) {
+        $fallback = 'C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe'
+        if (Test-Path $fallback) { $cli = $fallback }
+    }
+    if (-not $cli) { Write-Skipped 'glazewm not installed'; return }
+    # winget's shim resolves with a doubled separator (GlazeWM\\cli), which
+    # works but would be written verbatim into the Run key.
+    $cli = [System.IO.Path]::GetFullPath($cli)
+
+    if (Get-Process glazewm -ErrorAction SilentlyContinue) {
+        if ($DryRun) { Write-Dry 'glazewm command wm-reload-config' }
+        else {
+            & $cli command wm-reload-config 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { Write-Good 'glazewm config reloaded' }
+            else { Write-Skipped 'glazewm running but would not reload' }
+        }
+    }
+    elseif ($DryRun) { Write-Dry 'glazewm start (window manager not running)' }
+    else {
+        # Start detached: `glazewm start` runs in the foreground and would
+        # block the rest of this script until the WM exits.
+        Start-Process -FilePath $cli -ArgumentList 'start' -WindowStyle Hidden
+        Start-Sleep -Seconds 2
+        if (Get-Process glazewm -ErrorAction SilentlyContinue) { Write-Good 'glazewm started' }
+        else { Write-Note 'glazewm did not start; run "glazewm start" to see the error' }
+    }
+
+    Register-GlazeWMStartup -Cli $cli
+}
+
+function Register-GlazeWMStartup {
+    param([Parameter(Mandatory)][string] $Cli)
+
+    $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+    $value  = '"{0}" start' -f $Cli
+    $existing = (Get-ItemProperty -Path $runKey -Name 'GlazeWM' -ErrorAction SilentlyContinue).GlazeWM
+
+    if ($existing -eq $value) { Write-Skipped 'glazewm already starts at login'; return }
+    if ($DryRun) { Write-Dry ('set Run\GlazeWM = {0}' -f $value); return }
+
+    Set-ItemProperty -Path $runKey -Name 'GlazeWM' -Value $value
+    Write-Good 'glazewm registered to start at login'
 }
 
 function Update-HerdrConfig {

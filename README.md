@@ -490,6 +490,21 @@ one `enter` + one detach lands you on exactly the workspace you picked.
 - `install.ps1` runs `glazewm command wm-reload-config` after deploying, so an
   already-running instance picks up the new config without a restart.
 
+> **`glazewm` on its own does not start the window manager.** The binary on
+> `PATH` (`...\GlazeWM\cli\glazewm.exe`) is the CLI *client*, not the WM
+> (`...\GlazeWM\glazewm.exe`). Running bare `glazewm` prints usage and exits 0
+> having started nothing, which looks exactly like "installed but no UI". The
+> window manager is started with the `start` subcommand:
+>
+> ```powershell
+> glazewm start
+> ```
+>
+> winget also registers no autostart entry, so nothing launches the WM at login.
+> `install.ps1` handles both: it starts the WM if it is not already running, and
+> writes an `HKCU:\...\CurrentVersion\Run\GlazeWM` entry pointing at
+> `glazewm start`.
+
 ### **Zebar** — GlazeWM status bar
 
 - Configuration file: `windows/.glzr/zebar/settings.json`
