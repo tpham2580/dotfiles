@@ -8,7 +8,7 @@
 #
 #   hf              fzf folder picker
 #   hf <dir>        open a specific folder directly
-#   hw <dir>        same thing, non-interactive (Open-HerdrWorkspace)
+#   hw <dir>        same thing (Open-HerdrWorkspace)
 #
 # Search roots live in %APPDATA%\herdr\sessionize-paths, one `path[:depth]` per
 # line. Override the file with $env:HERDR_SESSIONIZE_PATHS.
@@ -161,6 +161,51 @@ function Get-HerdrWorkspaceLabel {
     '{0}/{1}' -f ($parent -replace '\.', '_'), ($base -replace '\.', '_')
 }
 
+function Get-HerdrUniqueWorkspaceLabel {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $Label,
+        [Parameter(Mandatory)] $Workspaces
+    )
+
+    $labels = @($Workspaces | ForEach-Object label)
+    if ($Label -notin $labels) { return $Label }
+
+    $suffix = 2
+    while ("$Label-$suffix" -in $labels) { $suffix++ }
+    "$Label-$suffix"
+}
+
+function Read-HerdrWorkspaceLabel {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $Path,
+        [Parameter(Mandatory)] $Workspaces,
+        [string] $Name
+    )
+
+    $labels = @($Workspaces | ForEach-Object label)
+    $suggested = Get-HerdrWorkspaceLabel -Path $Path
+    $suggested = Get-HerdrUniqueWorkspaceLabel -Label $suggested -Workspaces $Workspaces
+
+    if ($Name) {
+        $candidate = $Name.Trim()
+        if ($candidate -and $candidate -notin $labels) { return $candidate }
+
+        Write-Warning "workspace name '$candidate' is already in use."
+        return
+    }
+
+    while ($true) {
+        $entered = Read-Host "Workspace name [$suggested]"
+        $candidate = if ($entered) { $entered.Trim() } else { $suggested }
+
+        if ($candidate -and $candidate -notin $labels) { return $candidate }
+
+        Write-Warning "workspace name '$candidate' is already in use."
+    }
+}
+
 function Invoke-HerdrApi {
     [CmdletBinding()]
     param(
@@ -267,6 +312,9 @@ function Open-HerdrWorkspace {
         # Session to open the workspace in (defaults to the current one).
         [string] $Session,
 
+        # Supply a name to skip the interactive prompt for a new workspace.
+        [string] $Name,
+
         # Stay in the shell instead of attaching when run outside herdr.
         [switch] $NoAttach
     )
@@ -286,8 +334,8 @@ function Open-HerdrWorkspace {
         return
     }
 
-    $label = Get-HerdrWorkspaceLabel -Path $dir
     $result = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $target
+    $workspaces = @($result.workspaces)
     $panes = @((Invoke-HerdrApi -Arguments @('pane', 'list') -Session $target).panes)
     $existingPane = $panes | Where-Object {
         if (-not $_.cwd -or -not (Test-Path -LiteralPath $_.cwd -PathType Container)) { return $false }
@@ -296,6 +344,8 @@ function Open-HerdrWorkspace {
     $id = $existingPane.workspace_id
 
     if (-not $id) {
+        $label = Read-HerdrWorkspaceLabel -Path $dir -Workspaces $workspaces -Name $Name
+        if (-not $label) { return }
         $created = Invoke-HerdrApi -Session $target `
             -Arguments @('workspace', 'create', '--cwd', $dir, '--label', $label, '--focus')
         $id = $created.workspace.workspace_id
@@ -336,6 +386,8 @@ function Invoke-HerdrSessionize {
 
         [string] $Session,
 
+        [string] $Name,
+
         # Print the candidate folders and exit.
         [switch] $List,
 
@@ -351,7 +403,7 @@ function Invoke-HerdrSessionize {
     }
 
     if ($List) { Get-HerdrSessionizeDirectory; return }
-    if ($Path) { Open-HerdrWorkspace -Path $Path -Session $Session; return }
+    if ($Path) { Open-HerdrWorkspace -Path $Path -Session $Session -Name $Name; return }
 
     $fzf = Get-FzfExe
     if (-not $fzf) {
@@ -382,7 +434,7 @@ function Invoke-HerdrSessionize {
             --preview-window 'right,50%,border-left')
 
     if (-not $picked -or -not $picked[0]) { return }
-    Open-HerdrWorkspace -Path ([string]$picked[0]).Trim() -Session $Session
+    Open-HerdrWorkspace -Path ([string]$picked[0]).Trim() -Session $Session -Name $Name
 }
 
 Set-Alias -Name hf -Value Invoke-HerdrSessionize -Scope Global

@@ -73,17 +73,14 @@ previous_agent = "ctrl+alt+k"
 # PowerShell in ~\.copilot\scripts. herdr does not expand $HOME or %USERPROFILE%
 # here, so these paths are absolute — fix the user name on a new machine.
 
-# Cross-session picker. Herdr sessions are separate servers, so the built-in
-# workspace picker cannot see them; this popup runs an fzf list over every
-# workspace in every running session PLUS `herdr session list`. enter focuses
-# the workspace (queueing a session switch when it lives in another session, so
-# prefix+d lands you on it); ctrl-t opens it in a new Windows Terminal tab; del
-# closes a workspace or stops+deletes a session in place.
+# Workspace picker for the current session. Each workspace can hold its own
+# panes and agents; the popup shows the workspace's pane count and aggregate
+# agent status. ctrl-t opens it in a new Windows Terminal tab and del closes it.
 [[keys.command]]
 key = "prefix+alt+s"
 type = "popup"
 command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Invoke-HerdrSessionizer.ps1" -Popup'
-description = "switch workspace / session"
+description = "switch workspace"
 width = "80%"
 height = "60%"
 

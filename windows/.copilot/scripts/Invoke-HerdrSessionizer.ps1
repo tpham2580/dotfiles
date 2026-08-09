@@ -1,4 +1,4 @@
-# Herdr sessionizer — fzf picker over herdr workspaces and named sessions.
+# Herdr sessionizer — fzf picker over workspaces in the current session.
 # The Windows port of ~/.script/herdr-sessionizer.
 #
 # Concept map from tmux:
@@ -7,8 +7,8 @@
 #   tmux new-session -c   -> herdr workspace create --cwd   (see hf / Invoke-HerdrSessionize)
 #
 # Keys inside the picker (same as Linux, plus ctrl-t):
-#   enter   focus the workspace / switch to the session
-#   del     close the workspace, or stop+delete a named session
+#   enter   focus the workspace
+#   del     close the workspace
 #           (asks for confirmation, then reopens the picker)
 #   ctrl-t  open it in a new Windows Terminal tab instead
 #   ctrl-c  cancel
@@ -92,33 +92,20 @@ function Get-HerdrSessionizerRow {
     [CmdletBinding()]
     param()
 
-    $sessions = @(Get-HerdrSession)
     $current = Get-HerdrCurrentSessionName
+    $sessionName = if ($current) { $current } else { 'default' }
     $rows = [System.Collections.Generic.List[object]]::new()
 
-    foreach ($session in ($sessions | Where-Object Status -eq 'running')) {
-        $result = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $session.Name
-        foreach ($ws in @($result.workspaces)) {
-            $unit = if ($ws.pane_count -eq 1) { 'pane' } else { 'panes' }
-            $here = if ($session.Name -eq $current) { '*' } else { ' ' }
-            $rows.Add([pscustomobject]@{
-                    Type    = 'ws'
-                    Session = $session.Name
-                    Id      = $ws.workspace_id
-                    Display = ('{0} {1,-30} {2}' -f $here, $ws.label, $session.Name)
-                    Meta    = ('({0} {1}, {2})' -f $ws.pane_count, $unit, $ws.agent_status)
-                })
-        }
-    }
-
-    foreach ($session in $sessions) {
-        $here = if ($session.Name -eq $current) { '*' } else { ' ' }
+    $result = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $sessionName
+    foreach ($ws in @($result.workspaces)) {
+        $unit = if ($ws.pane_count -eq 1) { 'pane' } else { 'panes' }
+        $here = if ($ws.focused) { '*' } else { ' ' }
         $rows.Add([pscustomobject]@{
-                Type    = 'ses'
-                Session = $session.Name
-                Id      = $session.Name
-                Display = ('{0} {1,-30} {2}' -f $here, $session.Name, '(session)')
-                Meta    = ('[{0}]  {1}' -f $session.Status, $session.Directory)
+                Type    = 'ws'
+                Session = $sessionName
+                Id      = $ws.workspace_id
+                Display = ('{0} {1}' -f $here, $ws.label)
+                Meta    = ('({0} {1}, {2})' -f $ws.pane_count, $unit, $ws.agent_status)
             })
     }
 
@@ -214,7 +201,7 @@ function Show-HerdrSessionizerPicker {
 
     $rows = @(Write-HerdrSessionizerRow)
     if (-not $rows) {
-        Write-Warning 'no active herdr workspaces or sessions — use ctrl+f to open a folder'
+        Write-Warning 'no active herdr workspaces — use ctrl+f to open a folder'
         return
     }
 

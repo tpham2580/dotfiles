@@ -367,8 +367,8 @@ under `windows/` maps to the same path under `$HOME`, so
 | Script | Purpose |
 | --- | --- |
 | `Invoke-HerdrSession.ps1` | Core session helpers: `Get-HerdrExe`, `Get-HerdrSession`, `Connect-HerdrSession`, the detach→attach handoff |
-| `Invoke-HerdrSessionize.ps1` | Open any folder as a workspace — the `herdr-sessionize` port |
-| `Invoke-HerdrSessionizer.ps1` | fzf picker over every workspace **and** every session — the `herdr-sessionizer` port |
+| `Invoke-HerdrSessionize.ps1` | Open any folder as a workspace and name new workspaces — the `herdr-sessionize` port |
+| `Invoke-HerdrSessionizer.ps1` | fzf picker over the current session's workspaces, including pane count and agent status |
 | `Select-HerdrSession.ps1` | Session-only picker (superseded by the sessionizer, kept because `hsw` still uses it) |
 | `Start-HerdrAgentHere.ps1` | Start a Copilot agent in the focused pane instead of splitting a new one |
 | `Stop-CurrentHerdrSession.ps1` | Stop + delete the session this pane belongs to, behind a typed confirmation |
@@ -389,18 +389,23 @@ if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
 
 | Key / alias | Action |
 | --- | --- |
-| `Alt+S` / `hz` | Workspace + session picker; type a new name to create it in the current directory |
-| `Ctrl+F` / `hf` | Open any folder as a workspace (fzf) |
-| `hf <dir>` / `hw <dir>` | Open a specific folder as a workspace |
+| `Alt+S` / `hz` | Current-session workspace picker; type a new name to create a session in the current directory |
+| `Ctrl+F` / `hf` | Open any folder as a workspace (fzf), prompting for its workspace name |
+| `hf <dir>` / `hw <dir>` | Open a specific folder and prompt for its workspace name |
+| `hw <dir> -Name <name>` | Open a specific folder with a supplied workspace name |
 | `hf -Edit` | Edit the search-roots file |
 | `hz -Rows` | Print the raw picker rows (what fzf's reload binding calls) |
 | `hdr [name]` | Attach in a loop that honors the switch handoff |
 | `hsw [name]` | Session-only picker / switch |
 
-Inside the pickers: `enter` switches, `ctrl-t` opens in a new Windows Terminal
-tab, `del` closes a workspace or stops+deletes a session, `ctrl-c` cancels.
-In the unified `Alt+S` picker, an unmatched query is a new named session rooted
-at the focused pane's current directory.
+Inside the pickers: `enter` switches workspaces, `ctrl-t` opens one in a new
+Windows Terminal tab, `del` closes a workspace, and `ctrl-c` cancels. Each
+workspace can contain its own group of panes and agents.
+
+`Alt+S` lists only the current session's workspaces — the model is one session
+holding several workspaces. Named sessions are still reachable there: an
+unmatched query creates a named session rooted at the focused pane's current
+directory, and typing an existing session's name switches to it.
 
 `del` always asks for confirmation first — it sits one key away from the arrows,
 and closing a workspace kills every process in it. It additionally refuses to
