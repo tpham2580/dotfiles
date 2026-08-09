@@ -197,12 +197,35 @@ function Read-HerdrWorkspaceLabel {
     }
 
     while ($true) {
-        $entered = Read-Host "Workspace name [$suggested]"
-        $candidate = if ($entered) { $entered.Trim() } else { $suggested }
+        Write-Host "Workspace name [$suggested]: " -NoNewline -ForegroundColor Yellow
 
-        if ($candidate -and $candidate -notin $labels) { return $candidate }
+        # Read-Host needs a real console and returns $null at EOF, which a herdr
+        # popup or a redirected host can hand us. Fall back to the raw stream,
+        # and take the suggestion rather than looping on input that will never
+        # arrive -- $suggested is already unique, so it is always accepted.
+        $entered = $null
+        try {
+            $entered = if ([Console]::IsInputRedirected) {
+                [Console]::In.ReadLine()
+            }
+            else {
+                Read-Host
+            }
+        }
+        catch {
+            try { $entered = [Console]::In.ReadLine() } catch { $entered = $null }
+        }
 
-        Write-Warning "workspace name '$candidate' is already in use."
+        if ($null -eq $entered) {
+            Write-Host $suggested
+            return $suggested
+        }
+
+        $candidate = $entered.Trim()
+        if (-not $candidate) { $candidate = $suggested }
+        if ($candidate -notin $labels) { return $candidate }
+
+        Write-Warning "workspace '$candidate' already exists — pick another name."
     }
 }
 
