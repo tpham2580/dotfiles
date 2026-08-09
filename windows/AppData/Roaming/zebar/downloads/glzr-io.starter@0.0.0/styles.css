@@ -1,0 +1,141 @@
+/**
+ * Kanagawa Wave styling for Zebar's bundled GlazeWM widget.
+ */
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --wave-bg: rgb(31 31 40 / 94%);
+  --wave-bg-alt: rgb(42 42 55 / 94%);
+  --wave-fg: #dcd7ba;
+  --wave-muted: #727169;
+  --wave-blue: #7e9cd8;
+  --wave-cyan: #7fb4ca;
+  --wave-green: #76946a;
+  --wave-red: #c34043;
+  --wave-yellow: #c0a36e;
+  --text-size: 12px;
+  --icon-size: 12px;
+}
+
+body {
+  color: var(--wave-fg);
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-size);
+  overflow: hidden;
+}
+
+i {
+  color: var(--wave-cyan);
+  margin-right: 7px;
+  font-size: var(--icon-size);
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+#root {
+  background: linear-gradient(180deg, var(--wave-bg), var(--wave-bg-alt));
+  border-bottom: 1px solid rgb(126 156 216 / 35%);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 1.5vw;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+.logo,
+.binding-mode,
+.tiling-direction,
+.paused-button,
+.network,
+.memory,
+.cpu,
+.battery {
+  margin-right: 20px;
+}
+
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: rgb(114 113 105 / 18%);
+  margin-right: 4px;
+  padding: 4px 8px;
+  color: var(--wave-fg);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+
+  &.displayed {
+    background: rgb(126 156 216 / 20%);
+    border-color: rgb(126 156 216 / 35%);
+  }
+
+  &.focused,
+  &:hover {
+    background: var(--wave-blue);
+    color: #1f1f28;
+  }
+}
+
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: rgb(192 163 110 / 22%);
+  color: var(--wave-yellow);
+  border-radius: 2px;
+  line-height: 1;
+  padding: 4px 8px;
+  border: 0;
+  cursor: pointer;
+}
+
+.binding-mode {
+  margin-right: 4px;
+}
+
+.cpu .high-usage {
+  color: var(--wave-red);
+}
+
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  color: var(--wave-green);
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+}

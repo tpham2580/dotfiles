@@ -1202,7 +1202,7 @@ require('lazy').setup({
     init = function()
       -- Load the colorscheme here.
       -- Kanagawa has different styles: 'kanagawa-wave', 'kanagawa-dragon', 'kanagawa-lotus'.
-      vim.cmd.colorscheme 'kanagawa-dragon'
+      vim.cmd.colorscheme 'kanagawa-wave'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'

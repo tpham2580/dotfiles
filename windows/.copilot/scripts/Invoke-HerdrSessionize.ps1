@@ -85,6 +85,16 @@ function Expand-HerdrHomePath {
     return $Path
 }
 
+function Resolve-HerdrDirectory {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string] $Path)
+
+    $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).ProviderPath
+    $root = [System.IO.Path]::GetPathRoot($resolved)
+    if ($resolved -ieq $root) { return $root }
+    return $resolved.TrimEnd('\', '/')
+}
+
 function Get-HerdrSessionizeDirectory {
     [CmdletBinding()]
     param()
@@ -108,7 +118,7 @@ function Get-HerdrSessionizeDirectory {
 
         $root = Expand-HerdrHomePath $root
         if (-not (Test-Path -LiteralPath $root -PathType Container)) { continue }
-        $root = (Resolve-Path -LiteralPath $root).ProviderPath.TrimEnd('\')
+        $root = Resolve-HerdrDirectory $root
 
         if ($depth -le 0) { $seen[$root] = $true; continue }
 
@@ -162,10 +172,26 @@ function Invoke-HerdrApi {
     $all = if ($Session) { @('--session', $Session) + $Arguments } else { $Arguments }
 
     $raw = & $exe @all 2>&1 | Out-String
-    if (-not $raw.Trim()) { return $null }
+    $exitCode = $LASTEXITCODE
+    if (-not $raw.Trim()) {
+        if ($exitCode -ne 0) {
+            throw "herdr $($all -join ' ') failed with exit code $exitCode and no output."
+        }
+        return $null
+    }
 
-    try { $json = $raw | ConvertFrom-Json } catch { return $null }
-    if ($json.PSObject.Properties.Name -contains 'error' -and $json.error) { return $null }
+    try {
+        $json = $raw | ConvertFrom-Json -ErrorAction Stop
+    }
+    catch {
+        throw "herdr $($all -join ' ') returned invalid output (exit $exitCode): $($raw.Trim())"
+    }
+
+    if ($exitCode -ne 0 -or
+        ($json.PSObject.Properties.Name -contains 'error' -and $json.error)) {
+        $message = if ($json.error) { $json.error } else { $raw.Trim() }
+        throw "herdr $($all -join ' ') failed (exit $exitCode): $message"
+    }
     return $json.result
 }
 
@@ -175,6 +201,7 @@ function Get-HerdrTargetSession {
 
     if ($Session) { return $Session }
     if ($env:HERDR_SESSION) { return $env:HERDR_SESSION }
+    if ($env:HERDR_ENV -eq '1') { return 'default' }
 
     $running = @(Get-HerdrSession) | Where-Object Status -eq 'running' | Select-Object -First 1
     if ($running) { return $running.Name }
@@ -185,7 +212,12 @@ function Test-HerdrServer {
     [CmdletBinding()]
     param([string] $Session)
 
-    $null -ne (Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $Session)
+    try {
+        return $null -ne (Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $Session)
+    }
+    catch {
+        return $false
+    }
 }
 
 function Start-HerdrServer {
@@ -212,11 +244,25 @@ function Start-HerdrServer {
     return $false
 }
 
+function Get-HerdrCurrentDirectory {
+    [CmdletBinding()]
+    param([string] $Session)
+
+    # Popup commands do not consistently inherit the focused pane's cwd. Ask
+    # Herdr for the pane cwd instead of trusting the popup PowerShell process.
+    if ($env:HERDR_ENV -eq '1') {
+        $target = Get-HerdrTargetSession -Session $Session
+        return Resolve-HerdrDirectory (Get-HerdrFocusedDirectory -Session $target)
+    }
+
+    return Resolve-HerdrDirectory $PWD.ProviderPath
+}
+
 function Open-HerdrWorkspace {
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
-        [string] $Path = $PWD.Path,
+        [string] $Path,
 
         # Session to open the workspace in (defaults to the current one).
         [string] $Session,
@@ -225,12 +271,14 @@ function Open-HerdrWorkspace {
         [switch] $NoAttach
     )
 
+    if (-not $Path) { $Path = Get-HerdrCurrentDirectory -Session $Session }
+
     $dir = Expand-HerdrHomePath $Path
     if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
         Write-Warning "not a directory: $Path"
         return
     }
-    $dir = (Resolve-Path -LiteralPath $dir).ProviderPath.TrimEnd('\')
+    $dir = Resolve-HerdrDirectory $dir
 
     $target = Get-HerdrTargetSession -Session $Session
     if (-not (Start-HerdrServer -Session $target)) {
@@ -240,12 +288,16 @@ function Open-HerdrWorkspace {
 
     $label = Get-HerdrWorkspaceLabel -Path $dir
     $result = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $target
-    $existing = @($result.workspaces) | Where-Object { $_.label -eq $label } | Select-Object -First 1
-    $id = $existing.workspace_id
+    $panes = @((Invoke-HerdrApi -Arguments @('pane', 'list') -Session $target).panes)
+    $existingPane = $panes | Where-Object {
+        if (-not $_.cwd -or -not (Test-Path -LiteralPath $_.cwd -PathType Container)) { return $false }
+        (Resolve-HerdrDirectory $_.cwd) -ieq $dir
+    } | Select-Object -First 1
+    $id = $existingPane.workspace_id
 
     if (-not $id) {
         $created = Invoke-HerdrApi -Session $target `
-            -Arguments @('workspace', 'create', '--cwd', $dir, '--label', $label)
+            -Arguments @('workspace', 'create', '--cwd', $dir, '--label', $label, '--focus')
         $id = $created.workspace.workspace_id
     }
 
@@ -254,9 +306,22 @@ function Open-HerdrWorkspace {
         return
     }
 
-    # Focus explicitly: create does not reliably focus when a client is
-    # attached, which would leave you in the previous workspace after attaching.
-    Invoke-HerdrApi -Arguments @('workspace', 'focus', $id) -Session $target | Out-Null
+    # Focus explicitly for existing workspaces and verify the state. This also
+    # closes the small race between a create response and the popup exiting.
+    $focused = $false
+    foreach ($attempt in 1..5) {
+        Invoke-HerdrApi -Arguments @('workspace', 'focus', $id) -Session $target | Out-Null
+        $current = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $target
+        if ((@($current.workspaces | Where-Object focused)).workspace_id -contains $id) {
+            $focused = $true
+            break
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    if (-not $focused) {
+        Write-Warning "workspace '$label' was opened but could not be focused."
+        return
+    }
 
     # Already inside herdr: the focus above is the whole job, do not nest a client.
     if ($env:HERDR_ENV -eq '1' -or $NoAttach) { return }

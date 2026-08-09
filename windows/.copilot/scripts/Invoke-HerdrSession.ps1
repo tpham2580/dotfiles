@@ -138,9 +138,38 @@ function Show-HerdrSessionPicker {
     }
 }
 
+function Get-HerdrFocusedDirectory {
+    [CmdletBinding()]
+    param([string] $Session)
+
+    $exe = Get-HerdrExe
+    $all = if ($Session) {
+        @('--session', $Session, 'pane', 'current', '--current')
+    }
+    else {
+        @('pane', 'current', '--current')
+    }
+
+    try {
+        $response = (& $exe @all 2>&1 | Out-String) | ConvertFrom-Json -ErrorAction Stop
+        if ($response.result.pane.cwd -and
+            (Test-Path -LiteralPath $response.result.pane.cwd -PathType Container)) {
+            return (Resolve-Path -LiteralPath $response.result.pane.cwd).ProviderPath
+        }
+    }
+    catch {
+        Write-Verbose "Could not resolve focused Herdr pane directory: $_"
+    }
+
+    return $PWD.ProviderPath
+}
+
 function Open-HerdrSessionInTab {
     [CmdletBinding()]
-    param([Parameter(Mandatory)][string] $Name)
+    param(
+        [Parameter(Mandatory)][string] $Name,
+        [string] $Directory
+    )
 
     $wtPath = (Get-Command wt -CommandType Application -ErrorAction SilentlyContinue |
         Select-Object -First 1).Source
@@ -151,8 +180,20 @@ function Open-HerdrSessionInTab {
     if (-not $wtPath) { Write-Warning 'Windows Terminal (wt.exe) not found.'; return }
 
     $loader = Join-Path $PSScriptRoot 'Invoke-HerdrSession.ps1'
-    & $wtPath --window 0 new-tab --title "herdr:$Name" `
-        pwsh.exe -NoLogo -NoExit -Command ". '$loader'; Connect-HerdrSession -Name '$Name'"
+    $escapedLoader = $loader.Replace("'", "''")
+    $escapedName = $Name.Replace("'", "''")
+    $tabArgs = @('--window', '0', 'new-tab', '--title', "herdr:$Name")
+    if ($Directory -and (Test-Path -LiteralPath $Directory -PathType Container)) {
+        $tabArgs += @('--startingDirectory', (Resolve-Path -LiteralPath $Directory).ProviderPath)
+    }
+    $tabArgs += @(
+        'pwsh.exe',
+        '-NoLogo',
+        '-NoExit',
+        '-Command',
+        ". '$escapedLoader'; Connect-HerdrSession -Name '$escapedName'"
+    )
+    & $wtPath @tabArgs
 }
 
 function Invoke-HerdrPickerAction {
@@ -187,7 +228,13 @@ function Invoke-HerdrPickerAction {
     }
 
     if ($Choice.Key -eq 'ctrl-t') {
-        Open-HerdrSessionInTab -Name $name
+        $directory = if ($Choice.IsExisting) {
+            $null
+        }
+        else {
+            Get-HerdrFocusedDirectory -Session $CurrentSession
+        }
+        Open-HerdrSessionInTab -Name $name -Directory $directory
         return 'handled'
     }
 
@@ -204,6 +251,7 @@ function Switch-HerdrSession {
         [switch] $Force
     )
 
+    $isNew = $false
     if (-not $Name) {
         $choice = Show-HerdrSessionPicker
         if (-not $choice) { return }
@@ -213,12 +261,27 @@ function Switch-HerdrSession {
 
         if ((Invoke-HerdrPickerAction -Choice $choice -CurrentSession $current) -ne 'switch') { return }
         $Name = $choice.Name
+        $isNew = -not $choice.IsExisting
     }
 
     if (-not $Name) { return }
 
     if ($env:HERDR_ENV -eq '1' -and -not $Force) {
-        Set-HerdrSwitch -Name $Name
+        $currentSession = if ($env:HERDR_SESSION) { $env:HERDR_SESSION } else { 'default' }
+        $directory = Get-HerdrFocusedDirectory -Session $currentSession
+
+        # A handoff only works when the outer shell launched Herdr through
+        # Connect-HerdrSession. Sessions started directly have no loop waiting
+        # to consume the switch file, so open the destination in a real tab.
+        if ($env:HERDR_WRAPPED -ne '1') {
+            Open-HerdrSessionInTab -Name $Name -Directory $(if ($isNew) { $directory } else { $null })
+            Write-Host ''
+            Write-Host "  Opened herdr session '$Name' in a new terminal tab." -ForegroundColor Cyan
+            Write-Host ''
+            return
+        }
+
+        Set-HerdrSwitch -Name $Name -Directory $(if ($isNew) { $directory } else { $null })
         Write-Host ''
         Write-Host "  Switch target set: " -NoNewline -ForegroundColor DarkGray
         Write-Host $Name -ForegroundColor Cyan
@@ -235,10 +298,14 @@ function Set-HerdrSwitch {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0)]
-        [string] $Name
+        [string] $Name,
+        [string] $Directory
     )
 
-    Set-Content -Path (Get-HerdrHandoffPath) -Value $Name -Encoding UTF8
+    [pscustomobject]@{
+        name      = $Name
+        directory = $Directory
+    } | ConvertTo-Json -Compress | Set-Content -Path (Get-HerdrHandoffPath) -Encoding UTF8
 }
 
 function Clear-HerdrSwitch {
@@ -256,7 +323,8 @@ function Connect-HerdrSession {
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
-        [string] $Name
+        [string] $Name,
+        [string] $Directory
     )
 
     if ($env:HERDR_ENV -eq '1') {
@@ -274,18 +342,49 @@ function Connect-HerdrSession {
     }
 
     while ($Name) {
-        & $exe --session $Name
+        $oldWrapped = $env:HERDR_WRAPPED
+        $env:HERDR_WRAPPED = '1'
+        $pushed = $false
+        try {
+            if ($Directory -and (Test-Path -LiteralPath $Directory -PathType Container)) {
+                Push-Location -LiteralPath $Directory
+                $pushed = $true
+            }
+            & $exe --session $Name
+        }
+        finally {
+            if ($pushed) { Pop-Location }
+            if ($null -eq $oldWrapped) {
+                Remove-Item Env:\HERDR_WRAPPED -ErrorAction SilentlyContinue
+            }
+            else {
+                $env:HERDR_WRAPPED = $oldWrapped
+            }
+        }
 
         $next = $null
+        $nextDirectory = $null
         $path = Get-HerdrHandoffPath
         if (Test-Path $path) {
-            $next = (Get-Content $path -Raw).Trim()
+            $handoff = (Get-Content $path -Raw).Trim()
             Remove-Item $path -Force
+
+            try {
+                $parsed = $handoff | ConvertFrom-Json -ErrorAction Stop
+                $next = $parsed.name
+                $nextDirectory = $parsed.directory
+            }
+            catch {
+                # Backward compatibility with handoff files written by the
+                # previous version, which contained only the session name.
+                $next = $handoff
+            }
         }
 
         if ($next -and $next -ne $Name) {
             Write-Host "-> switching to herdr session '$next'" -ForegroundColor Cyan
             $Name = $next
+            $Directory = $nextDirectory
         }
         else { $Name = $null }
     }
@@ -315,6 +414,18 @@ function Stop-HerdrSession {
 
 Set-Alias -Name hsw -Value Switch-HerdrSession -Scope Global
 Set-Alias -Name hdr -Value Connect-HerdrSession -Scope Global
+
+# Make the ordinary `herdr` command handoff-aware. Explicit CLI arguments still
+# go straight to the executable, so `herdr --version` and API commands are
+# unchanged.
+function global:herdr {
+    $exe = Get-HerdrExe
+    if ($args.Count -eq 0) {
+        Connect-HerdrSession
+        return
+    }
+    & $exe @args
+}
 
 if (Get-Module -ListAvailable -Name PSReadLine) {
     try {

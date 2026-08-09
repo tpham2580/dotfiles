@@ -245,21 +245,36 @@ function Show-HerdrSessionizerPicker {
             --with-shell 'cmd /c' `
             --delimiter $tab --with-nth '4..' `
             --prompt 'herdr> ' --height $Height --reverse --ansi --no-multi `
-            --header 'enter: switch   ctrl-t: new terminal tab   del: close (asks first)   ctrl-c: cancel' `
-            --expect 'ctrl-t,del')
+            --header 'type a new session name or select one   enter: open   ctrl-t: new tab   del: close' `
+            --print-query --expect 'ctrl-t,del')
 
-    # --expect emits the pressed key first (empty for enter), then the selection.
+    # --print-query + --expect emit the query, pressed key, then the selection.
+    # When the query has no matching row, enter creates a named session rooted
+    # at the focused pane's current directory.
     if (-not $picked -or $picked.Count -lt 2) { return }
 
-    $key = ([string]$picked[0]).Trim()
-    $fields = ([string]$picked[1]) -split $tab
-    if ($fields.Count -lt 3) { return }
+    $query = ([string]$picked[0]).Trim()
+    $key = ([string]$picked[1]).Trim()
 
-    [pscustomobject]@{
+    if ($picked.Count -ge 3 -and $picked[2]) {
+        $fields = ([string]$picked[2]) -split $tab
+        if ($fields.Count -lt 3) { return }
+
+        return [pscustomobject]@{
+            Key     = $key
+            Type    = $fields[0]
+            Session = $fields[1]
+            Id      = $fields[2]
+        }
+    }
+
+    if (-not $query -or $key -eq 'del') { return }
+
+    return [pscustomobject]@{
         Key     = $key
-        Type    = $fields[0]
-        Session = $fields[1]
-        Id      = $fields[2]
+        Type    = 'new'
+        Session = $query
+        Id      = $query
     }
 }
 
@@ -290,6 +305,15 @@ function Invoke-HerdrSessionizer {
     }
 
     $current = Get-HerdrCurrentSessionName
+    $directory = $null
+
+    if ($choice.Type -eq 'new') {
+        $directory = Get-HerdrCurrentDirectory -Session $current
+        $existingSession = Get-HerdrSession | Where-Object Name -eq $choice.Session | Select-Object -First 1
+        if ($existingSession) {
+            $choice.Type = 'ses'
+        }
+    }
 
     # Focusing works across sessions because it is a plain socket call to that
     # session's own server, so the target workspace is already selected by the
@@ -300,7 +324,26 @@ function Invoke-HerdrSessionizer {
     }
 
     if ($choice.Key -eq 'ctrl-t') {
-        Open-HerdrSessionInTab -Name $choice.Session
+        Open-HerdrSessionInTab -Name $choice.Session -Directory $directory
+        return
+    }
+
+    if ($choice.Type -eq 'new') {
+        if ($env:HERDR_ENV -eq '1') {
+            if ($env:HERDR_WRAPPED -eq '1') {
+                Set-HerdrSwitch -Name $choice.Session -Directory $directory
+                Write-Host ''
+                Write-Host "  New session queued: $($choice.Session)" -ForegroundColor Cyan
+                Write-Host '  Press ctrl+b d to switch into it.' -ForegroundColor DarkGray
+                Write-Host ''
+            }
+            else {
+                Open-HerdrSessionInTab -Name $choice.Session -Directory $directory
+            }
+            return
+        }
+
+        Connect-HerdrSession -Name $choice.Session -Directory $directory
         return
     }
 
@@ -310,6 +353,13 @@ function Invoke-HerdrSessionizer {
     # target is written to the handoff file and the outer `hdr` loop picks it up
     # on detach. This is the Windows stand-in for Linux's in-place attach.
     if ($env:HERDR_ENV -eq '1') {
+        if ($env:HERDR_WRAPPED -ne '1') {
+            $currentSession = if ($env:HERDR_SESSION) { $env:HERDR_SESSION } else { 'default' }
+            Open-HerdrSessionInTab -Name $choice.Session `
+                -Directory (Get-HerdrFocusedDirectory -Session $currentSession)
+            return
+        }
+
         Set-HerdrSwitch -Name $choice.Session
         Write-Host ''
         Write-Host '  Switch target set: ' -NoNewline -ForegroundColor DarkGray

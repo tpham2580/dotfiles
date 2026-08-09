@@ -342,8 +342,8 @@ under `windows/` maps to the same path under `$HOME`, so
   | Windows-only | Why |
   | --- | --- |
   | `onboarding = false` | Skips the first-run wizard |
-  | `[theme] name = "kanagawa"` | Matches nvim's `kanagawa-dragon` (Linux is catppuccin) |
-  | `[theme.custom] panel_bg = "reset"` | Lets Windows Terminal's `opacity` show through |
+  | `[theme] name = "kanagawa"` | Uses the Kanagawa Wave palette (Linux is catppuccin) |
+  | `[theme.custom]` | Pins Wave accents and lets Windows Terminal's `opacity` show through |
   | `[terminal] default_shell = "pwsh"` | PowerShell 5.1 is `Restricted` and refuses to dot-source the helper scripts |
   | `[[keys.command]]` paths | PowerShell in `~\.copilot\scripts` instead of bash in `~/.script` |
 
@@ -389,7 +389,7 @@ if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
 
 | Key / alias | Action |
 | --- | --- |
-| `Alt+S` / `hz` | Workspace + session picker |
+| `Alt+S` / `hz` | Workspace + session picker; type a new name to create it in the current directory |
 | `Ctrl+F` / `hf` | Open any folder as a workspace (fzf) |
 | `hf <dir>` / `hw <dir>` | Open a specific folder as a workspace |
 | `hf -Edit` | Edit the search-roots file |
@@ -399,6 +399,8 @@ if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
 
 Inside the pickers: `enter` switches, `ctrl-t` opens in a new Windows Terminal
 tab, `del` closes a workspace or stops+deletes a session, `ctrl-c` cancels.
+In the unified `Alt+S` picker, an unmatched query is a new named session rooted
+at the focused pane's current directory.
 
 `del` always asks for confirmation first — it sits one key away from the arrows,
 and closing a workspace kills every process in it. It additionally refuses to
@@ -438,9 +440,11 @@ mode is obvious — both just look like a dead key:
 A herdr *named session* is a separate server process with its own socket, and a
 client cannot re-point itself at another one. Linux therefore hides sessions
 from the picker while you are inside herdr. Windows instead uses a **handoff
-file** (`~\.herdr\.switch-target`): picking something in another session writes
-the target, and the outer `hdr` attach loop re-attaches to it as soon as you
-press the detach key (`ctrl+b d`).
+file** (`~\.herdr\.switch-target`): the profile wraps the ordinary no-argument
+`herdr` command in the same attach loop as `hdr`, so picking something in
+another session writes the target and `ctrl+b d` re-attaches to it. A Herdr
+process started before that wrapper was loaded falls back to opening the
+destination in a new Windows Terminal tab.
 
 Because focusing a workspace is a plain socket call to *that* session's server,
 the sessionizer can list and focus workspaces across every running session — so
