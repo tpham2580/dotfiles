@@ -7,7 +7,7 @@
 #   tmux new-session -c   -> herdr workspace create --cwd   (see hf / Invoke-HerdrSessionize)
 #
 # Keys inside the picker (same as Linux, plus ctrl-t):
-#   enter   focus the workspace
+#   enter   focus the workspace, or create one named after an unmatched query
 #   del     close the workspace
 #           (asks for confirmation, then reopens the picker)
 #   ctrl-t  open it in a new Windows Terminal tab instead
@@ -194,6 +194,30 @@ function Remove-HerdrSessionizerWorkspace {
     Invoke-HerdrApi -Session $Session -Arguments @('workspace', 'focus', $next.workspace_id) | Out-Null
 }
 
+# ------------------------------------------------------------------ creation
+# An unmatched query in the picker becomes a new workspace in THIS session,
+# rooted at the focused pane's directory. One session holding many workspaces
+# is the whole model here, so a typed name never spawns a separate server.
+function New-HerdrSessionizerWorkspace {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $Session,
+        [Parameter(Mandatory)][string] $Label
+    )
+
+    $workspaces = @((Invoke-HerdrApi -Session $Session -Arguments @('workspace', 'list')).workspaces)
+    $existing = $workspaces | Where-Object label -eq $Label | Select-Object -First 1
+    if ($existing) { return $existing.workspace_id }
+
+    $dir = Get-HerdrCurrentDirectory -Session $Session
+    $created = Invoke-HerdrApi -Session $Session `
+        -Arguments @('workspace', 'create', '--cwd', $dir, '--label', $Label, '--focus')
+
+    $id = $created.workspace.workspace_id
+    if (-not $id) { Write-Warning "could not create workspace '$Label'."; return }
+    $id
+}
+
 # -------------------------------------------------------------------- picker
 function Show-HerdrSessionizerPicker {
     [CmdletBinding()]
@@ -232,12 +256,12 @@ function Show-HerdrSessionizerPicker {
             --with-shell 'cmd /c' `
             --delimiter $tab --with-nth '4..' `
             --prompt 'herdr> ' --height $Height --reverse --ansi --no-multi `
-            --header 'type a new session name or select one   enter: open   ctrl-t: new tab   del: close' `
+            --header 'type a new workspace name or select one   enter: open   ctrl-t: new tab   del: close' `
             --print-query --expect 'ctrl-t,del')
 
     # --print-query + --expect emit the query, pressed key, then the selection.
-    # When the query has no matching row, enter creates a named session rooted
-    # at the focused pane's current directory.
+    # When the query has no matching row, enter creates a workspace of that name
+    # in this session, rooted at the focused pane's current directory.
     if (-not $picked -or $picked.Count -lt 2) { return }
 
     $query = ([string]$picked[0]).Trim()
@@ -292,14 +316,17 @@ function Invoke-HerdrSessionizer {
     }
 
     $current = Get-HerdrCurrentSessionName
-    $directory = $null
+    $sessionName = if ($current) { $current } else { 'default' }
 
+    # A typed name creates a workspace here rather than a separate server, so
+    # from this point on every choice is an ordinary workspace row.
     if ($choice.Type -eq 'new') {
-        $directory = Get-HerdrCurrentDirectory -Session $current
-        $existingSession = Get-HerdrSession | Where-Object Name -eq $choice.Session | Select-Object -First 1
-        if ($existingSession) {
-            $choice.Type = 'ses'
-        }
+        $id = New-HerdrSessionizerWorkspace -Session $sessionName -Label $choice.Id
+        if (-not $id) { return }
+
+        $choice.Type = 'ws'
+        $choice.Session = $sessionName
+        $choice.Id = $id
     }
 
     # Focusing works across sessions because it is a plain socket call to that
@@ -311,26 +338,7 @@ function Invoke-HerdrSessionizer {
     }
 
     if ($choice.Key -eq 'ctrl-t') {
-        Open-HerdrSessionInTab -Name $choice.Session -Directory $directory
-        return
-    }
-
-    if ($choice.Type -eq 'new') {
-        if ($env:HERDR_ENV -eq '1') {
-            if ($env:HERDR_WRAPPED -eq '1') {
-                Set-HerdrSwitch -Name $choice.Session -Directory $directory
-                Write-Host ''
-                Write-Host "  New session queued: $($choice.Session)" -ForegroundColor Cyan
-                Write-Host '  Press ctrl+b d to switch into it.' -ForegroundColor DarkGray
-                Write-Host ''
-            }
-            else {
-                Open-HerdrSessionInTab -Name $choice.Session -Directory $directory
-            }
-            return
-        }
-
-        Connect-HerdrSession -Name $choice.Session -Directory $directory
+        Open-HerdrSessionInTab -Name $choice.Session
         return
     }
 

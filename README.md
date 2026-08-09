@@ -389,7 +389,7 @@ if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
 
 | Key / alias | Action |
 | --- | --- |
-| `Alt+S` / `hz` | Current-session workspace picker; type a new name to create a session in the current directory |
+| `Alt+S` / `hz` | Current-session workspace picker; type a new name to create a workspace in the current directory |
 | `Ctrl+F` / `hf` | Open any folder as a workspace (fzf), prompting for its workspace name |
 | `hf <dir>` / `hw <dir>` | Open a specific folder and prompt for its workspace name |
 | `hw <dir> -Name <name>` | Open a specific folder with a supplied workspace name |
@@ -403,9 +403,10 @@ Windows Terminal tab, `del` closes a workspace, and `ctrl-c` cancels. Each
 workspace can contain its own group of panes and agents.
 
 `Alt+S` lists only the current session's workspaces — the model is one session
-holding several workspaces. Named sessions are still reachable there: an
-unmatched query creates a named session rooted at the focused pane's current
-directory, and typing an existing session's name switches to it.
+holding several workspaces. Typing a name that matches no row creates a
+workspace with that name, rooted at the focused pane's current directory, so a
+typed name never spawns a separate server. Named sessions are switched with
+`hsw` / `hdr` instead.
 
 `del` always asks for confirmation first — it sits one key away from the arrows,
 and closing a workspace kills every process in it. It additionally refuses to
