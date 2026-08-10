@@ -568,7 +568,7 @@ one `enter` + one detach lands you on exactly the workspace you picked.
   | --- | --- |
   | `lua/custom/review.lua` | Review mode — repoints gitsigns at the **merge-base** with the target branch, so every hunk a branch introduced stays highlighted in real, editable buffers even after it is committed and pushed (plain gitsigns diffs against `HEAD`, so the gutter goes blank once you commit). |
   | `lua/custom/plugins/review.lua` | Lazy-loads the above off `gitsigns.nvim`; `init` only registers commands and keymaps, so startup cost is unmeasurable. |
-  | `lua/custom/aisend.lua` | Sends a visual selection plus a prompt to the Copilot agent in the current herdr session — the terminal equivalent of VS Code's "add selection to Copilot chat". Pairs with hunk: press `e` on a hunk, select lines, `<leader>ai`. |
+  | `lua/custom/aisend.lua` | Sends a visual selection plus a prompt to the Copilot agent in the current herdr session — the terminal equivalent of VS Code's "add selection to Copilot chat". Pairs with hunk: press `e` on a hunk, select lines, `<leader>ai`. When more than one agent is running, the picker leads with the **workspace name**: agent names are usually unset, terminal titles are truncated task names, and folder basenames repeat across checkouts, so the workspace label is the only field that reliably tells two agents apart. |
 
 ---
 

@@ -35,6 +35,20 @@ local function repo_root()
   return (vim.trim(res.stdout):gsub('/', '\\'))
 end
 
+-- workspace_id -> label. `agent list` only carries the opaque id (wA, wB), but
+-- the label is the one field that reliably tells two candidates apart: agent
+-- names are often unset, terminal titles are truncated task names, and folder
+-- basenames repeat across checkouts.
+local function workspace_labels()
+  local data = run({ 'workspace', 'list' })
+  local out = {}
+  if not data then return out end
+  for _, w in ipairs((data.result or {}).workspaces or {}) do
+    if w.workspace_id then out[w.workspace_id] = w.label end
+  end
+  return out
+end
+
 -- Rank candidates so the agent in *this* repo/workspace wins automatically.
 local function score(agent, root, pane)
   local s = 0
@@ -55,33 +69,46 @@ local function candidates()
   if not data then return nil, err end
   local all = (data.result or {}).agents or {}
   local root, pane = repo_root(), vim.env.HERDR_PANE_ID
+  local labels = workspace_labels()
   local out = {}
   for _, a in ipairs(all) do
     if a.agent == 'copilot' then
       -- Agents started by hand have no name; the pane id is a valid target too.
       a._target = (a.name ~= nil and a.name ~= '') and a.name or a.pane_id
       if a._target then
+        a._workspace = labels[a.workspace_id] or a.workspace_id or '?'
         a._score = score(a, root, pane)
         table.insert(out, a)
       end
     end
   end
-  table.sort(out, function(x, y) return x._score > y._score end)
+  table.sort(out, function(x, y)
+    if x._score ~= y._score then return x._score > y._score end
+    return x._workspace < y._workspace
+  end)
   return out, nil
 end
 
-local function label(a)
-  local base = (a.name ~= nil and a.name ~= '') and (a.name .. '  (' .. a.pane_id .. ')')
-    or a.pane_id
-  return string.format('%s  [%s]  %s', base, a.agent_status or '?', a.cwd or '')
-end
-
 local function pick(list, cb)
-  vim.ui.select(list, { prompt = 'Send to which Copilot agent?', format_item = label },
+  -- Lay the rows out in columns with the workspace first: it is the field that
+  -- disambiguates, so it must not be buried behind a pane id or a long cwd.
+  local wsw, whow = 0, 0
+  for _, a in ipairs(list) do
+    a._who = (a._target ~= a.pane_id) and (a._target .. ' (' .. a.pane_id .. ')') or a.pane_id
+    wsw = math.max(wsw, #a._workspace)
+    whow = math.max(whow, #a._who)
+  end
+
+  local fmt = '%-' .. wsw .. 's  %-' .. whow .. 's  [%s]  %s'
+  local function format_item(a)
+    return string.format(fmt, a._workspace, a._who, a.agent_status or '?', a.cwd or '')
+  end
+
+  vim.ui.select(list, { prompt = 'Send to which Copilot agent?', format_item = format_item },
     function(choice)
       if not choice then return end
       vim.g.ai_agent = choice._target
-      cb(choice._target)
+      cb(choice._target, choice)
     end)
 end
 
@@ -198,7 +225,7 @@ function M.choose(arg)
   if #list == 0 then
     return vim.notify('AiSend: no Copilot agent in this Herdr session', vim.log.levels.WARN)
   end
-  pick(list, function(t) vim.notify('AiSend target: ' .. t) end)
+  pick(list, function(t, a) vim.notify('AiSend target: ' .. a._workspace .. ' / ' .. t) end)
 end
 
 function M.setup()
