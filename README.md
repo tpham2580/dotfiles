@@ -356,7 +356,7 @@ under `windows/` maps to the same path under `$HOME`, so
 
 | Key | Action |
 | --- | --- |
-| `prefix+alt+s` | Workspace / session picker (`Invoke-HerdrSessionizer.ps1`) |
+| `prefix+alt+s` | Workspace / folder picker (`Invoke-HerdrSessionizer.ps1`) |
 | `prefix+ctrl+f` | Open any folder as a workspace (`Invoke-HerdrSessionize.ps1`) |
 | `prefix+a` | Start a Copilot agent in the focused pane |
 | `prefix+shift+a` | Same, pre-authorized to drive hunk |
@@ -368,7 +368,7 @@ under `windows/` maps to the same path under `$HOME`, so
 | --- | --- |
 | `Invoke-HerdrSession.ps1` | Core session helpers: `Get-HerdrExe`, `Get-HerdrSession`, `Connect-HerdrSession`, the detach→attach handoff |
 | `Invoke-HerdrSessionize.ps1` | Open any folder as a workspace and name new workspaces — the `herdr-sessionize` port |
-| `Invoke-HerdrSessionizer.ps1` | fzf picker over the current session's workspaces, including pane count and agent status |
+| `Invoke-HerdrSessionizer.ps1` | fzf picker over the `default` session's workspaces (pane count + agent status) **and** the folders from `sessionize-paths` |
 | `Select-HerdrSession.ps1` | Session-only picker (superseded by the sessionizer, kept because `hsw` still uses it) |
 | `Start-HerdrAgentHere.ps1` | Start a Copilot agent in the focused pane instead of splitting a new one |
 | `Stop-CurrentHerdrSession.ps1` | Stop + delete the session this pane belongs to, behind a typed confirmation |
@@ -376,8 +376,9 @@ under `windows/` maps to the same path under `$HOME`, so
 
 #### Shell bindings and aliases
 
-Add to `$PROFILE` (load the sessionizer **after** `Invoke-HerdrSession.ps1` —
-it rebinds `Alt+S` from the session-only picker to the unified one):
+Add to `$PROFILE`. Only the sessionizer binds `Alt+S`, so load order no longer
+decides which picker you get; `Invoke-HerdrSession.ps1` still loads first
+because the sessionizer builds on its helpers:
 
 ```powershell
 $__herdrSession = "$HOME\.copilot\scripts\Invoke-HerdrSession.ps1"
@@ -389,7 +390,7 @@ if (Test-Path $__herdrSessionizer) { . $__herdrSessionizer }
 
 | Key / alias | Action |
 | --- | --- |
-| `Alt+S` / `hz` | Current-session workspace picker; type a new name to create a workspace in the current directory |
+| `Alt+S` / `hz` | Workspace **and** folder picker for the `default` session; type a new name to create a workspace in the current directory |
 | `Ctrl+F` / `hf` | Open any folder as a workspace (fzf), prompting for its workspace name |
 | `hf <dir>` / `hw <dir>` | Open a specific folder and prompt for its workspace name |
 | `hw <dir> -Name <name>` | Open a specific folder with a supplied workspace name |
@@ -402,11 +403,16 @@ Inside the pickers: `enter` switches workspaces, `ctrl-t` opens one in a new
 Windows Terminal tab, `del` closes a workspace, and `ctrl-c` cancels. Each
 workspace can contain its own group of panes and agents.
 
-`Alt+S` lists only the current session's workspaces — the model is one session
-holding several workspaces. Typing a name that matches no row creates a
-workspace with that name, rooted at the focused pane's current directory, so a
-typed name never spawns a separate server. Named sessions are switched with
-`hsw` / `hdr` instead.
+`Alt+S` never lists sessions. Outside herdr it pins itself to `default`, so the
+terminal and the in-herdr popup show the same thing: that session's workspaces,
+then every folder from `sessionize-paths` that no workspace is sitting in yet.
+Picking a folder opens it as a workspace in `default` (deriving a unique name,
+no prompt) and attaches — the whole `tmux-sessionizer` workflow in one key. The
+model is one session holding several workspaces, so a typed name that matches no
+row also becomes a workspace here, rooted at the focused pane's directory, and
+never spawns a separate server. When the server is down the workspace rows are
+simply absent and opening a folder starts it. Named sessions, on the rare
+occasion you want one, are still reachable through `hsw` / `hdr`.
 
 `del` always asks for confirmation first — it sits one key away from the arrows,
 and closing a workspace kills every process in it. It additionally refuses to

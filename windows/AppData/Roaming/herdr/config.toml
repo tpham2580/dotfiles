@@ -9,8 +9,10 @@
 #   tmux session  ->  herdr WORKSPACE  (one per project; this is your daily switcher)
 #   tmux window   ->  herdr TAB
 #   tmux pane     ->  herdr PANE
-# A herdr "named session" is a whole separate server, NOT a tmux session. Those
-# are switched with prefix+alt+s / `hz` / `hdr` (see ~\.copilot\scripts).
+# A herdr "named session" is a whole separate server, NOT a tmux session. The
+# pickers here never create or switch one: prefix+alt+s / `hz` stays inside a
+# single session (`default` from a plain terminal). Use `hdr` for the rare
+# cross-server case (see ~\.copilot\scripts).
 
 onboarding = false
 
@@ -73,14 +75,15 @@ previous_agent = "ctrl+alt+k"
 # PowerShell in ~\.copilot\scripts. herdr does not expand $HOME or %USERPROFILE%
 # here, so these paths are absolute — fix the user name on a new machine.
 
-# Workspace picker for the current session. Each workspace can hold its own
-# panes and agents; the popup shows the workspace's pane count and aggregate
-# agent status. ctrl-t opens it in a new Windows Terminal tab and del closes it.
+# Workspace picker for the current session, plus every folder from
+# %APPDATA%\herdr\sessionize-paths that is not already open as one. Each
+# workspace row shows its pane count and aggregate agent status; ctrl-t opens
+# it in a new Windows Terminal tab and del closes it. Sessions are never listed.
 [[keys.command]]
 key = "prefix+alt+s"
 type = "popup"
 command = 'pwsh -NoLogo -NoProfile -File "C:\Users\timpham\.copilot\scripts\Invoke-HerdrSessionizer.ps1" -Popup'
-description = "switch workspace"
+description = "switch workspace / open folder"
 width = "80%"
 height = "60%"
 

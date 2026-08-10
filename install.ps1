@@ -438,8 +438,9 @@ $ProfileEndMarker = '# <<< dotfiles: herdr <<<'
 $ProfileBlock = @"
 $ProfileBeginMarker
 # Managed by dotfiles\install.ps1 -- edit the repo, not this block.
-# Order matters: the sessionizer rebinds Alt+S from the session-only picker
-# to the unified workspace+session one, so it must load second.
+# Only the sessionizer binds Alt+S, so load order no longer decides which
+# picker the terminal gets. Invoke-HerdrSession.ps1 supplies the helpers it
+# builds on, so it still loads first.
 `$__herdrSession = "`$HOME\.copilot\scripts\Invoke-HerdrSession.ps1"
 if (Test-Path `$__herdrSession) { . `$__herdrSession }
 

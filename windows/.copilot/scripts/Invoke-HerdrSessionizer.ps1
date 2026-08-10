@@ -1,13 +1,22 @@
-# Herdr sessionizer — fzf picker over workspaces in the current session.
+# Herdr sessionizer — fzf picker over the workspaces of a single session, plus
+# every folder the folder picker knows about.
 # The Windows port of ~/.script/herdr-sessionizer.
 #
 # Concept map from tmux:
 #   tmux session          -> herdr WORKSPACE   (switch in place)
 #   tmux switch-client -t -> herdr workspace focus
-#   tmux new-session -c   -> herdr workspace create --cwd   (see hf / Invoke-HerdrSessionize)
+#   tmux new-session -c   -> herdr workspace create --cwd
+#
+# There is deliberately no session management here. Outside herdr the picker
+# pins itself to the `default` session, so the terminal and the in-herdr popup
+# show the same list: the workspaces of `default`, then the candidate folders
+# from %APPDATA%\herdr\sessionize-paths. Picking a folder opens it as a
+# workspace in `default` and attaches, which is the whole tmux-sessionizer
+# workflow in one key.
 #
 # Keys inside the picker (same as Linux, plus ctrl-t):
-#   enter   focus the workspace, or create one named after an unmatched query
+#   enter   focus the workspace, open the folder as one, or create one named
+#           after an unmatched query
 #   del     close the workspace
 #           (asks for confirmation, then reopens the picker)
 #   ctrl-t  open it in a new Windows Terminal tab instead
@@ -82,8 +91,23 @@ function Get-HerdrCurrentSessionName {
     return $null
 }
 
+# The session every row in this picker belongs to. Outside herdr that is always
+# `default`: sessions are separate servers and this picker does not manage them,
+# so a terminal Alt+S must land in the same place the in-herdr popup shows.
+function Get-HerdrSessionizerSession {
+    [CmdletBinding()]
+    param()
+
+    $current = Get-HerdrCurrentSessionName
+    if ($current) { return $current }
+    return 'default'
+}
+
 # ---------------------------------------------------------------- row listing
 # Row format:  TYPE \t SESSION \t ID \t DISPLAY \t META
+#
+#   ws   the session's live workspaces        ID = workspace_id
+#   dir  candidate folders not yet open       ID = full path
 #
 # Linux only has to name a workspace, because there is a single server. On
 # Windows every named session is its own server with its own socket, so the
@@ -92,12 +116,28 @@ function Get-HerdrSessionizerRow {
     [CmdletBinding()]
     param()
 
-    $current = Get-HerdrCurrentSessionName
-    $sessionName = if ($current) { $current } else { 'default' }
+    $sessionName = Get-HerdrSessionizerSession
     $rows = [System.Collections.Generic.List[object]]::new()
 
-    $result = Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $sessionName
-    foreach ($ws in @($result.workspaces)) {
+    # Outside herdr the server is often not running at all. The folder half of
+    # the picker still works then -- opening a folder starts the server -- so a
+    # dead socket must not take the whole picker down with it.
+    $workspaces = @()
+    $openDirs = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase)
+    try {
+        $workspaces = @((Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $sessionName).workspaces)
+        foreach ($pane in @((Invoke-HerdrApi -Arguments @('pane', 'list') -Session $sessionName).panes)) {
+            if (-not $pane.cwd) { continue }
+            if (-not (Test-Path -LiteralPath $pane.cwd -PathType Container)) { continue }
+            [void]$openDirs.Add((Resolve-HerdrDirectory $pane.cwd))
+        }
+    }
+    catch {
+        Write-Verbose "herdr session '$sessionName' is not running: $_"
+    }
+
+    foreach ($ws in $workspaces) {
         $unit = if ($ws.pane_count -eq 1) { 'pane' } else { 'panes' }
         $here = if ($ws.focused) { '*' } else { ' ' }
         $rows.Add([pscustomobject]@{
@@ -106,6 +146,19 @@ function Get-HerdrSessionizerRow {
                 Id      = $ws.workspace_id
                 Display = ('{0} {1}' -f $here, $ws.label)
                 Meta    = ('({0} {1}, {2})' -f $ws.pane_count, $unit, $ws.agent_status)
+            })
+    }
+
+    # Folders a workspace is already sitting in are skipped, so each project
+    # appears exactly once -- as the live workspace row that can be focused.
+    foreach ($dir in @(Get-HerdrSessionizeDirectory)) {
+        if ($openDirs.Contains($dir)) { continue }
+        $rows.Add([pscustomobject]@{
+                Type    = 'dir'
+                Session = $sessionName
+                Id      = $dir
+                Display = ('  {0}' -f (Get-HerdrWorkspaceLabel -Path $dir))
+                Meta    = $dir
             })
     }
 
@@ -126,6 +179,9 @@ function Write-HerdrSessionizerRow {
 # path here confirms first. This runs in the parent process, which owns the
 # console -- see the note in Show-HerdrSessionizerPicker for why it cannot run
 # as an fzf binding on Windows.
+#
+# Only workspaces are closable: `dir` rows are not live yet, and sessions are
+# not managed from this picker at all.
 function Remove-HerdrSessionizerRow {
     [CmdletBinding()]
     param(
@@ -134,24 +190,8 @@ function Remove-HerdrSessionizerRow {
         [string] $Id
     )
 
-    if (-not $Id) { return }
-
-    if ($Type -eq 'ws') { Remove-HerdrSessionizerWorkspace -Session $Session -Id $Id; return }
-
-    # Never destroy the default session (as on Linux), nor the session this
-    # client is attached to: closing the server out from under the attached
-    # client leaves the terminal wedged.
-    if ($Id -eq 'default') {
-        Write-Warning 'refusing to delete the default session'
-        return
-    }
-    if ($Id -eq (Get-HerdrCurrentSessionName)) {
-        Write-Warning "refusing to delete '$Id' — it is the session you are attached to"
-        return
-    }
-
-    if (-not (Confirm-HerdrAction "Stop and delete session '$Id' and every pane in it?")) { return }
-    Stop-HerdrSession -Name $Id -Delete -Confirm:$false | Out-Null
+    if (-not $Id -or $Type -ne 'ws') { return }
+    Remove-HerdrSessionizerWorkspace -Session $Session -Id $Id
 }
 
 function Remove-HerdrSessionizerWorkspace {
@@ -218,6 +258,28 @@ function New-HerdrSessionizerWorkspace {
     $id
 }
 
+# A `dir` row skips the interactive name prompt that `hf` uses: the point of
+# the picker is one keystroke from folder to workspace, and the derived label
+# is already made unique against what is open.
+function Get-HerdrSessionizerLabel {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $Path,
+        [Parameter(Mandatory)][string] $Session
+    )
+
+    $label = Get-HerdrWorkspaceLabel -Path $Path
+
+    $workspaces = @()
+    try {
+        $workspaces = @((Invoke-HerdrApi -Arguments @('workspace', 'list') -Session $Session).workspaces)
+    }
+    catch { return $label }
+
+    if (-not $workspaces) { return $label }
+    Get-HerdrUniqueWorkspaceLabel -Label $label -Workspaces $workspaces
+}
+
 # -------------------------------------------------------------------- picker
 function Show-HerdrSessionizerPicker {
     [CmdletBinding()]
@@ -225,7 +287,7 @@ function Show-HerdrSessionizerPicker {
 
     $rows = @(Write-HerdrSessionizerRow)
     if (-not $rows) {
-        Write-Warning 'no active herdr workspaces — use ctrl+f to open a folder'
+        Write-Warning "no workspaces and no candidate folders — add search roots with: hf -Edit"
         return
     }
 
@@ -256,7 +318,7 @@ function Show-HerdrSessionizerPicker {
             --with-shell 'cmd /c' `
             --delimiter $tab --with-nth '4..' `
             --prompt 'herdr> ' --height $Height --reverse --ansi --no-multi `
-            --header 'type a new workspace name or select one   enter: open   ctrl-t: new tab   del: close' `
+            --header 'select a workspace or a folder, or type a new workspace name   enter: open   ctrl-t: new tab   del: close' `
             --print-query --expect 'ctrl-t,del')
 
     # --print-query + --expect emit the query, pressed key, then the selection.
@@ -316,7 +378,19 @@ function Invoke-HerdrSessionizer {
     }
 
     $current = Get-HerdrCurrentSessionName
-    $sessionName = if ($current) { $current } else { 'default' }
+    $sessionName = Get-HerdrSessionizerSession
+
+    # A folder row is the tmux-sessionizer half of the picker: open it as a
+    # workspace in this session (or refocus the one already rooted there).
+    # Open-HerdrWorkspace starts the server when it is down and attaches on the
+    # way out, so a folder goes from picked to attached in one keystroke.
+    if ($choice.Type -eq 'dir') {
+        $label = Get-HerdrSessionizerLabel -Path $choice.Id -Session $sessionName
+        $newTab = ($choice.Key -eq 'ctrl-t')
+        Open-HerdrWorkspace -Path $choice.Id -Session $sessionName -Name $label -NoAttach:$newTab
+        if ($newTab) { Open-HerdrSessionInTab -Name $sessionName -Directory $choice.Id }
+        return
+    }
 
     # A typed name creates a workspace here rather than a separate server, so
     # from this point on every choice is an ordinary workspace row.
@@ -375,7 +449,7 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
         # Re-dot-source before running: functions are cached in memory, so a
         # shell opened before an edit would otherwise keep the stale version.
         Set-PSReadLineKeyHandler -Chord 'Alt+s' -BriefDescription 'HerdrSessionizer' `
-            -LongDescription 'Pick a herdr workspace or session with fzf' -ScriptBlock {
+            -LongDescription 'Pick a herdr workspace or folder with fzf' -ScriptBlock {
             [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert(
                 ". '$($script:HerdrSessionizerPath)'; Invoke-HerdrSessionizer")

@@ -4,7 +4,7 @@
 # in-app workspace picker can never show them. This provides the missing
 # cross-session navigation from PowerShell.
 #
-#   hsw            Alt+S -> fzf picker over `herdr session list`
+#   hsw            fzf picker over `herdr session list` (rarely needed)
 #   hdr [name]     Attach in a loop that honors the switch handoff file
 #
 # Inside a Herdr pane the picker writes the chosen session to a handoff file;
@@ -427,18 +427,12 @@ function global:herdr {
     & $exe @args
 }
 
-if (Get-Module -ListAvailable -Name PSReadLine) {
-    try {
-        # Re-dot-source before running: functions are cached in memory, so a
-        # shell opened before an edit would otherwise keep the stale version.
-        $script:HerdrLoaderPath = $PSCommandPath
-        Set-PSReadLineKeyHandler -Chord 'Alt+s' -BriefDescription 'HerdrSessionPicker' `
-            -LongDescription 'Pick a herdr session with fzf' -ScriptBlock {
-            [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert(
-                ". '$($script:HerdrLoaderPath)'; Switch-HerdrSession")
-            [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-        }
-    }
-    catch { Write-Verbose "Could not bind Alt+S for the herdr session picker: $_" }
-}
+# Deliberately no Alt+S binding here.
+#
+# Sessions are not something to manage from the terminal: the model is a single
+# `default` session holding many workspaces. Alt+S belongs to the workspace
+# sessionizer (Invoke-HerdrSessionizer.ps1) and only to it -- binding the
+# session picker here too made the terminal binding depend on dot-source order,
+# so a shell that loaded this file last got the session list instead.
+#
+# `hsw` still reaches the session picker for the rare cross-server case.
