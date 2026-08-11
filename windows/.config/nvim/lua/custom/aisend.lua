@@ -49,6 +49,20 @@ local function workspace_labels()
   return out
 end
 
+-- tab_id -> label. Tab names are unique *within* a workspace but repeat across
+-- them ("agent 1" in two workspaces), so this is the second half of the key,
+-- not a replacement for the workspace label. It is what separates two agents
+-- in the same workspace, where cwd and workspace label are identical.
+local function tab_labels()
+  local data = run({ 'tab', 'list' })
+  local out = {}
+  if not data then return out end
+  for _, t in ipairs((data.result or {}).tabs or {}) do
+    if t.tab_id then out[t.tab_id] = t.label end
+  end
+  return out
+end
+
 -- Rank candidates so the agent in *this* repo/workspace wins automatically.
 local function score(agent, root, pane)
   local s = 0
@@ -69,7 +83,7 @@ local function candidates()
   if not data then return nil, err end
   local all = (data.result or {}).agents or {}
   local root, pane = repo_root(), vim.env.HERDR_PANE_ID
-  local labels = workspace_labels()
+  local labels, tabs = workspace_labels(), tab_labels()
   local out = {}
   for _, a in ipairs(all) do
     if a.agent == 'copilot' then
@@ -77,6 +91,7 @@ local function candidates()
       a._target = (a.name ~= nil and a.name ~= '') and a.name or a.pane_id
       if a._target then
         a._workspace = labels[a.workspace_id] or a.workspace_id or '?'
+        a._tab = tabs[a.tab_id] or a.tab_id or '?'
         a._score = score(a, root, pane)
         table.insert(out, a)
       end
@@ -84,24 +99,28 @@ local function candidates()
   end
   table.sort(out, function(x, y)
     if x._score ~= y._score then return x._score > y._score end
-    return x._workspace < y._workspace
+    if x._workspace ~= y._workspace then return x._workspace < y._workspace end
+    return x._tab < y._tab
   end)
   return out, nil
 end
 
 local function pick(list, cb)
-  -- Lay the rows out in columns with the workspace first: it is the field that
-  -- disambiguates, so it must not be buried behind a pane id or a long cwd.
-  local wsw, whow = 0, 0
+  -- Lay the rows out in columns with workspace then tab first: together they
+  -- are what disambiguates. The workspace alone is not enough when a workspace
+  -- runs several agents -- there the tab name is the only thing that differs,
+  -- since cwd and workspace label are identical.
+  local wsw, tabw, whow = 0, 0, 0
   for _, a in ipairs(list) do
     a._who = (a._target ~= a.pane_id) and (a._target .. ' (' .. a.pane_id .. ')') or a.pane_id
     wsw = math.max(wsw, #a._workspace)
+    tabw = math.max(tabw, #a._tab)
     whow = math.max(whow, #a._who)
   end
 
-  local fmt = '%-' .. wsw .. 's  %-' .. whow .. 's  [%s]  %s'
+  local fmt = '%-' .. wsw .. 's  %-' .. tabw .. 's  %-' .. whow .. 's  [%s]  %s'
   local function format_item(a)
-    return string.format(fmt, a._workspace, a._who, a.agent_status or '?', a.cwd or '')
+    return string.format(fmt, a._workspace, a._tab, a._who, a.agent_status or '?', a.cwd or '')
   end
 
   vim.ui.select(list, { prompt = 'Send to which Copilot agent?', format_item = format_item },
@@ -225,7 +244,9 @@ function M.choose(arg)
   if #list == 0 then
     return vim.notify('AiSend: no Copilot agent in this Herdr session', vim.log.levels.WARN)
   end
-  pick(list, function(t, a) vim.notify('AiSend target: ' .. a._workspace .. ' / ' .. t) end)
+  pick(list, function(t, a)
+    vim.notify('AiSend target: ' .. a._workspace .. ' / ' .. a._tab .. ' / ' .. t)
+  end)
 end
 
 function M.setup()
