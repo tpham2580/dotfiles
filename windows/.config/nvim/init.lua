@@ -700,7 +700,40 @@ require('lazy').setup({
 
       -- Allows extra capabilities provided by nvim-cmp
       'hrsh7th/cmp-nvim-lsp',
-      { 'seblyng/roslyn.nvim' },
+      { 'seblyng/roslyn.nvim',
+        opts = {
+          -- Oneportal has 24 solutions and 118 projects with no solution at the
+          -- repository root, so opening nvim there leaves roslyn.nvim with an
+          -- ambiguous target: it asks for `:Roslyn target` and, until one is
+          -- chosen, every C# file is a "miscellaneous file". Roslyn still
+          -- attaches, but it cannot resolve types, so its semantic tokens come
+          -- back partial or wrong -- and since semantic tokens outrank
+          -- treesitter, those wrong colours win. That is the mixed highlighting.
+          --
+          -- Pick the solution closest to the file being opened, which is the one
+          -- that actually contains it. Opening the repo root then behaves the
+          -- same as opening the service directory directly.
+          choose_target = function(targets)
+            local bufname = vim.api.nvim_buf_get_name(0)
+            if bufname == '' then
+              return nil
+            end
+
+            local dir = vim.fs.dirname(bufname)
+            local best, best_len = nil, -1
+            for _, target in ipairs(targets) do
+              local target_dir = vim.fs.dirname(target)
+              -- Only consider a solution that sits above this file, and prefer
+              -- the deepest such directory: the innermost solution wins.
+              if vim.startswith(dir:lower(), target_dir:lower()) and #target_dir > best_len then
+                best, best_len = target, #target_dir
+              end
+            end
+
+            return best
+          end,
+        },
+      },
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -997,7 +1030,28 @@ require('lazy').setup({
             diagnostic = { dynamicRegistration = true },
           },
         }),
+        on_attach = function(client, _)
+          -- Roslyn's semantic tokens outrank treesitter, so wherever the two
+          -- disagree the server wins and a C# buffer ends up looking like two
+          -- colour schemes at once. Roslyn also emits several C#-only token
+          -- types that no colorscheme styles. Treesitter alone is consistent
+          -- here, so let it own the colours; everything else the server
+          -- provides -- diagnostics, completion, go-to-definition -- is
+          -- untouched. `:SemanticTokensToggle` turns them back on per buffer.
+          client.server_capabilities.semanticTokensProvider = nil
+        end,
       })
+
+      -- Compare the two highlighting sources in a live buffer.
+      vim.api.nvim_create_user_command('SemanticTokensToggle', function()
+        local buf = vim.api.nvim_get_current_buf()
+        local enabled = vim.lsp.semantic_tokens.is_enabled { bufnr = buf }
+        vim.lsp.semantic_tokens.enable(not enabled, { bufnr = buf })
+        vim.notify(
+          'LSP semantic tokens ' .. (enabled and 'OFF (treesitter only)' or 'ON'),
+          vim.log.levels.INFO
+        )
+      end, { desc = 'Toggle LSP semantic token highlighting in this buffer' })
 
       -- Copilot LSP. Powers sidekick.nvim's Next Edit Suggestions; inline completion is
       -- left to copilot.lua/nvim-cmp, so `vim.lsp.inline_completion` is intentionally
@@ -1252,22 +1306,107 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
     build = ':TSUpdate',
     event = { 'BufReadPre', 'BufNewFile' },
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
+    --
+    -- This is the `main` branch API, which is not the one kickstart ships. On
+    -- `main` there is no `configs.lua`: `ensure_installed`, `auto_install` and
+    -- `highlight` inside `opts` are silently ignored, parsers are installed
+    -- through `require('nvim-treesitter').install()`, and highlighting only
+    -- starts when something calls `vim.treesitter.start()`.
+    --
+    -- Left as the kickstart `opts` table, the result is a config that looks
+    -- correct and does nothing: every language without a parser bundled in
+    -- Neovim itself falls back to the legacy regex syntax. C# is the worst of
+    -- them, because Roslyn's LSP semantic tokens then repaint part of the
+    -- buffer over that regex highlighting and the two disagree.
+    config = function()
+      local treesitter = require 'nvim-treesitter'
+      treesitter.setup {}
+
+      -- Neovim only maps `help`/`checkhealth` to a parser name; every other
+      -- filetype falls back to itself. That silently breaks the languages whose
+      -- parser is not named after their filetype -- `cs` needs `c_sharp` and
+      -- `ps1` needs `powershell` -- so register those from nvim-treesitter's own
+      -- parser table instead of hardcoding a list that will drift.
+      for lang, info in pairs(require 'nvim-treesitter.parsers') do
+        if info.filetype then
+          vim.treesitter.language.register(lang, info.filetype)
+        end
+      end
+      vim.treesitter.language.register('c_sharp', 'cs')
+
+      -- Parsers worth having on disk. Anything not listed still works: the
+      -- FileType handler below installs on demand.
+      local ensure_installed = {
+        'bash',
+        'c',
+        'c_sharp',
+        'csv',
+        'diff',
+        'html',
+        'json',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'powershell',
+        'python',
+        'query',
+        'toml',
+        'vim',
+        'vimdoc',
+        'xml',
+        'yaml',
+      }
+
+      local installed = {}
+      for _, lang in ipairs(treesitter.get_installed 'parsers') do
+        installed[lang] = true
+      end
+
+      local missing = vim.tbl_filter(function(lang)
+        return not installed[lang]
+      end, ensure_installed)
+
+      if #missing > 0 then
+        treesitter.install(missing)
+      end
+
+      -- `main` does not attach highlighting itself, so do it per buffer.
+      vim.api.nvim_create_autocmd('FileType', {
+        group = vim.api.nvim_create_augroup('kickstart-treesitter-start', { clear = true }),
+        callback = function(event)
+          local lang = vim.treesitter.language.get_lang(event.match)
+          if not lang then
+            return
+          end
+
+          if installed[lang] then
+            pcall(vim.treesitter.start, event.buf, lang)
+            return
+          end
+
+          -- Unknown language: only try to install one nvim-treesitter actually
+          -- ships, otherwise every scratch filetype triggers a failed build.
+          if not require('nvim-treesitter.parsers')[lang] then
+            return
+          end
+
+          -- Install once, then start highlighting when it lands. Doing this
+          -- asynchronously keeps the first open of an unknown filetype from
+          -- blocking on a compile.
+          installed[lang] = true
+          treesitter.install({ lang }):await(function()
+            if vim.api.nvim_buf_is_valid(event.buf) then
+              pcall(vim.treesitter.start, event.buf, lang)
+            end
+          end)
+        end,
+      })
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
