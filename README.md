@@ -20,7 +20,7 @@ missing, and copies every config into `$HOME`.
 | Flag | Effect |
 | --- | --- |
 | *(none)* | Packages + configs, terminal stack only |
-| `--desktop` | Also install the Hyprland / i3 desktop stack |
+| `--desktop` | Also install the Hyprland desktop stack |
 | `--no-packages` | Deploy config files only, install nothing |
 | `--packages-only` | Install software only, touch no config files |
 | `--dry-run` | Print every action without doing any of it |
@@ -149,18 +149,15 @@ dotfiles/
 │   │   ├── herdr/              # herdr multiplexer (tmux-compatible keymap)
 │   │   ├── hunk/               # hunk diff viewer
 │   │   ├── hypr/               # Hyprland (+ host.conf.example)
-│   │   ├── i3/                 # i3 window manager
-│   │   ├── wofi/ waybar/       # Wayland launcher and bar
 │   │   ├── nvim/               # Neovim
-│   │   ├── picom/ polybar/ rofi/  # X11 compositor, bar, launcher
+│   │   ├── wofi/ waybar/       # Wayland launcher and bar
 │   │   └── tmux/               # Terminal multiplexer (legacy, replaced by herdr)
 │   ├── .local/scripts/         # tmux-sessionizer (legacy)
 │   ├── .script/                # herdr helper scripts
 │   ├── .zsh/completions/       # _herdr
 │   ├── .gitconfig              # identity + hunk difftool
 │   ├── .zshenv                 # EDITOR, cargo env
-│   ├── .zshrc                  # Zsh config
-│   └── lock.sh                 # i3 lock screen script
+│   └── .zshrc                  # Zsh config
 ├── windows/                    # Windows-only configs
 │   ├── AppData/
 │   │   ├── Local/Packages/…/   # Windows Terminal settings.json
@@ -327,32 +324,6 @@ after upgrading herdr to see exactly what, if anything, broke.
   `exec-once = ~/.script/notification-daemon` prevents it by owning the name up
   front, so activation never runs. To check: `notify-send test` must return
   instantly.
-
-### **i3 Window Manager** (X11, kept for older machines)
-
-- Configuration file: `linux/.config/i3/config`
-- Deploy path: `~/.config/i3/config`
-- Current theme: [Catppuccin](https://github.com/catppuccin/catppuccin)
-- Stack: `i3-wm i3status dmenu i3lock xbacklight feh conky xss-lock picom
-  network-manager-applet light maim xclip dunst polkit-gnome polybar rofi`
-  - `xss-lock` — lock and idle handling
-  - `picom` — compositor (`linux/.config/picom/picom.conf`)
-  - `light` — display brightness
-  - `maim` / `xclip` — screenshots and clipboard
-  - `dunst` — notifications
-  - `polkit-gnome` — authentication/elevation
-  - `polybar` — status bar (`linux/.config/polybar/config.ini`)
-  - `rofi` — launcher (`linux/.config/rofi/config.rasi`)
-
-- REMEMBER: if flathub apps do not show up in dmenu, create a shell script in `/usr/local/bin`:
-  ```bash
-  #!/bin/bash
-  flatpak run {flatpak for application here}
-  ```
-- Or symlink it:
-  ```bash
-  sudo ln -s /opt/extract-folder/bin/start.sh /usr/local/bin/appname
-  ```
 
 ### **Legacy scripts**
 - `tmux-sessionizer` (`linux/.local/scripts/tmux-sessionizer`)

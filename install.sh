@@ -64,9 +64,9 @@ Usage: ./install.sh [options]
 
   --no-packages    Deploy config files only; install nothing.
   --packages-only  Install software only; touch no config files.
-  --desktop        Also install the Hyprland/i3 desktop stack (bars, launchers,
-                   screenshot and audio tools). Skipped by default so this can
-                   run on a headless box or a work machine.
+  --desktop        Also install the Hyprland desktop stack (bar, launcher,
+                   notifications, screenshot and audio tools). Skipped by
+                   default so this can run on a headless box or a work machine.
   --yes, -y        Do not prompt; assume yes.
   --dry-run        Print every action without doing any of it.
   --help, -h       Show this message.
@@ -192,7 +192,6 @@ DESKTOP_PKGS=(
   'dunst:dunst:dunst:dunst'
   'python-requests:python-requests:python3-requests:python3-requests'  # waybar-wttr.py imports requests
   'wofi:wofi:wofi:wofi'
-  'rofi:rofi:rofi:rofi'
   'swaybg:swaybg:swaybg:swaybg'
   'swayidle:swayidle:swayidle:swayidle'
   'swaylock:swaylock-effects:swaylock:swaylock'
@@ -203,17 +202,9 @@ DESKTOP_PKGS=(
   'pamixer:pamixer:pamixer:pamixer'
   'thunar:thunar:Thunar:thunar'
   'polkit-agent:polkit-gnome:polkit-gnome:policykit-1-gnome'
-  # tray applets both hyprland.conf and the i3 config autostart
+  # tray applets hyprland.conf autostarts
   'nm-applet:network-manager-applet:network-manager-applet:network-manager-gnome'
   'blueman:blueman:blueman:blueman'
-  'i3:i3-wm:i3:i3'
-  'i3lock:i3lock:i3lock:i3lock'
-  'xss-lock:xss-lock:xss-lock:xss-lock'  # i3 locks on idle/sleep through this
-  'picom:picom:picom:picom'
-  'polybar:polybar:polybar:polybar'
-  'dunst:dunst:dunst:dunst'
-  'feh:feh:feh:feh'
-  'maim:maim:maim:maim'
 )
 
 field_for_distro() {
@@ -549,7 +540,7 @@ main() {
       install_pkgs "${CORE_PKGS[@]}"
 
       if (( DO_DESKTOP )); then
-        step "Desktop packages (Hyprland / i3)"
+        step "Desktop packages (Hyprland)"
         install_pkgs "${DESKTOP_PKGS[@]}"
       else
         skip "desktop stack skipped (pass --desktop to include it)"

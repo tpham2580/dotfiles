@@ -31,7 +31,7 @@
 #   daemon at all, which is the bug this is meant to prevent. So: check first,
 #   then start whichever daemon this machine actually has.
 #
-# Usage: notification-daemon        (from hyprland.conf / i3 autostart)
+# Usage: notification-daemon        (from hyprland.conf)
 #
 set -uo pipefail
 
