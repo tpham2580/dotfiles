@@ -290,6 +290,11 @@ after upgrading herdr to see exactly what, if anything, broke.
 - Monitors, wallpaper and the polkit agent are **per-machine** — see
   [Per-machine settings](#-per-machine-settings) above.
 - Bar: waybar · Launcher: wofi · Notifications: mako · Lock: swaylock + swayidle
+- Also autostarted: `xdg-desktop-portal-hyprland` (screen share, file pickers),
+  `nm-applet` and `blueman-applet` (network and bluetooth trays — waybar's
+  bluetooth module opens `blueman-manager` on click). The waybar weather module
+  runs `waybar-wttr.py`, which needs Python `requests`. `install.sh --desktop`
+  installs all of them.
 
 ### **i3 Window Manager** (X11, kept for older machines)
 

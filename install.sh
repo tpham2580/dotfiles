@@ -179,7 +179,11 @@ CORE_PKGS=(
 
 DESKTOP_PKGS=(
   'hyprland:hyprland:hyprland:'
+  # hyprland.conf's first exec-once starts ~/.config/hypr/xdg-portal-hyprland;
+  # without the portal, screen sharing and GTK file pickers do not work.
+  'portal-hyprland:xdg-desktop-portal-hyprland:xdg-desktop-portal-hyprland:xdg-desktop-portal-hyprland'
   'waybar:waybar:waybar:waybar'
+  'python-requests:python-requests:python3-requests:python3-requests'  # waybar-wttr.py imports requests
   'wofi:wofi:wofi:wofi'
   'rofi:rofi:rofi:rofi'
   'mako:mako:mako:mako-notifier'
@@ -193,8 +197,12 @@ DESKTOP_PKGS=(
   'pamixer:pamixer:pamixer:pamixer'
   'thunar:thunar:Thunar:thunar'
   'polkit-agent:polkit-gnome:polkit-gnome:policykit-1-gnome'
+  # tray applets both hyprland.conf and the i3 config autostart
+  'nm-applet:network-manager-applet:network-manager-applet:network-manager-gnome'
+  'blueman:blueman:blueman:blueman'
   'i3:i3-wm:i3:i3'
   'i3lock:i3lock:i3lock:i3lock'
+  'xss-lock:xss-lock:xss-lock:xss-lock'  # i3 locks on idle/sleep through this
   'picom:picom:picom:picom'
   'polybar:polybar:polybar:polybar'
   'dunst:dunst:dunst:dunst'
