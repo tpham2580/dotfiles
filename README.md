@@ -210,6 +210,9 @@ reads `%LOCALAPPDATA%\nvim`, not `~\.config\nvim`, so it needs the special case.
   | `ctrl+alt+j` / `ctrl+alt+k` | Next / previous agent |
 
 - Search roots for the folder picker: `linux/.config/herdr/sessionize-paths`
+- `onboarding = false` (first line of the config) skips herdr's first-run wizard.
+  herdr writes this key itself once the wizard is completed, so it is kept in the
+  repo to stop the wizard reappearing every time the config is redeployed.
 - **Requires:** `fzf` and `jq`
 
 #### Helper scripts (`linux/.script/` → `~/.script/`, on `PATH`)

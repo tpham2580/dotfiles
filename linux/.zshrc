@@ -129,3 +129,11 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 # herdr helpers (session switching, hunk aliases)
 [ -f "$HOME/.script/herdr.zsh" ] && source "$HOME/.script/herdr.zsh"
+
+# .NET: prefer the userspace SDK in ~/.dotnet, which ships the
+# Microsoft.AspNetCore.App shared framework the system install lacks
+# (without it `dotnet test` cannot run the ASP.NET Core test hosts).
+if [ -d "$HOME/.dotnet" ]; then
+  export DOTNET_ROOT="$HOME/.dotnet"
+  export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"
+fi
