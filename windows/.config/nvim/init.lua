@@ -1250,12 +1250,17 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    -- Kanagawa Color scheme
+    -- Both colorscheme plugins are installed because install.ps1 picks the
+    -- theme per machine and rewrites the `colorscheme` line below at deploy
+    -- time. Shipping only one would leave the other machine's choice missing.
+    -- Colour schemes
     'rebelot/kanagawa.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
+    dependencies = { 'catppuccin/nvim' },
     init = function()
-      -- Load the colorscheme here.
-      -- Kanagawa has different styles: 'kanagawa-wave', 'kanagawa-dragon', 'kanagawa-lotus'.
+      -- Load the colorscheme here. `install.ps1 -Theme <name>` rewrites this
+      -- line, so switch themes through the installer rather than by hand.
+      -- Supported: 'kanagawa-wave', 'kanagawa-dragon', 'catppuccin-mocha'.
       vim.cmd.colorscheme 'kanagawa-wave'
 
       -- You can configure highlights by doing something like:

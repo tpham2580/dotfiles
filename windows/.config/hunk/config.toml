@@ -1,10 +1,8 @@
 # hunk — persistent view preferences (Windows)
 # docs: https://github.com/modem-dev/hunk#config
 #
-# Kept in step with linux/.config/hunk/config.toml. Two deliberate differences:
-#   theme                   kanagawa-wave rather than catppuccin-mocha, to
-#                           match nvim and herdr on this machine.
-#   transparent_background  the counterpart of herdr's `panel_bg = "reset"`, so
+# Kept in step with linux/.config/hunk/config.toml apart from the Windows-only
+# transparent background, the counterpart of herdr's `panel_bg = "reset"`, so
 #                           Windows Terminal's `opacity` shows through hunk too.
 #
 # `tab_width` is NOT a recognised key (hunk 0.17.7 reads mode, vcs, theme,

@@ -1,31 +1,42 @@
 /**
- * Kanagawa Wave styling for Zebar's bundled GlazeWM widget.
+ * Theme-neutral styling for Zebar's bundled GlazeWM widget.
  */
 @import 'https://www.nerdfonts.com/assets/css/webfont.css';
 
 :root {
-  --wave-bg: rgb(31 31 40 / 94%);
-  --wave-bg-alt: rgb(42 42 55 / 94%);
-  --wave-fg: #dcd7ba;
-  --wave-muted: #727169;
-  --wave-blue: #7e9cd8;
-  --wave-cyan: #7fb4ca;
-  --wave-green: #76946a;
-  --wave-red: #c34043;
-  --wave-yellow: #c0a36e;
+  /* Solid colours, plus the same values as bare RGB triples so a rule can add
+     its own alpha. install.ps1 rewrites this block per theme; everything below
+     refers to these variables rather than repeating a literal colour. */
+  --bar-bg-rgb: 31 31 40;
+  --bar-bg-alt-rgb: 42 42 55;
+  --bar-accent-rgb: 126 156 216;
+  --bar-muted-rgb: 114 113 105;
+  --bar-yellow-rgb: 192 163 110;
+
+  --bar-fg: #dcd7ba;
+  --bar-muted: #727169;
+  --bar-accent: #7e9cd8;
+  --bar-accent-fg: #1f1f28;
+  --bar-teal: #7fb4ca;
+  --bar-green: #76946a;
+  --bar-red: #c34043;
+  --bar-yellow: #c0a36e;
+
+  --bar-bg: rgb(var(--bar-bg-rgb) / 94%);
+  --bar-bg-alt: rgb(var(--bar-bg-alt-rgb) / 94%);
   --text-size: 12px;
   --icon-size: 12px;
 }
 
 body {
-  color: var(--wave-fg);
+  color: var(--bar-fg);
   font-family: ui-monospace, monospace;
   font-size: var(--text-size);
   overflow: hidden;
 }
 
 i {
-  color: var(--wave-cyan);
+  color: var(--bar-teal);
   margin-right: 7px;
   font-size: var(--icon-size);
 }
@@ -44,8 +55,8 @@ body,
 }
 
 #root {
-  background: linear-gradient(180deg, var(--wave-bg), var(--wave-bg-alt));
-  border-bottom: 1px solid rgb(126 156 216 / 35%);
+  background: linear-gradient(180deg, var(--bar-bg), var(--bar-bg-alt));
+  border-bottom: 1px solid rgb(var(--bar-accent-rgb) / 35%);
 }
 
 .app {
@@ -88,31 +99,31 @@ body,
 }
 
 .workspace {
-  background: rgb(114 113 105 / 18%);
+  background: rgb(var(--bar-muted-rgb) / 18%);
   margin-right: 4px;
   padding: 4px 8px;
-  color: var(--wave-fg);
+  color: var(--bar-fg);
   border: 1px solid transparent;
   border-radius: 2px;
   cursor: pointer;
 
   &.displayed {
-    background: rgb(126 156 216 / 20%);
-    border-color: rgb(126 156 216 / 35%);
+    background: rgb(var(--bar-accent-rgb) / 20%);
+    border-color: rgb(var(--bar-accent-rgb) / 35%);
   }
 
   &.focused,
   &:hover {
-    background: var(--wave-blue);
-    color: #1f1f28;
+    background: var(--bar-accent);
+    color: var(--bar-accent-fg);
   }
 }
 
 .binding-mode,
 .tiling-direction,
 .paused-button {
-  background: rgb(192 163 110 / 22%);
-  color: var(--wave-yellow);
+  background: rgb(var(--bar-yellow-rgb) / 18%);
+  color: var(--bar-yellow);
   border-radius: 2px;
   line-height: 1;
   padding: 4px 8px;
@@ -125,7 +136,7 @@ body,
 }
 
 .cpu .high-usage {
-  color: var(--wave-red);
+  color: var(--bar-red);
 }
 
 .battery {
@@ -134,7 +145,7 @@ body,
 
 .battery .charging-icon {
   position: absolute;
-  color: var(--wave-green);
+  color: var(--bar-green);
   font-size: 7px;
   left: -8px;
   top: 3px;

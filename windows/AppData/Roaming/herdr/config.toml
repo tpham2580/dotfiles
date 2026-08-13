@@ -126,18 +126,15 @@ width = "60%"
 height = "40%"
 
 # --- Windows-only appearance -------------------------------------------------
-# Linux is catppuccin; Windows uses the Kanagawa Wave palette.
+# Use Catppuccin Mocha across platforms.
+# theme_label = "kanagawa-wave"
 [theme]
 name = "kanagawa"
 auto_switch = false
 
-# Keep the built-in Kanagawa theme pinned to the Wave palette while allowing
-# Windows Terminal's opacity to show through Herdr's panels.
+# Let Windows Terminal's opacity show through the main panel.
 [theme.custom]
 panel_bg = "reset"
-accent = "#7e9cd8"
-red = "#c34043"
-green = "#76946a"
 
 # New panes use PowerShell 7. Windows PowerShell 5.1 (Herdr's default on
 # Windows) has no LocalMachine execution policy set, so it falls back to

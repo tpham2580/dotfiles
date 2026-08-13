@@ -15,16 +15,21 @@
     Packages come from winget. Anything winget does not carry (herdr, hunk) is
     installed from its own upstream installer.
 
-    Themes are deliberately NOT hardcoded here. They live in the deployed
-    configs (herdr [theme], hunk theme, the nvim colorscheme) and this script
-    only reports whatever it just deployed -- so changing a theme is a config
-    edit, never an installer edit.
+    Themes are chosen per machine with -Theme and remembered in
+    ~\.dotfiles-theme, so a later run without the switch keeps whatever this
+    machine already uses. The repo carries one default; the deploy rewrites the
+    theme value in every config that needs it, which is why a theme is never
+    committed from one machine onto another.
 
 .PARAMETER NoPackages
     Deploy config files only; install nothing.
 
 .PARAMETER PackagesOnly
     Install software only; touch no config files.
+
+.PARAMETER Theme
+    Colour scheme to deploy: kanagawa-wave, kanagawa-dragon or catppuccin-mocha.
+    Defaults to whatever this machine chose last, then to the repo default.
 
 .PARAMETER Yes
     Do not prompt; assume yes.
@@ -37,11 +42,16 @@
 
 .EXAMPLE
     .\install.ps1 -NoPackages -Yes
+
+.EXAMPLE
+    .\install.ps1 -Theme catppuccin-mocha
 #>
 [CmdletBinding()]
 param(
     [switch] $NoPackages,
     [switch] $PackagesOnly,
+    [ValidateSet('kanagawa-wave', 'kanagawa-dragon', 'catppuccin-mocha')]
+    [string] $Theme,
     [switch] $Yes,
     [switch] $DryRun
 )
@@ -342,6 +352,182 @@ $PathRewrite = @(
     'AppData\Roaming\herdr\config.toml'
 )
 
+# ---------------------------------------------------------------------------
+# themes
+#
+# Every app names its colours differently, so a theme is a set of per-app values
+# rather than one string: nvim wants a colorscheme name, herdr a built-in theme,
+# GlazeWM two border colours, Zebar a CSS palette and Windows Terminal a scheme
+# name. The repo stores one default and the deploy rewrites those values, so a
+# machine picks a theme without ever committing it -- which is what keeps two
+# machines on different themes from fighting over the same tracked files.
+#
+# Windows Terminal is the exception: its settings.json carries all three scheme
+# definitions and only the active `colorScheme` is rewritten, because a scheme
+# it does not know about would leave the profile unstyled.
+# ---------------------------------------------------------------------------
+$ThemeFile = Join-Path $HOME '.dotfiles-theme'
+$DefaultTheme = 'kanagawa-wave'
+
+$Themes = @{
+    'kanagawa-wave'    = @{
+        Nvim            = 'kanagawa-wave'
+        Hunk            = 'kanagawa-wave'
+        Herdr           = 'kanagawa'
+        TerminalScheme  = 'Kanagawa Wave'
+        BorderFocused   = '#7e9cd8'
+        BorderUnfocused = '#727169'
+        Bar             = @{
+            bg = '31 31 40'; bgAlt = '42 42 55'; fg = '#dcd7ba'; muted = '#727169'
+            accent = '#7e9cd8'; accentText = '#1f1f28'; teal = '#7fb4ca'
+            green = '#76946a'; red = '#c34043'; yellow = '#c0a36e'
+            accentRgb = '126 156 216'; mutedRgb = '114 113 105'; yellowRgb = '192 163 110'
+        }
+    }
+    'kanagawa-dragon'  = @{
+        Nvim            = 'kanagawa-dragon'
+        Hunk            = 'kanagawa-dragon'
+        Herdr           = 'kanagawa'
+        TerminalScheme  = 'Kanagawa Dragon'
+        BorderFocused   = '#8ba4b0'
+        BorderUnfocused = '#7a8382'
+        Bar             = @{
+            bg = '24 22 22'; bgAlt = '40 39 39'; fg = '#c5c9c5'; muted = '#a6a69c'
+            accent = '#8ba4b0'; accentText = '#181616'; teal = '#8ea4a2'
+            green = '#8a9a7b'; red = '#c4746e'; yellow = '#c4b28a'
+            accentRgb = '139 164 176'; mutedRgb = '166 166 156'; yellowRgb = '196 178 138'
+        }
+    }
+    'catppuccin-mocha' = @{
+        Nvim            = 'catppuccin-mocha'
+        Hunk            = 'catppuccin-mocha'
+        Herdr           = 'catppuccin'
+        TerminalScheme  = 'Catppuccin Mocha'
+        BorderFocused   = '#89b4fa'
+        BorderUnfocused = '#6c7086'
+        Bar             = @{
+            bg = '30 30 46'; bgAlt = '49 50 68'; fg = '#cdd6f4'; muted = '#6c7086'
+            accent = '#89b4fa'; accentText = '#1e1e2e'; teal = '#94e2d5'
+            green = '#a6e3a1'; red = '#f38ba8'; yellow = '#f9e2af'
+            accentRgb = '137 180 250'; mutedRgb = '108 112 134'; yellowRgb = '249 226 175'
+        }
+    }
+}
+
+# Files whose theme values are rewritten on the way out.
+$ThemeRewrite = @(
+    '.config\nvim\init.lua',
+    '.config\hunk\config.toml',
+    'AppData\Roaming\herdr\config.toml',
+    '.glzr\glazewm\config.yaml',
+    'AppData\Roaming\zebar\downloads\glzr-io.starter@0.0.0\styles.css',
+    'AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json'
+)
+
+function Resolve-Theme {
+    <#
+      -Theme wins, then this machine's remembered choice, then the repo default.
+    #>
+    [CmdletBinding()]
+    param([string] $Requested)
+
+    if ($Requested) { return $Requested }
+
+    if (Test-Path $ThemeFile) {
+        $saved = (Get-Content -LiteralPath $ThemeFile -Raw).Trim()
+        if ($Themes.ContainsKey($saved)) { return $saved }
+        Write-Note ("{0} names an unknown theme '{1}'; falling back to {2}" -f $ThemeFile, $saved, $DefaultTheme)
+    }
+
+    return $DefaultTheme
+}
+
+function Save-Theme {
+    [CmdletBinding()]
+    param([string] $Name)
+
+    if ($DryRun) { Write-Dry ('remember theme {0} in {1}' -f $Name, $ThemeFile); return }
+    Set-Content -LiteralPath $ThemeFile -Value $Name -Encoding UTF8
+}
+
+function Set-ThemeValues {
+    <#
+      Applies the active theme to one config's text. Each pattern is anchored on
+      the key it replaces so the rewrite cannot wander into unrelated content.
+    #>
+    [CmdletBinding()]
+    param([string] $Text, [string] $RelativePath, [hashtable] $Values)
+
+    switch ($RelativePath) {
+        '.config\nvim\init.lua' {
+            return [regex]::Replace($Text, "(?m)^(\s*vim\.cmd\.colorscheme\s+')[^']+(')", {
+                    param($m) $m.Groups[1].Value + $Values.Nvim + $m.Groups[2].Value
+                })
+        }
+        '.config\hunk\config.toml' {
+            return [regex]::Replace($Text, '(?m)^(theme\s*=\s*")[^"]+(")', {
+                    param($m) $m.Groups[1].Value + $Values.Hunk + $m.Groups[2].Value
+                })
+        }
+        'AppData\Roaming\herdr\config.toml' {
+            $text = [regex]::Replace($Text, '(?m)^(#\s*theme_label\s*=\s*")[^"]+(")', {
+                    param($m) $m.Groups[1].Value + $Values.Name + $m.Groups[2].Value
+                })
+            # Only the name inside [theme]; herdr has no other bare `name =` key,
+            # but anchor on the section anyway so it stays true if one appears.
+            return [regex]::Replace($text, '(?ms)(\[theme\]\r?\nname\s*=\s*")[^"]+(")', {
+                    param($m) $m.Groups[1].Value + $Values.Herdr + $m.Groups[2].Value
+                })
+        }
+        '.glzr\glazewm\config.yaml' {
+            # Anchored on the two section names rather than on match order: a
+            # counter shared with a MatchEvaluator does not survive between
+            # calls, which silently gave both borders the focused colour.
+            $text = [regex]::Replace($Text, "(?s)(focused_window:.*?color:\s*')#[0-9a-fA-F]{6}(')", {
+                    param($m) $m.Groups[1].Value + $Values.BorderFocused + $m.Groups[2].Value
+                })
+            return [regex]::Replace($text, "(?s)(other_windows:.*?color:\s*')#[0-9a-fA-F]{6}(')", {
+                    param($m) $m.Groups[1].Value + $Values.BorderUnfocused + $m.Groups[2].Value
+                })
+        }
+        'AppData\Roaming\zebar\downloads\glzr-io.starter@0.0.0\styles.css' {
+            $bar = $Values.Bar
+            $map = @{
+                '--bar-bg-rgb'      = $bar.bg
+                '--bar-bg-alt-rgb'  = $bar.bgAlt
+                '--bar-accent-rgb'  = $bar.accentRgb
+                '--bar-muted-rgb'   = $bar.mutedRgb
+                '--bar-yellow-rgb'  = $bar.yellowRgb
+                '--bar-fg'          = $bar.fg
+                '--bar-muted'       = $bar.muted
+                '--bar-accent'      = $bar.accent
+                '--bar-accent-fg'   = $bar.accentText
+                '--bar-teal'        = $bar.teal
+                '--bar-green'       = $bar.green
+                '--bar-red'         = $bar.red
+                '--bar-yellow'      = $bar.yellow
+            }
+            $text = $Text
+            foreach ($key in $map.Keys) {
+                $value = $map[$key]
+                # Anchor on the exact variable name; --bar-bg must not also match
+                # --bar-bg-rgb, so require the colon immediately after the name.
+                $text = [regex]::Replace($text, ('(?m)^(\s*{0}:\s*)[^;]+(;)' -f [regex]::Escape($key)), {
+                        param($m) $m.Groups[1].Value + $value + $m.Groups[2].Value
+                    })
+            }
+            return $text
+        }
+        'AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json' {
+            return [regex]::Replace($Text, '("colorScheme"\s*:\s*")[^"]+(")', {
+                    param($m) $m.Groups[1].Value + $Values.TerminalScheme + $m.Groups[2].Value
+                })
+        }
+    }
+
+    return $Text
+}
+
 function Get-DeployContent {
     <#
       Returns the text to deploy, or $null when the file should be copied
@@ -349,13 +535,24 @@ function Get-DeployContent {
     #>
     param([string] $SourcePath, [string] $RelativePath)
 
-    if ($PathRewrite -notcontains $RelativePath) { return $null }
+    $needsPath = $PathRewrite -contains $RelativePath
+    $needsTheme = $ThemeRewrite -contains $RelativePath
+    if (-not $needsPath -and -not $needsTheme) { return $null }
 
     $text = Get-Content -LiteralPath $SourcePath -Raw
-    $home_ = $HOME.TrimEnd('\') + '\'
-    # MatchEvaluator, not a replacement string: `$` is a substitution token in
-    # .NET replacements and a home directory is free to contain one.
-    return [regex]::Replace($text, '(?i)C:\\Users\\[^\\"'']+\\', { $home_ })
+
+    if ($needsPath) {
+        $home_ = $HOME.TrimEnd('\') + '\'
+        # MatchEvaluator, not a replacement string: `$` is a substitution token in
+        # .NET replacements and a home directory is free to contain one.
+        $text = [regex]::Replace($text, '(?i)C:\\Users\\[^\\"'']+\\', { $home_ })
+    }
+
+    if ($needsTheme) {
+        $text = Set-ThemeValues -Text $text -RelativePath $RelativePath -Values $script:ActiveTheme
+    }
+
+    return $text
 }
 
 function Backup-Target {
@@ -438,6 +635,13 @@ $ProfileEndMarker = '# <<< dotfiles: herdr <<<'
 $ProfileBlock = @"
 $ProfileBeginMarker
 # Managed by dotfiles\install.ps1 -- edit the repo, not this block.
+
+# The Windows counterpart of linux/.zshenv: hunk's 'e' command reads `$EDITOR
+# from the environment it inherits, and herdr panes inherit it from here. An
+# EDITOR already set in the environment wins, so this only fills the gap.
+if (-not `$env:EDITOR) { `$env:EDITOR = 'nvim' }
+if (-not `$env:VISUAL) { `$env:VISUAL = `$env:EDITOR }
+
 # Only the sessionizer binds Alt+S, so load order no longer decides which
 # picker the terminal gets. Invoke-HerdrSession.ps1 supplies the helpers it
 # builds on, so it still loads first.
@@ -520,15 +724,23 @@ function Get-ConfigValue {
 }
 
 function Show-ThemeSummary {
-    # Read back what was deployed instead of hardcoding names, so this stays
-    # correct when the themes change.
-    $herdr = Get-ConfigValue (Join-Path $env:APPDATA 'herdr\config.toml') '^\s*name\s*=\s*"([^"]+)"'
+    # Read back what was deployed instead of trusting the theme table, so a
+    # rewrite that silently failed to match shows up here rather than in a
+    # confusing half-themed desktop.
+    $herdr = Get-ConfigValue (Join-Path $env:APPDATA 'herdr\config.toml') '^\s*#\s*theme_label\s*=\s*"([^"]+)"'
     $hunk = Get-ConfigValue (Join-Path $HOME '.config\hunk\config.toml') '^\s*theme\s*=\s*"([^"]+)"'
+    $nvim = Get-ConfigValue (Join-Path $env:LOCALAPPDATA 'nvim\init.lua') "colorscheme\s+'([^']+)'"
+    $terminal = Get-ConfigValue `
+        (Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json') `
+        '"colorScheme"\s*:\s*"([^"]+)"'
 
-    Write-Host ('  herdr theme : {0}' -f ($herdr ?? '(unset)'))
-    Write-Host ('  hunk theme  : {0}' -f ($hunk ?? '(unset)'))
-    Write-Host '  change them in windows\AppData\Roaming\herdr\config.toml and' -ForegroundColor DarkGray
-    Write-Host '  windows\.config\hunk\config.toml, then re-run this script.' -ForegroundColor DarkGray
+    Write-Host ('  active theme : {0}' -f $script:ActiveThemeName) -ForegroundColor Cyan
+    Write-Host ('  terminal     : {0}' -f ($terminal ?? '(unset)'))
+    Write-Host ('  nvim         : {0}' -f ($nvim ?? '(unset)'))
+    Write-Host ('  herdr        : {0}' -f ($herdr ?? '(unset)'))
+    Write-Host ('  hunk         : {0}' -f ($hunk ?? '(unset)'))
+    Write-Host ('  choices      : {0}' -f (($Themes.Keys | Sort-Object) -join ', ')) -ForegroundColor DarkGray
+    Write-Host '  switch with  : .\install.ps1 -Theme <name>' -ForegroundColor DarkGray
 }
 
 function Show-Notes {
@@ -633,6 +845,12 @@ Write-Head 'Environment'
 Write-Good ('dotfiles   : {0}' -f $Dotfiles)
 Write-Good ('powershell : {0}' -f $PSVersionTable.PSVersion)
 Write-Good ('user       : {0}' -f $env:USERNAME)
+
+$script:ActiveThemeName = Resolve-Theme -Requested $Theme
+$script:ActiveTheme = $Themes[$script:ActiveThemeName].Clone()
+$script:ActiveTheme.Name = $script:ActiveThemeName
+Write-Good ('theme      : {0}{1}' -f $script:ActiveThemeName, ($Theme ? ' (selected)' : ' (remembered)'))
+
 if ($DryRun) { Write-Note 'dry run -- nothing will be changed' }
 
 if ($NoPackages) {
@@ -664,6 +882,7 @@ else {
     Update-GlazeWM
 
     Write-Head 'Themes'
+    Save-Theme -Name $script:ActiveThemeName
     Show-ThemeSummary
 }
 

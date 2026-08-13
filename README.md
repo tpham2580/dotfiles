@@ -67,6 +67,7 @@ helpers.
 | *(none)* | Packages + configs |
 | `-NoPackages` | Deploy config files only, install nothing |
 | `-PackagesOnly` | Install software only, touch no config files |
+| `-Theme <name>` | Colour scheme: `kanagawa-wave`, `kanagawa-dragon`, `catppuccin-mocha` |
 | `-DryRun` | Print every action without doing any of it |
 | `-Yes` | Never prompt |
 
@@ -81,10 +82,24 @@ are skipped, so re-running after a `git pull` is cheap.
   (`irm https://herdr.dev/install.ps1 | iex`).
 - **hunk** — `npm install -g hunkdiff`.
 
-**Themes are read back, not hardcoded.** The script prints the herdr and hunk
-themes by parsing the configs it just deployed, so changing a theme in
-`windows\AppData\Roaming\herdr\config.toml` is all it takes — the installer
-needs no edit.
+**Themes are chosen per machine, not committed.** Every app names its colours
+differently — nvim wants a colorscheme, herdr a built-in theme, GlazeWM two
+border colours, Zebar a CSS palette, Windows Terminal a scheme name — so a
+theme is a set of values rather than one string. The repo carries a single
+default and `install.ps1` rewrites those values as it deploys:
+
+```powershell
+.\install.ps1 -Theme catppuccin-mocha   # switch this machine
+.\install.ps1                           # keep whatever it chose last
+```
+
+The choice is remembered in `~\.dotfiles-theme`, so later runs without the flag
+leave it alone. That is what lets two machines sit on different themes without
+either one committing its own over the other. Windows Terminal is the exception
+to the rewrite: its `settings.json` carries all three scheme *definitions* and
+only the active `colorScheme` is swapped, because a scheme it has never heard of
+leaves the profile unstyled. Adding a theme means one entry in the `$Themes`
+table in `install.ps1` (plus a scheme block for the terminal).
 
 **Paths are retargeted per machine.** herdr does not expand `$HOME` (or any
 variable) inside `[[keys.command]]`, so the tracked `config.toml` has to carry an
@@ -150,7 +165,7 @@ dotfiles/
 │   ├── AppData/
 │   │   ├── Local/Packages/…/   # Windows Terminal settings.json
 │   │   └── Roaming/herdr/      # herdr config + sessionize search roots
-│   ├── .copilot/scripts/       # herdr helper scripts (PowerShell)
+│   ├── .copilot/               # Copilot CLI settings + herdr helper scripts
 │   ├── .config/hunk/           # hunk diff viewer
 │   ├── .config/nvim/           # Neovim (deploys to %LOCALAPPDATA%\nvim)
 │   └── .glzr/
@@ -350,8 +365,8 @@ under `windows/` maps to the same path under `$HOME`, so
   | Windows-only | Why |
   | --- | --- |
   | `onboarding = false` | Skips the first-run wizard |
-  | `[theme] name = "kanagawa"` | Uses the Kanagawa Wave palette (Linux is catppuccin) |
-  | `[theme.custom]` | Pins Wave accents and lets Windows Terminal's `opacity` show through |
+  | `[theme] name` | Rewritten per machine by `install.ps1 -Theme` (Linux is catppuccin) |
+  | `[theme.custom] panel_bg = "reset"` | Lets Windows Terminal's `opacity` show through |
   | `[terminal] default_shell = "pwsh"` | PowerShell 5.1 is `Restricted` and refuses to dot-source the helper scripts |
   | `[[keys.command]]` paths | PowerShell in `~\.copilot\scripts` instead of bash in `~/.script` |
 
@@ -384,11 +399,16 @@ under `windows/` maps to the same path under `$HOME`, so
 
 #### Shell bindings and aliases
 
-Add to `$PROFILE`. Only the sessionizer binds `Alt+S`, so load order no longer
-decides which picker you get; `Invoke-HerdrSession.ps1` still loads first
-because the sessionizer builds on its helpers:
+Add to `$PROFILE`. `EDITOR` is set here because Windows has no `.zshenv`
+equivalent, and hunk's `e` command reads `$EDITOR` from the environment it
+inherits. Only the sessionizer binds `Alt+S`, so load order no longer decides
+which picker you get; `Invoke-HerdrSession.ps1` still loads first because the
+sessionizer builds on its helpers:
 
 ```powershell
+if (-not $env:EDITOR) { $env:EDITOR = 'nvim' }
+if (-not $env:VISUAL) { $env:VISUAL = $env:EDITOR }
+
 $__herdrSession = "$HOME\.copilot\scripts\Invoke-HerdrSession.ps1"
 if (Test-Path $__herdrSession) { . $__herdrSession }
 
@@ -479,14 +499,25 @@ one `enter` + one detach lands you on exactly the workspace you picked.
 - Configuration file: `windows/.config/hunk/config.toml`
 - Deploy path: `~\.config\hunk\config.toml`
 - Mirrors `linux/.config/hunk/config.toml` apart from two deliberate changes:
-  `theme = "kanagawa-dragon"` (matching nvim and herdr on Windows) and
-  `transparent_background = true`, the counterpart of herdr's
+  `theme` is rewritten per machine by `install.ps1 -Theme` (matching nvim,
+  herdr and the terminal) and `transparent_background = true`, the counterpart
+  of herdr's
   `panel_bg = "reset"` so Windows Terminal's `opacity` shows through hunk too.
 - ⚠️ `tab_width` is **not** a recognised key in hunk 0.17.7 — the accepted set is
   `mode`, `vcs`, `theme`, `watch`, `exclude_untracked`, `line_numbers`,
   `wrap_lines`, `hunk_headers`, `menu_bar`, `agent_notes`, `copy_decorations`,
   `transparent_background`, `color_moved`. The `tab_width` line in the Linux
   config is a no-op and is not mirrored here.
+- ⚠️ Pressing `e` on a file needs **`$EDITOR`** — hunk reads that variable and
+  nothing else (not `VISUAL`, and there is no config key for it), so an unset
+  `EDITOR` gives `$EDITOR is not set.` Linux gets it from `.zshenv`; Windows
+  gets it from the `$PROFILE` block above, plus a user-level environment
+  variable so `-NoProfile` processes are covered too:
+  ```powershell
+  [Environment]::SetEnvironmentVariable('EDITOR', 'nvim', 'User')
+  ```
+  `nvim` is one of hunk's vi-style editors, so `e` opens the file at the
+  selected line (`nvim +<line> <file>`) and suspends hunk until you quit it.
 - Unlike Linux, hunk is **not** wired into git as the difftool here — Windows
   `~\.gitconfig` has no `[diff] tool = hunk`. Add it if you want `git difftool`
   to open hunk:
@@ -555,6 +586,9 @@ one `enter` + one detach lands you on exactly the workspace you picked.
 - Install: `winget install Microsoft.WindowsTerminal`
 - Tracked because herdr's `panel_bg = "reset"` depends on the terminal's own
   opacity/theme to render correctly.
+- Uses the **Catppuccin Mocha** scheme. Copilot CLI and `agency copilot`
+  use their terminal-native `default` theme on top because they do not support
+  custom third-party palettes.
 - ⚠️ Windows Terminal **rewrites this file itself** — it appends profiles when it
   discovers newly installed shells. Expect it to drift, and copy it back before
   committing. Its sibling files (`state.json`, `elevated-state.json`, `*.backup`)
@@ -568,7 +602,7 @@ one `enter` + one detach lands you on exactly the workspace you picked.
 - Configuration file: `windows/.config/nvim/init.lua`
 - Deploy path: `~/AppData/Local/nvim/init.lua`
 - Base configuration came from [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
-- Current theme: [Kanagawa](https://github.com/rebelot/kanagawa.nvim) (kanagawa-dragon)
+- Current theme: [Catppuccin](https://github.com/catppuccin/nvim) (`catppuccin-mocha`)
 - The Windows tree has since diverged from the Linux one and carries three
   modules that tie Neovim into the herdr/hunk workflow:
 
