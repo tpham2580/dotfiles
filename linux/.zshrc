@@ -104,27 +104,9 @@ source $ZSH/oh-my-zsh.sh
 # Old tmux binding, kept for reference:
 #   bindkey -s '^F' '~/.local/scripts/tmux-sessionizer\n'
 
-# Uses pass to retrive api key from key "deepseek/api-key"
-deepseek_key() {
-  export DEEPSEEK_API_KEY=$(pass deepseek/api-key)
-}
-
-function run_aichat_session() {
-  deepseek_key
-  cat > ~/.config/aichat/config.yaml <<EOF
-model: deepseek:deepseek-chat
-clients:
-- type: openai-compatible
-  name: deepseek
-  api_base: https://api.deepseek.com
-  api_key: $DEEPSEEK_API_KEY
-EOF
-  aichat --session
-  zle reset-prompt
-}
-
-zle -N run_aichat_session
-bindkey '^G' run_aichat_session
+# Chat from the terminal is Copilot CLI now, started in a herdr pane with
+# prefix+shift+A (~/.script/herdr-copilot). The old ctrl+g aichat/DeepSeek
+# binding lived here.
 
 # let ssh egent run on startup - prevents reentering pass everytime
 # Check if SSH agent is running

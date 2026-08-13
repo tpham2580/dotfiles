@@ -154,7 +154,6 @@ CORE_PKGS=(
   'ripgrep:ripgrep:ripgrep:ripgrep'  # telescope live_grep
   'fd:fd:fd-find:fd-find'            # telescope file finder
   'tree:tree:tree:tree'
-  'pass:pass:pass:pass'              # deepseek_key in .zshrc
   'gh:github-cli:gh:gh'              # git credential helper in .gitconfig
   # editor + build deps for treesitter/mason
   'neovim:neovim:neovim:neovim'
@@ -511,7 +510,7 @@ post_deploy_notes() {
   have hunk || notes+=("hunk missing: npm install -g hunkdiff")
   have fzf || notes+=("fzf missing: herdr-sessionizer and ctrl+f will not work")
   have jq || notes+=("jq missing: herdr-copilot (prefix+A) and the empty-workspace watcher need it")
-  have pass || notes+=("pass missing: the ctrl+g aichat binding needs 'pass deepseek/api-key'")
+  have copilot || notes+=("Copilot CLI missing: npm install -g @github/copilot (prefix+shift+A needs it)")
 
   (( ${#notes[@]} == 0 )) && return 0
   step "Still to do"

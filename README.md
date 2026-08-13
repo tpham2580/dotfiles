@@ -279,8 +279,8 @@ after upgrading herdr to see exactly what, if anything, broke.
 - `~/.script` is on `PATH`; `~/.zsh/completions` is on `fpath` before oh-my-zsh
   runs `compinit` (herdr completions).
 - `ctrl+f` opens the herdr folder picker (was `tmux-sessionizer`).
-- `ctrl+g` starts an [aichat](https://github.com/sigoden/aichat) session using a
-  Deepseek key read from `pass deepseek/api-key`.
+- Terminal chat is Copilot CLI, started in a herdr pane with `prefix+shift+A`
+  (`herdr-copilot`). There is no `ctrl+g` binding.
 - ssh-agent starts on first use so the ssh passphrase is entered once.
 
 ### **Hyprland**
