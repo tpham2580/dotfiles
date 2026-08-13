@@ -150,7 +150,7 @@ dotfiles/
 │   │   ├── hunk/               # hunk diff viewer
 │   │   ├── hypr/               # Hyprland (+ host.conf.example)
 │   │   ├── i3/                 # i3 window manager
-│   │   ├── mako/ wofi/ waybar/ # Wayland notifications, launcher, bar
+│   │   ├── wofi/ waybar/       # Wayland launcher and bar
 │   │   ├── nvim/               # Neovim
 │   │   ├── picom/ polybar/ rofi/  # X11 compositor, bar, launcher
 │   │   └── tmux/               # Terminal multiplexer (legacy, replaced by herdr)
@@ -234,8 +234,10 @@ reads `%LOCALAPPDATA%\nvim`, not `~\.config\nvim`, so it needs the special case.
 
 | Script | Purpose |
 | --- | --- |
-| `herdr-attach` | Attach, and return to the shell when you close your last workspace instead of landing in an auto-created empty one |
+| `herdr-attach` | Attach, and return to the shell when you close your last workspace instead of landing in an auto-created empty one. Also supervises the client: a `SIGABRT`/`SIGSEGV` is followed by an automatic reattach instead of a dead terminal, and the client's stderr (panics included) is appended to `~/.config/herdr/herdr-client-stderr.log` |
 | `herdr-watch-empty` | The watcher that makes the above work |
+| `herdr-diagnose` | Capture a **frozen** herdr client: per-thread kernel wait states, a native backtrace, terminal fds, and whether the server still answers. Run it from another window *before* closing the stuck one — a hang leaves no coredump, so closing the window destroys the only evidence |
+| `notification-daemon` | Starts mako or dunst, whichever the machine has, and does nothing if a daemon is already running. Autostarted by Hyprland — see the Hyprland notes for why a missing daemon freezes the terminal |
 | `herdr-sessionizer` | fzf picker over workspaces + projects + named sessions (the `tmux-sessionizer` port) |
 | `herdr-sessionize` | Open any folder as a workspace (`ctrl+f`) |
 | `herdr-copilot` | Register Copilot CLI as a tracked agent in the current pane |
@@ -307,12 +309,24 @@ after upgrading herdr to see exactly what, if anything, broke.
 - Deploy path: `~/.config/hypr/hyprland.conf`
 - Monitors, wallpaper and the polkit agent are **per-machine** — see
   [Per-machine settings](#-per-machine-settings) above.
-- Bar: waybar · Launcher: wofi · Notifications: mako · Lock: swaylock + swayidle
+- Bar: waybar · Launcher: wofi · Notifications: mako or dunst · Lock: swaylock + swayidle
 - Also autostarted: `xdg-desktop-portal-hyprland` (screen share, file pickers),
   `nm-applet` and `blueman-applet` (network and bluetooth trays — waybar's
   bluetooth module opens `blueman-manager` on click). The waybar weather module
   runs `waybar-wttr.py`, which needs Python `requests`. `install.sh --desktop`
   installs all of them.
+- **A notification daemon is not optional.** If nothing owns
+  `org.freedesktop.Notifications`, D-Bus tries to *activate* it and every
+  `notify-send` blocks **forever** rather than failing. On a machine that has
+  ever had KDE installed, the name is claimed by
+  `plasma_waitforname`, which waits for a Plasma service that never starts under
+  Hyprland. The herdr client sends notifications synchronously from the thread
+  that draws the terminal, so this presents as the terminal freezing at random —
+  usually right as an agent changes state. It looks like a herdr crash and is
+  not one; the server and every pane stay healthy.
+  `exec-once = ~/.script/notification-daemon` prevents it by owning the name up
+  front, so activation never runs. To check: `notify-send test` must return
+  instantly.
 
 ### **i3 Window Manager** (X11, kept for older machines)
 

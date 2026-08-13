@@ -183,10 +183,16 @@ DESKTOP_PKGS=(
   # without the portal, screen sharing and GTK file pickers do not work.
   'portal-hyprland:xdg-desktop-portal-hyprland:xdg-desktop-portal-hyprland:xdg-desktop-portal-hyprland'
   'waybar:waybar:waybar:waybar'
+  # Notification daemon. Not cosmetic: with no owner for
+  # org.freedesktop.Notifications, D-Bus tries to activate the name and
+  # notify-send blocks forever instead of failing. herdr's client calls it
+  # synchronously from its render thread, so a missing daemon shows up as the
+  # terminal freezing at random. ~/.script/notification-daemon starts this or
+  # mako, whichever the machine has.
+  'dunst:dunst:dunst:dunst'
   'python-requests:python-requests:python3-requests:python3-requests'  # waybar-wttr.py imports requests
   'wofi:wofi:wofi:wofi'
   'rofi:rofi:rofi:rofi'
-  'mako:mako:mako:mako-notifier'
   'swaybg:swaybg:swaybg:swaybg'
   'swayidle:swayidle:swayidle:swayidle'
   'swaylock:swaylock-effects:swaylock:swaylock'

@@ -3,21 +3,73 @@
 # herdr-attach — attach to herdr, and return to the shell when you close your
 # last workspace (instead of landing in an auto-created empty workspace).
 #
-# The watcher is started first, then this shell is REPLACED by the herdr client
-# via exec. That is deliberate: after exec the client inherits this process id,
-# so the watcher already knows exactly which pid to signal, with no process
-# name matching or guesswork.
+# The watcher is started first and is given THIS pid. The herdr client then
+# runs as a child of this script rather than replacing it, and the TERM trap
+# below forwards the signal on, so "detach by signal" behaves as it always did.
 #
 # Everything else about herdr is unchanged. prefix+d still detaches normally,
 # and the server keeps running in the background either way.
 #
+# --- CRASH SURVIVAL ----------------------------------------------------------
+# The 0.8.0 client aborts on a Rust panic (SIGABRT) every so often, usually
+# right after a picker popup closes. The SERVER is untouched when that happens:
+# every workspace, pane and agent keeps running, so the crash only costs a
+# reattach. This script does that reattach automatically instead of dropping
+# you into a dead terminal, and appends the panic to $CRASHLOG for reporting.
+# -----------------------------------------------------------------------------
 set -uo pipefail
 
 HERDR="${HERDR_BIN_PATH:-$HOME/.local/bin/herdr}"
 WATCHER="$HOME/.script/herdr-watch-empty"
+CRASHLOG="${HERDR_CLIENT_STDERR:-$HOME/.config/herdr/herdr-client-stderr.log}"
+MAX_RESTARTS="${HERDR_MAX_RESTARTS:-5}"
+
+export RUST_BACKTRACE="${RUST_BACKTRACE:-full}"
+mkdir -p "$(dirname "$CRASHLOG")"
 
 if [[ -x "$WATCHER" ]] && command -v jq >/dev/null 2>&1; then
   setsid "$WATCHER" "$$" >/dev/null 2>&1 </dev/null &
 fi
 
-exec "$HERDR" "$@"
+child=0
+forward_signal() {
+  if (( child )); then
+    kill -TERM "$child" 2>/dev/null
+    wait "$child" 2>/dev/null
+  fi
+  exit 0
+}
+trap forward_signal TERM INT HUP
+
+restarts=0
+while :; do
+  printf '\n===== client start %s wrapper=%s =====\n' "$(date -Is)" "$$" >>"$CRASHLOG"
+
+  # 0<&0 is deliberate: bash points a background job's stdin at /dev/null unless
+  # the redirection is explicit, which would leave the client unable to read the
+  # keyboard. Backgrounding it is what lets the trap above run while it is up.
+  "$HERDR" "$@" 0<&0 2>>"$CRASHLOG" &
+  child=$!
+  wait "$child"
+  rc=$?
+  child=0
+
+  # 134 = SIGABRT (Rust panic), 139 = SIGSEGV. Every other status is a real
+  # exit — a clean quit, a detach, or a usage error — so pass it through.
+  case $rc in
+    134|139) ;;
+    *) exit "$rc" ;;
+  esac
+
+  restarts=$(( restarts + 1 ))
+  if (( restarts > MAX_RESTARTS )); then
+    printf 'herdr client crashed %d times; not reattaching again. See %s\n' \
+      "$restarts" "$CRASHLOG" | tee -a "$CRASHLOG" >&2
+    exit "$rc"
+  fi
+
+  printf '  -> client crashed (exit %d), reattaching %d/%d\n' \
+    "$rc" "$restarts" "$MAX_RESTARTS" >>"$CRASHLOG"
+  printf '\nherdr client crashed (panic logged to %s) — reattaching...\n' "$CRASHLOG" >&2
+  sleep 1
+done

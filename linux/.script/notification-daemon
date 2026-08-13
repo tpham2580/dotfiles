@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# notification-daemon — make sure SOMETHING owns org.freedesktop.Notifications.
+#
+# WHY THIS EXISTS
+#   If no daemon owns that D-Bus name, a notify-send does not fail — D-Bus tries
+#   to activate the service and the call blocks FOREVER. The herdr client sends
+#   desktop notifications synchronously from the thread that draws the terminal
+#   (client::handle_notify -> show_desktop_notification -> Command::status), so a
+#   missing daemon presents as the terminal freezing at random, usually just as
+#   an agent changes state. It looks like a herdr crash and is not one.
+#
+#   Activation is worse than useless on a mixed machine. Both of these claim the
+#   name on a Fedora box that has ever had KDE installed:
+#
+#     /usr/share/dbus-1/services/org.knopwob.dunst.service
+#         Exec=/usr/bin/dunst
+#     /usr/share/dbus-1/services/org.kde.plasma.Notifications.service
+#         Exec=/usr/bin/plasma_waitforname org.freedesktop.Notifications
+#
+#   When KDE's wins, plasma_waitforname sits there waiting for a Plasma service
+#   that never starts under Hyprland ("WaitForName: Service was not registered
+#   within timeout" in the journal) and the caller blocks the whole time. Owning
+#   the name up front means activation never runs at all.
+#
+# WHY IT IS A SCRIPT AND NOT `exec-once = dunst`
+#   Machines differ: some run mako (Wayland-native), some dunst. Hard-coding one
+#   in the shared hyprland.conf starts a second daemon on a machine that already
+#   has the other, and both then fight over the same D-Bus name. Naming it per
+#   machine in host.conf avoids that but silently leaves a NEW machine with no
+#   daemon at all, which is the bug this is meant to prevent. So: check first,
+#   then start whichever daemon this machine actually has.
+#
+# Usage: notification-daemon        (from hyprland.conf / i3 autostart)
+#
+set -uo pipefail
+
+DBUS_NAME=org.freedesktop.Notifications
+
+has_owner() {
+  # Prefer gdbus: it answers the question directly. busctl is the fallback; an
+  # "activatable" name lists no pid there, which is exactly the wedged state.
+  if command -v gdbus >/dev/null 2>&1; then
+    [[ "$(timeout 5 gdbus call --session \
+            --dest org.freedesktop.DBus \
+            --object-path /org/freedesktop/DBus \
+            --method org.freedesktop.DBus.NameHasOwner "$DBUS_NAME" 2>/dev/null)" == *true* ]]
+  elif command -v busctl >/dev/null 2>&1; then
+    timeout 5 busctl --user list --no-legend 2>/dev/null \
+      | awk -v n="$DBUS_NAME" '$1 == n && $2 != "-" { found = 1 } END { exit !found }'
+  else
+    return 1
+  fi
+}
+
+if has_owner; then
+  echo "notification-daemon: $DBUS_NAME already owned, nothing to do"
+  exit 0
+fi
+
+# mako first: it is Wayland-native, so it is the better fit where it exists.
+for daemon in mako dunst; do
+  if command -v "$daemon" >/dev/null 2>&1; then
+    echo "notification-daemon: starting $daemon"
+    exec "$daemon"
+  fi
+done
+
+echo "notification-daemon: no daemon installed (mako or dunst) —" \
+     "notify-send will hang and freeze the herdr client" >&2
+exit 1

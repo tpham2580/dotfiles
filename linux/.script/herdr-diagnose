@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# herdr-diagnose — capture the state of a FROZEN herdr client.
+#
+# A hang leaves no coredump and no log line, so it has to be caught while it is
+# still happening. Run this from a DIFFERENT terminal window while the herdr
+# window is stuck, and do NOT close the stuck window first — closing it destroys
+# the evidence and turns the hang into a "crash" that tells us nothing.
+#
+#   ~/.script/herdr-diagnose
+#
+# Everything lands in ~/.config/herdr/diagnose-<timestamp>.txt
+#
+set -uo pipefail
+
+HERDR="${HERDR_BIN_PATH:-$HOME/.local/bin/herdr}"
+OUT="$HOME/.config/herdr/diagnose-$(date +%Y%m%d-%H%M%S).txt"
+
+exec > >(tee "$OUT") 2>&1
+
+section() { printf '\n===== %s =====\n' "$*"; }
+
+section "when"
+date -Is
+uptime
+
+section "herdr processes"
+ps -eo pid,ppid,stat,etime,pcpu,pmem,tty,args | grep -E '[h]erdr' || echo "none"
+
+# The client is the process whose parent is a shell, not the server.
+CLIENTS=$(pgrep -f "^${HERDR}( |$)" 2>/dev/null | tr '\n' ' ')
+section "client pids"
+echo "${CLIENTS:-none found}"
+
+for pid in $CLIENTS; do
+  section "pid $pid — state"
+  # State D or the same wchan across two samples means it is stuck in the kernel;
+  # state R with no progress means a spin; S is a normal idle wait.
+  cat "/proc/$pid/status" 2>/dev/null | grep -E '^(Name|State|Threads|SigQ|SigBlk|SigIgn|SigCgt)'
+  echo "wchan: $(cat "/proc/$pid/wchan" 2>/dev/null)"
+
+  section "pid $pid — per-thread wchan (twice, 1s apart)"
+  for round in 1 2; do
+    echo "--- sample $round ---"
+    for t in /proc/$pid/task/*; do
+      printf '  tid %-8s %-24s %s\n' \
+        "$(basename "$t")" \
+        "$(cat "$t/comm" 2>/dev/null)" \
+        "$(cat "$t/wchan" 2>/dev/null)"
+    done
+    [ "$round" = 1 ] && sleep 1
+  done
+
+  section "pid $pid — native backtrace"
+  if command -v eu-stack >/dev/null; then
+    timeout 20 eu-stack -p "$pid" 2>&1 | head -60
+  else
+    timeout 20 gdb -p "$pid" -batch -ex "thread apply all bt" 2>&1 | head -60
+  fi
+
+  section "pid $pid — open terminal fds"
+  ls -l "/proc/$pid/fd" 2>/dev/null | head -12
+done
+
+section "is the SERVER still answering?"
+# A 5s timeout separates "server wedged" from "client wedged": if this returns,
+# the server is healthy and the hang is client-side.
+if timeout 5 "$HERDR" workspace list >/dev/null 2>&1; then
+  echo "server responded OK within 5s"
+  timeout 5 "$HERDR" pane list 2>/dev/null | head -5
+else
+  echo "server did NOT respond within 5s <-- server-side hang"
+fi
+
+section "server log (last 25)"
+tail -25 "$HOME/.config/herdr/herdr-server.log" 2>/dev/null
+
+section "client log (last 10)"
+tail -10 "$HOME/.config/herdr/herdr-client.log" 2>/dev/null
+
+section "client stderr (last 20)"
+tail -20 "$HOME/.config/herdr/herdr-client-stderr.log" 2>/dev/null
+
+section "terminal emulator"
+ps -eo pid,lstart,args | grep -E '[k]itty' | head
+
+printf '\nSaved to %s\n' "$OUT"
