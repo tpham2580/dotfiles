@@ -838,6 +838,66 @@ function Update-HerdrConfig {
     else { Write-Skipped 'no running herdr server to reload' }
 }
 
+function Install-AgentSkills {
+    <#
+      herdr and hunk both ship a SKILL.md telling a coding agent how to drive
+      them, and both are invisible until one is dropped into ~\.copilot\skills.
+      That gap is worth closing on every machine: hunk's skill exists mostly to
+      say "the TUI is for the user, drive `hunk session *` instead", and an agent
+      without it will happily launch an interactive viewer in a non-interactive
+      shell and hang.
+
+      The files are generated from the installed binaries rather than tracked in
+      this repo, so a skill can never describe a different version than the tool
+      actually present, and upgrading either tool refreshes its own skill on the
+      next run. Personal scope only -- nothing is written into a project repo.
+    #>
+    $skillsDir = Join-Path $HOME '.copilot\skills'
+
+    $sources = @(
+        @{
+            Name    = 'herdr'
+            Present = { Test-Tool 'herdr' }
+            # herdr prints its skill to stdout; there is no file to copy.
+            Content = { (& herdr --skill 2>$null) -join "`n" }
+        },
+        @{
+            Name    = 'hunk-review'
+            Present = { Test-Tool 'hunk' }
+            Content = {
+                $path = (& hunk skill path 2>$null | Select-Object -First 1)
+                if ($path -and (Test-Path $path)) { Get-Content -LiteralPath $path -Raw } else { $null }
+            }
+        }
+    )
+
+    $written = 0
+    foreach ($source in $sources) {
+        if (-not (& $source.Present)) {
+            Write-Skipped ('{0} not installed, skill skipped' -f $source.Name)
+            continue
+        }
+
+        $content = & $source.Content
+        if (-not $content) { Write-Note ('could not read the {0} skill' -f $source.Name); continue }
+
+        $target = Join-Path $skillsDir ('{0}\SKILL.md' -f $source.Name)
+        if ((Test-Path $target) -and ((Get-Content -LiteralPath $target -Raw) -eq $content)) {
+            continue
+        }
+
+        if ($DryRun) { Write-Dry ('write {0}' -f $target); $written++; continue }
+        New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+        # -NoNewline so the file is byte-identical to what the comparison above
+        # reads back; otherwise an appended newline makes every run rewrite it.
+        Set-Content -LiteralPath $target -Value $content -Encoding UTF8 -NoNewline
+        Write-Good ('{0} skill installed' -f $source.Name)
+        $written++
+    }
+
+    if ($written -eq 0) { Write-Skipped 'agent skills already up to date' }
+}
+
 # ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
@@ -877,6 +937,9 @@ else {
 
     Write-Head 'herdr'
     Update-HerdrConfig
+
+    Write-Head 'Agent skills'
+    Install-AgentSkills
 
     Write-Head 'Window manager'
     Update-GlazeWM

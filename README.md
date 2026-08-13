@@ -101,6 +101,18 @@ only the active `colorScheme` is swapped, because a scheme it has never heard of
 leaves the profile unstyled. Adding a theme means one entry in the `$Themes`
 table in `install.ps1` (plus a scheme block for the terminal).
 
+**Agent skills are generated, not tracked.** herdr and hunk each ship a
+`SKILL.md` describing how a coding agent should drive them, and both are
+invisible until one lands in `~\.copilot\skills`. `install.ps1` writes them from
+the installed binaries (`herdr --skill`, `hunk skill path`), so a skill can never
+describe a different version than the tool actually present, and upgrading
+either tool refreshes its skill on the next run. They install at **personal**
+scope, so shared project repos are never touched.
+
+This matters most for hunk: its skill exists largely to say *the TUI is for the
+user — drive `hunk session *` instead*, and an agent without it will launch an
+interactive viewer in a non-interactive shell and hang.
+
 **Paths are retargeted per machine.** herdr does not expand `$HOME` (or any
 variable) inside `[[keys.command]]`, so the tracked `config.toml` has to carry an
 absolute path to the helper scripts. `install.ps1` rewrites that path to the
