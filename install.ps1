@@ -847,12 +847,19 @@ function Install-AgentSkills {
       without it will happily launch an interactive viewer in a non-interactive
       shell and hang.
 
-      The files are generated from the installed binaries rather than tracked in
+      Those two are generated from the installed binaries rather than tracked in
       this repo, so a skill can never describe a different version than the tool
       actually present, and upgrading either tool refreshes its own skill on the
-      next run. Personal scope only -- nothing is written into a project repo.
+      next run. Skills that are just text -- windows\.copilot\skills\* -- are
+      tracked instead and land through the normal file deploy.
+
+      Everything is then mirrored into ~\.agents\skills, the tool-neutral
+      location other agent CLIs read. Copilot reads both and de-duplicates on the
+      `name` in each file's frontmatter, so a skill present in both still appears
+      once. Personal scope only -- nothing is written into a project repo.
     #>
     $skillsDir = Join-Path $HOME '.copilot\skills'
+    $mirrorDir = Join-Path $HOME '.agents\skills'
 
     $sources = @(
         @{
@@ -895,7 +902,39 @@ function Install-AgentSkills {
         $written++
     }
 
+    $written += Copy-SkillMirror -From $skillsDir -To $mirrorDir
+
     if ($written -eq 0) { Write-Skipped 'agent skills already up to date' }
+}
+
+function Copy-SkillMirror {
+    <#
+      Mirrors every personal skill into the tool-neutral ~\.agents\skills so
+      agent CLIs other than Copilot pick them up too. Only copies what differs,
+      so a run with nothing to do stays silent.
+    #>
+    param([string] $From, [string] $To)
+
+    if (-not (Test-Path $From)) { return 0 }
+
+    $copied = 0
+    foreach ($file in Get-ChildItem -Path $From -Recurse -File) {
+        $rel = $file.FullName.Substring($From.Length).TrimStart('\')
+        $target = Join-Path $To $rel
+
+        if ((Test-Path $target) -and
+            (Get-FileHash -LiteralPath $file.FullName).Hash -eq (Get-FileHash -LiteralPath $target).Hash) {
+            continue
+        }
+
+        if ($DryRun) { Write-Dry ('mirror {0}' -f $target); $copied++; continue }
+        New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+        Copy-Item -LiteralPath $file.FullName -Destination $target -Force
+        Write-Good ('{0} mirrored to ~\.agents\skills' -f (Split-Path (Split-Path $target -Parent) -Leaf))
+        $copied++
+    }
+
+    return $copied
 }
 
 # ---------------------------------------------------------------------------
