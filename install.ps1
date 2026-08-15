@@ -850,8 +850,7 @@ function Install-AgentSkills {
       Those two are generated from the installed binaries rather than tracked in
       this repo, so a skill can never describe a different version than the tool
       actually present, and upgrading either tool refreshes its own skill on the
-      next run. Skills that are just text -- windows\.copilot\skills\* -- are
-      tracked instead and land through the normal file deploy.
+      next run.
 
       Everything is then mirrored into ~\.agents\skills, the tool-neutral
       location other agent CLIs read. Copilot reads both and de-duplicates on the

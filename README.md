@@ -107,27 +107,17 @@ extend a coding agent; Copilot reads them from `~\.copilot\skills` and
 Everything here is installed at **personal** scope, so it applies in every
 repository — including shared team ones — without adding a file to any of them.
 
-`install.ps1` handles two kinds:
+`install.ps1` generates the herdr and hunk skills from the installed binaries
+(`herdr --skill`, `hunk skill path`), so a skill can never describe a different
+version than the tool actually present, and upgrading either tool refreshes its
+skill on the next run. Both land in `~\.copilot\skills` and are mirrored to
+`~\.agents\skills`, the tool-neutral location other agent CLIs read. Copilot
+reads both and de-duplicates on the `name` in each file's frontmatter, so a
+skill in both appears once.
 
-| Kind | Source | Why |
-| --- | --- | --- |
-| Generated | `herdr --skill`, `hunk skill path` | Read from the installed binaries, so a skill can never describe a different version than the tool present, and upgrading a tool refreshes its skill |
-| Vendored | `windows\.copilot\skills\` | Plain text with no tool to read it from, so it is tracked here |
-
-Both land in `~\.copilot\skills` and are mirrored to `~\.agents\skills`, the
-tool-neutral location other agent CLIs read. Copilot reads both and
-de-duplicates on the `name` in each file's frontmatter, so a skill in both
-appears once.
-
-Vendored today:
-
-- [`karpathy-guidelines`](https://github.com/multica-ai/andrej-karpathy-skills)
-  (MIT) — behavioural guidelines that bias an agent toward surgical changes,
-  simplicity, surfaced assumptions and verifiable success criteria.
-
-The generated pair matters most for hunk: its skill exists largely to say *the
-TUI is for the user — drive `hunk session *` instead*, and an agent without it
-will launch an interactive viewer in a non-interactive shell and hang.
+This matters most for hunk: its skill exists largely to say *the TUI is for the
+user — drive `hunk session *` instead*, and an agent without it will launch an
+interactive viewer in a non-interactive shell and hang.
 
 **Paths are retargeted per machine.** herdr does not expand `$HOME` (or any
 variable) inside `[[keys.command]]`, so the tracked `config.toml` has to carry an
